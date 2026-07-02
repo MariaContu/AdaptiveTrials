@@ -1,0 +1,28 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+*.rsuser
+
+# Rider / JetBrains
+.idea/
+
+# VS Code
+.vscode/
+
+# Logs
+*.log
+
+# Database local
+*.db
+*.sqlite
+*.sqlite3
+
+# Environment
+.env
+appsettings.Local.json
+
+# OS
+.DS_Store
+Thumbs.db 
