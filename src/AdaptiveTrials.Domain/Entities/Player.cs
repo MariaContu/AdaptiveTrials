@@ -1,5 +1,3 @@
-using System.Text.Json;
-
 namespace AdaptiveTrials.Domain.Entities;
 
 public class Player
