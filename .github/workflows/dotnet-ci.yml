@@ -1,0 +1,33 @@
+name: .NET CI
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore AdaptiveTrials.slnx
+
+      - name: Build project
+        run: dotnet build AdaptiveTrials.slnx --no-restore --configuration Release
+
+      - name: Run tests
+        run: dotnet test AdaptiveTrials.slnx --no-build --configuration Release
