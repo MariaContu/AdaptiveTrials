@@ -1,0 +1,6 @@
+@AdaptiveTrials.Api_HostAddress = http://localhost:5277
+
+GET {{AdaptiveTrials.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

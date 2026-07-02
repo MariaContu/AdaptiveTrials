@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/AdaptiveTrials.Api/AdaptiveTrials.Api.csproj" />
+    <Project Path="src/AdaptiveTrials.Application/AdaptiveTrials.Application.csproj" />
+    <Project Path="src/AdaptiveTrials.Domain/AdaptiveTrials.Domain.csproj" />
+    <Project Path="src/AdaptiveTrials.Infrastructure/AdaptiveTrials.Infrastructure.csproj" />
+  </Folder>
+</Solution>
