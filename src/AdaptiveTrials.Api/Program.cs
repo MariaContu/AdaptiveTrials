@@ -12,6 +12,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddScoped<ISessionService, SessionService>();
 builder.Services.AddScoped<IMissionService, MissionService>();
+builder.Services.AddScoped<IBehaviorEventService, BehaviorEventService>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
