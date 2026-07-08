@@ -184,4 +184,26 @@ public class PlayerService : IPlayerService
     {
         return CalculateDominance(preferences) - CalculateSecondMax(preferences);
     }
+
+    public async Task<PlayerProfileResponse?> GetPlayerProfileAsync(int playerId)
+    {
+        var player = await _context.Players
+            .Include(p => p.NormalizedProfile)
+            .FirstOrDefaultAsync(p => p.Id == playerId);
+
+        if (player is null || player.NormalizedProfile is null)
+        {
+            return null;
+        }
+
+        return new PlayerProfileResponse
+        {
+            PlayerId = player.Id,
+            Source = player.NormalizedProfile.Source,
+            Combat = player.NormalizedProfile.Combat,
+            Exploration = player.NormalizedProfile.Exploration,
+            Puzzle = player.NormalizedProfile.Puzzle,
+            CreatedAt = player.NormalizedProfile.CreatedAt
+        };
+    }
 }
