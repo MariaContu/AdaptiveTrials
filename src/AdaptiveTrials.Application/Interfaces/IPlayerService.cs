@@ -8,4 +8,6 @@ public interface IPlayerService
         int playerId,
         ManualPreferencesRequest request
     );
+
+    Task<PlayerProfileResponse?> GetPlayerProfileAsync(int playerId);
 }

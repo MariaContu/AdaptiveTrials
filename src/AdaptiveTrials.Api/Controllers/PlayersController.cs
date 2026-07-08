@@ -43,4 +43,20 @@ public class PlayersController : ControllerBase
             });
         }
     }
+
+    [HttpGet("{playerId:int}/profile")]
+    public async Task<ActionResult<PlayerProfileResponse>> GetPlayerProfile(int playerId)
+    {
+        var response = await _playerService.GetPlayerProfileAsync(playerId);
+
+        if (response is null)
+        {
+            return NotFound(new
+            {
+                message = "Player profile not found."
+            });
+        }
+
+        return Ok(response);
+    }
 }
