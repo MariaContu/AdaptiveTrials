@@ -13,6 +13,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddScoped<ISessionService, SessionService>();
 builder.Services.AddScoped<IMissionService, MissionService>();
 builder.Services.AddScoped<IBehaviorEventService, BehaviorEventService>();
+builder.Services.AddScoped<IPlayerService, PlayerService>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
