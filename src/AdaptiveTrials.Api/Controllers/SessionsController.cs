@@ -1,3 +1,4 @@
+using AdaptiveTrials.Application.DTOs.BehaviorEvents;
 using AdaptiveTrials.Application.DTOs.Sessions;
 using AdaptiveTrials.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -9,10 +10,15 @@ namespace AdaptiveTrials.Api.Controllers;
 public class SessionsController : ControllerBase
 {
     private readonly ISessionService _sessionService;
+    private readonly IBehaviorEventService _behaviorEventService;
 
-    public SessionsController(ISessionService sessionService)
+    public SessionsController(
+        ISessionService sessionService,
+        IBehaviorEventService behaviorEventService
+    )
     {
         _sessionService = sessionService;
+        _behaviorEventService = behaviorEventService;
     }
 
     [HttpPost]
@@ -52,5 +58,38 @@ public class SessionsController : ControllerBase
         }
 
         return Ok(response);
+    }
+
+    [HttpPost("{sessionId:int}/events")]
+    public async Task<ActionResult<RegisterBehaviorEventResponse>> RegisterBehaviorEvent(
+        int sessionId,
+        [FromBody] RegisterBehaviorEventRequest request
+    )
+    {
+        try
+        {
+            var response = await _behaviorEventService.RegisterEventAsync(sessionId, request);
+
+            if (response is null)
+            {
+                return NotFound(new
+                {
+                    message = "Session not found."
+                });
+            }
+
+            return CreatedAtAction(
+                nameof(RegisterBehaviorEvent),
+                new { sessionId, eventId = response.EventId },
+                response
+            );
+        }
+        catch (InvalidOperationException exception)
+        {
+            return BadRequest(new
+            {
+                message = exception.Message
+            });
+        }
     }
 }
