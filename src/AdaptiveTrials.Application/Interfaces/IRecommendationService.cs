@@ -7,4 +7,6 @@ public interface IRecommendationService
     Task<NextRecommendationResponse?> GetNextRecommendationAsync(
         NextRecommendationRequest request
     );
+
+    Task<BehaviorDistributionResponse?> GetBehaviorDistributionAsync(int sessionId);
 }
