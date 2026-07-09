@@ -16,7 +16,11 @@ public class NextRecommendationResponse
 
     public int Difficulty { get; set; }
 
-    public RecommendationProbabilitiesResponse Probabilities { get; set; } = new();
+    public RecommendationProbabilitiesResponse ProfileProbabilities { get; set; } = new();
+
+    public RecommendationProbabilitiesResponse BehaviorProbabilities { get; set; } = new();
+
+    public RecommendationProbabilitiesResponse FinalProbabilities { get; set; } = new();
 
     public RecommendationWeightsResponse Weights { get; set; } = new();
 
