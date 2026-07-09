@@ -1,4 +1,5 @@
 using AdaptiveTrials.Application.DTOs.BehaviorEvents;
+using AdaptiveTrials.Application.DTOs.SessionQueries;
 using AdaptiveTrials.Application.DTOs.Sessions;
 using AdaptiveTrials.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -19,6 +20,54 @@ public class SessionsController : ControllerBase
     {
         _sessionService = sessionService;
         _behaviorEventService = behaviorEventService;
+    }
+
+    [HttpGet("{sessionId:int}")]
+    public async Task<ActionResult<SessionDetailsResponse>> GetSessionById(int sessionId)
+    {
+        var response = await _sessionService.GetSessionByIdAsync(sessionId);
+
+        if (response is null)
+        {
+            return NotFound(new
+            {
+                message = "Session not found."
+            });
+        }
+
+        return Ok(response);
+    }
+
+    [HttpGet("{sessionId:int}/events")]
+    public async Task<ActionResult<List<SessionEventResponse>>> GetSessionEvents(int sessionId)
+    {
+        var response = await _sessionService.GetSessionEventsAsync(sessionId);
+
+        if (response is null)
+        {
+            return NotFound(new
+            {
+                message = "Session not found."
+            });
+        }
+
+        return Ok(response);
+    }
+
+    [HttpGet("{sessionId:int}/recommendations")]
+    public async Task<ActionResult<List<SessionRecommendationResponse>>> GetSessionRecommendations(int sessionId)
+    {
+        var response = await _sessionService.GetSessionRecommendationsAsync(sessionId);
+
+        if (response is null)
+        {
+            return NotFound(new
+            {
+                message = "Session not found."
+            });
+        }
+
+        return Ok(response);
     }
 
     [HttpPost]
