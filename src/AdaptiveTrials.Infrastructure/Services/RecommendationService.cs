@@ -66,12 +66,7 @@ public class RecommendationService : IRecommendationService
 
         var recommendedType = SelectMissionType(finalDistribution);
 
-        var mission = await _context.Missions
-            .AsNoTracking()
-            .Where(mission => mission.Type == recommendedType)
-            .OrderBy(mission => mission.Difficulty)
-            .ThenBy(mission => mission.Id)
-            .FirstOrDefaultAsync();
+        var mission = await SelectMissionByTypeAsync(recommendedType, session.Id);
 
         if (mission is null)
         {
@@ -89,7 +84,7 @@ public class RecommendationService : IRecommendationService
             PuzzleProbability = finalDistribution.Puzzle,
             ProfileWeight = weights.Profile,
             BehaviorWeight = weights.Behavior,
-            Reason = "Adaptive recommendation combining initial profile and behavior distribution.",
+            Reason = "Adaptive recommendation using probabilistic mission type selection.",
             CreatedAt = DateTime.UtcNow
         };
 
@@ -241,17 +236,59 @@ public class RecommendationService : IRecommendationService
         RecommendationProbabilitiesResponse finalDistribution
     )
     {
-        var probabilities = new Dictionary<MissionType, double>
-        {
-            { MissionType.Combat, finalDistribution.Combat },
-            { MissionType.Exploration, finalDistribution.Exploration },
-            { MissionType.Puzzle, finalDistribution.Puzzle }
-        };
+        var randomValue = Random.Shared.NextDouble();
 
-        return probabilities
-            .OrderByDescending(probability => probability.Value)
-            .First()
-            .Key;
+        var combatLimit = finalDistribution.Combat;
+        var explorationLimit = combatLimit + finalDistribution.Exploration;
+
+        if (randomValue <= combatLimit)
+        {
+            return MissionType.Combat;
+        }
+
+        if (randomValue <= explorationLimit)
+        {
+            return MissionType.Exploration;
+        }
+
+        return MissionType.Puzzle;
+    }
+
+    private async Task<Mission?> SelectMissionByTypeAsync(
+        MissionType recommendedType,
+        int sessionId
+    )
+    {
+        var previouslyRecommendedMissionIds = await _context.Recommendations
+            .AsNoTracking()
+            .Where(recommendation => recommendation.SessionId == sessionId)
+            .Where(recommendation => recommendation.MissionId.HasValue)
+            .Select(recommendation => recommendation.MissionId!.Value)
+            .ToListAsync();
+
+        var availableMissions = await _context.Missions
+            .AsNoTracking()
+            .Where(mission => mission.Type == recommendedType)
+            .OrderBy(mission => mission.Difficulty)
+            .ThenBy(mission => mission.Id)
+            .ToListAsync();
+
+        if (availableMissions.Count == 0)
+        {
+            return null;
+        }
+
+        var notRepeatedMissions = availableMissions
+            .Where(mission => !previouslyRecommendedMissionIds.Contains(mission.Id))
+            .ToList();
+
+        var candidateMissions = notRepeatedMissions.Count > 0
+            ? notRepeatedMissions
+            : availableMissions;
+
+        var selectedIndex = Random.Shared.Next(candidateMissions.Count);
+
+        return candidateMissions[selectedIndex];
     }
 
     private static double CalculateCategoryScore(
