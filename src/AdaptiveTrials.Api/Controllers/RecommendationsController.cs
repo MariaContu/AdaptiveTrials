@@ -42,4 +42,20 @@ public class RecommendationsController : ControllerBase
             });
         }
     }
+
+    [HttpGet("behavior-distribution/{sessionId:int}")]
+    public async Task<ActionResult<BehaviorDistributionResponse>> GetBehaviorDistribution(int sessionId)
+    {
+        var response = await _recommendationService.GetBehaviorDistributionAsync(sessionId);
+
+        if (response is null)
+        {
+            return NotFound(new
+            {
+                message = "Session not found."
+            });
+        }
+
+        return Ok(response);
+    }
 }
