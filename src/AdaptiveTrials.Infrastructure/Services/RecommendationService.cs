@@ -20,10 +20,11 @@ public class RecommendationService : IRecommendationService
         NextRecommendationRequest request
     )
     {
-        var playerExists = await _context.Players
-            .AnyAsync(player => player.Id == request.PlayerId);
+        var player = await _context.Players
+            .Include(player => player.NormalizedProfile)
+            .FirstOrDefaultAsync(player => player.Id == request.PlayerId);
 
-        if (!playerExists)
+        if (player is null)
         {
             return null;
         }
@@ -44,12 +45,26 @@ public class RecommendationService : IRecommendationService
             throw new InvalidOperationException("Cannot generate recommendation for a session that is not started.");
         }
 
-        // Distribuição fixa inicial para validar o fluxo da API.
-        var combatProbability = 0.34;
-        var explorationProbability = 0.33;
-        var puzzleProbability = 0.33;
+        var profileDistribution = GetProfileDistribution(player.NormalizedProfile);
 
-        var recommendedType = MissionType.Combat;
+        var behaviorDistribution = await GetBehaviorDistributionAsync(session.Id);
+
+        if (behaviorDistribution is null)
+        {
+            return null;
+        }
+
+        var totalEvents = behaviorDistribution.TotalEvents;
+
+        var weights = CalculateWeights(totalEvents);
+
+        var finalDistribution = CombineDistributions(
+            profileDistribution,
+            behaviorDistribution,
+            weights
+        );
+
+        var recommendedType = SelectMissionType(finalDistribution);
 
         var mission = await _context.Missions
             .AsNoTracking()
@@ -69,12 +84,12 @@ public class RecommendationService : IRecommendationService
             MissionId = mission.Id,
             RecommendedType = recommendedType,
             RecommendedDifficulty = mission.Difficulty,
-            CombatProbability = combatProbability,
-            ExplorationProbability = explorationProbability,
-            PuzzleProbability = puzzleProbability,
-            ProfileWeight = 0.8,
-            BehaviorWeight = 0.2,
-            Reason = "Initial mock recommendation using fixed probabilities.",
+            CombatProbability = finalDistribution.Combat,
+            ExplorationProbability = finalDistribution.Exploration,
+            PuzzleProbability = finalDistribution.Puzzle,
+            ProfileWeight = weights.Profile,
+            BehaviorWeight = weights.Behavior,
+            Reason = "Adaptive recommendation combining initial profile and behavior distribution.",
             CreatedAt = DateTime.UtcNow
         };
 
@@ -89,19 +104,154 @@ public class RecommendationService : IRecommendationService
             RecommendedType = recommendation.RecommendedType,
             Template = mission.Template,
             Difficulty = recommendation.RecommendedDifficulty,
-            Probabilities = new RecommendationProbabilitiesResponse
+
+            ProfileProbabilities = new RecommendationProbabilitiesResponse
             {
-                Combat = recommendation.CombatProbability,
-                Exploration = recommendation.ExplorationProbability,
-                Puzzle = recommendation.PuzzleProbability
+                Combat = profileDistribution.Combat,
+                Exploration = profileDistribution.Exploration,
+                Puzzle = profileDistribution.Puzzle
             },
+
+            BehaviorProbabilities = new RecommendationProbabilitiesResponse
+            {
+                Combat = behaviorDistribution.Combat,
+                Exploration = behaviorDistribution.Exploration,
+                Puzzle = behaviorDistribution.Puzzle
+            },
+
+            FinalProbabilities = new RecommendationProbabilitiesResponse
+            {
+                Combat = finalDistribution.Combat,
+                Exploration = finalDistribution.Exploration,
+                Puzzle = finalDistribution.Puzzle
+            },
+
             Weights = new RecommendationWeightsResponse
             {
-                Profile = recommendation.ProfileWeight,
-                Behavior = recommendation.BehaviorWeight
+                Profile = weights.Profile,
+                Behavior = weights.Behavior
             },
+
             Reason = recommendation.Reason
         };
+    }
+
+    private static RecommendationProbabilitiesResponse GetProfileDistribution(
+        NormalizedProfile? normalizedProfile
+    )
+    {
+        if (normalizedProfile is null)
+        {
+            return new RecommendationProbabilitiesResponse
+            {
+                Combat = 1.0 / 3.0,
+                Exploration = 1.0 / 3.0,
+                Puzzle = 1.0 / 3.0
+            };
+        }
+
+        var total = normalizedProfile.Combat +
+                    normalizedProfile.Exploration +
+                    normalizedProfile.Puzzle;
+
+        if (total <= 0)
+        {
+            return new RecommendationProbabilitiesResponse
+            {
+                Combat = 1.0 / 3.0,
+                Exploration = 1.0 / 3.0,
+                Puzzle = 1.0 / 3.0
+            };
+        }
+
+        return new RecommendationProbabilitiesResponse
+        {
+            Combat = normalizedProfile.Combat / total,
+            Exploration = normalizedProfile.Exploration / total,
+            Puzzle = normalizedProfile.Puzzle / total
+        };
+    }
+
+    private static RecommendationWeightsResponse CalculateWeights(int totalEvents)
+    {
+        const double minimumProfileWeight = 0.3;
+        const double behaviorGrowthPerEvent = 0.1;
+
+        var behaviorWeight = 0.2 + totalEvents * behaviorGrowthPerEvent;
+
+        if (behaviorWeight > 0.7)
+        {
+            behaviorWeight = 0.7;
+        }
+
+        var profileWeight = 1.0 - behaviorWeight;
+
+        if (profileWeight < minimumProfileWeight)
+        {
+            profileWeight = minimumProfileWeight;
+            behaviorWeight = 1.0 - profileWeight;
+        }
+
+        return new RecommendationWeightsResponse
+        {
+            Profile = profileWeight,
+            Behavior = behaviorWeight
+        };
+    }
+
+    private static RecommendationProbabilitiesResponse CombineDistributions(
+        RecommendationProbabilitiesResponse profileDistribution,
+        BehaviorDistributionResponse behaviorDistribution,
+        RecommendationWeightsResponse weights
+    )
+    {
+        var combat =
+            weights.Profile * profileDistribution.Combat +
+            weights.Behavior * behaviorDistribution.Combat;
+
+        var exploration =
+            weights.Profile * profileDistribution.Exploration +
+            weights.Behavior * behaviorDistribution.Exploration;
+
+        var puzzle =
+            weights.Profile * profileDistribution.Puzzle +
+            weights.Behavior * behaviorDistribution.Puzzle;
+
+        var total = combat + exploration + puzzle;
+
+        if (total <= 0)
+        {
+            return new RecommendationProbabilitiesResponse
+            {
+                Combat = 1.0 / 3.0,
+                Exploration = 1.0 / 3.0,
+                Puzzle = 1.0 / 3.0
+            };
+        }
+
+        return new RecommendationProbabilitiesResponse
+        {
+            Combat = combat / total,
+            Exploration = exploration / total,
+            Puzzle = puzzle / total
+        };
+    }
+
+    private static MissionType SelectMissionType(
+        RecommendationProbabilitiesResponse finalDistribution
+    )
+    {
+        var probabilities = new Dictionary<MissionType, double>
+        {
+            { MissionType.Combat, finalDistribution.Combat },
+            { MissionType.Exploration, finalDistribution.Exploration },
+            { MissionType.Puzzle, finalDistribution.Puzzle }
+        };
+
+        return probabilities
+            .OrderByDescending(probability => probability.Value)
+            .First()
+            .Key;
     }
 
     private static double CalculateCategoryScore(
