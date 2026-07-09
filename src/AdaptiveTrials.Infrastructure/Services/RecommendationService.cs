@@ -66,7 +66,13 @@ public class RecommendationService : IRecommendationService
 
         var recommendedType = SelectMissionType(finalDistribution);
 
-        var mission = await SelectMissionByTypeAsync(recommendedType, session.Id);
+        var targetDifficulty = await CalculateTargetDifficultyAsync(session.Id);
+
+        var mission = await SelectMissionByTypeAndDifficultyAsync(
+            recommendedType,
+            session.Id,
+            targetDifficulty
+        );
 
         if (mission is null)
         {
@@ -78,13 +84,13 @@ public class RecommendationService : IRecommendationService
             SessionId = session.Id,
             MissionId = mission.Id,
             RecommendedType = recommendedType,
-            RecommendedDifficulty = mission.Difficulty,
+            RecommendedDifficulty = targetDifficulty,
             CombatProbability = finalDistribution.Combat,
             ExplorationProbability = finalDistribution.Exploration,
             PuzzleProbability = finalDistribution.Puzzle,
             ProfileWeight = weights.Profile,
             BehaviorWeight = weights.Behavior,
-            Reason = "Adaptive recommendation using probabilistic mission type selection.",
+            Reason = "Adaptive recommendation using probabilistic mission type selection and rule-based difficulty adjustment.",
             CreatedAt = DateTime.UtcNow
         };
 
@@ -97,8 +103,8 @@ public class RecommendationService : IRecommendationService
             RecommendedMissionId = mission.Id,
             MissionName = mission.Name,
             RecommendedType = recommendation.RecommendedType,
-            Template = mission.Template,
-            Difficulty = recommendation.RecommendedDifficulty,
+            Template = mission.Template,Difficulty = mission.Difficulty,
+            TargetDifficulty = targetDifficulty,
 
             ProfileProbabilities = new RecommendationProbabilitiesResponse
             {
@@ -129,6 +135,67 @@ public class RecommendationService : IRecommendationService
 
             Reason = recommendation.Reason
         };
+    }
+
+    private async Task<int> CalculateTargetDifficultyAsync(int sessionId)
+    {
+        var events = await _context.BehaviorEvents
+            .AsNoTracking()
+            .Where(behaviorEvent => behaviorEvent.SessionId == sessionId)
+            .OrderByDescending(behaviorEvent => behaviorEvent.CreatedAt)
+            .Take(5)
+            .ToListAsync();
+
+        if (events.Count == 0)
+        {
+            return 1;
+        }
+
+        var averageDifficulty = events.Average(behaviorEvent => behaviorEvent.Difficulty);
+        var successRate = events.Count(behaviorEvent => behaviorEvent.Success) / (double)events.Count;
+        var averageFailures = events.Average(behaviorEvent => behaviorEvent.Failures);
+        var averagePersistence = events.Average(behaviorEvent => behaviorEvent.Persistence);
+        var averageCompletionTime = events.Average(behaviorEvent => behaviorEvent.CompletionTime);
+
+        var targetDifficulty = (int)Math.Round(averageDifficulty);
+
+        var playerIsDoingWell =
+            successRate >= 0.75 &&
+            averageFailures <= 1 &&
+            averagePersistence >= 0.7 &&
+            averageCompletionTime <= 90;
+
+        var playerIsStruggling =
+            successRate < 0.5 ||
+            averageFailures >= 3 ||
+            averagePersistence < 0.4 ||
+            averageCompletionTime >= 150;
+
+        if (playerIsDoingWell)
+        {
+            targetDifficulty += 1;
+        }
+        else if (playerIsStruggling)
+        {
+            targetDifficulty -= 1;
+        }
+
+        return ClampDifficulty(targetDifficulty);
+    }
+
+    private static int ClampDifficulty(int difficulty)
+    {
+        if (difficulty < 1)
+        {
+            return 1;
+        }
+
+        if (difficulty > 5)
+        {
+            return 5;
+        }
+
+        return difficulty;
     }
 
     private static RecommendationProbabilitiesResponse GetProfileDistribution(
@@ -254,9 +321,10 @@ public class RecommendationService : IRecommendationService
         return MissionType.Puzzle;
     }
 
-    private async Task<Mission?> SelectMissionByTypeAsync(
+    private async Task<Mission?> SelectMissionByTypeAndDifficultyAsync(
         MissionType recommendedType,
-        int sessionId
+        int sessionId,
+        int targetDifficulty
     )
     {
         var previouslyRecommendedMissionIds = await _context.Recommendations
@@ -269,8 +337,6 @@ public class RecommendationService : IRecommendationService
         var availableMissions = await _context.Missions
             .AsNoTracking()
             .Where(mission => mission.Type == recommendedType)
-            .OrderBy(mission => mission.Difficulty)
-            .ThenBy(mission => mission.Id)
             .ToListAsync();
 
         if (availableMissions.Count == 0)
@@ -278,13 +344,22 @@ public class RecommendationService : IRecommendationService
             return null;
         }
 
-        var notRepeatedMissions = availableMissions
+        var bestDistance = availableMissions
+            .Min(mission => Math.Abs(mission.Difficulty - targetDifficulty));
+
+        var closestMissions = availableMissions
+            .Where(mission => Math.Abs(mission.Difficulty - targetDifficulty) == bestDistance)
+            .OrderBy(mission => mission.Difficulty)
+            .ThenBy(mission => mission.Id)
+            .ToList();
+
+        var notRepeatedClosestMissions = closestMissions
             .Where(mission => !previouslyRecommendedMissionIds.Contains(mission.Id))
             .ToList();
 
-        var candidateMissions = notRepeatedMissions.Count > 0
-            ? notRepeatedMissions
-            : availableMissions;
+        var candidateMissions = notRepeatedClosestMissions.Count > 0
+            ? notRepeatedClosestMissions
+            : closestMissions;
 
         var selectedIndex = Random.Shared.Next(candidateMissions.Count);
 
