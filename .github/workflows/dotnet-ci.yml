@@ -28,10 +28,10 @@ jobs:
           dotnet-version: "8.0.x"
 
       - name: Restore dependencies
-        run: dotnet restore AdaptiveTrials.sln
+        run: dotnet restore api/AdaptiveTrials.sln
 
       - name: Build
-        run: dotnet build AdaptiveTrials.sln --no-restore
+        run: dotnet build api/AdaptiveTrials.sln --no-restore
 
       - name: Test
-        run: dotnet test AdaptiveTrials.sln --no-build --verbosity normal
+        run: dotnet test api/AdaptiveTrials.sln --no-build --verbosity normal
