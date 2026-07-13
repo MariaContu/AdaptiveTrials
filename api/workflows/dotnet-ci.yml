@@ -1,18 +1,22 @@
-name: .NET CI
+name: API CI
 
 on:
-  push:
-    branches:
-      - main
-      - develop
   pull_request:
     branches:
-      - main
       - develop
+      - main
+  push:
+    branches:
+      - develop
+      - main
 
 jobs:
-  build:
+  build-api:
     runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: api
 
     steps:
       - name: Checkout repository
@@ -21,13 +25,13 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '10.0.x'
+          dotnet-version: "8.0.x"
 
       - name: Restore dependencies
-        run: dotnet restore AdaptiveTrials.slnx
+        run: dotnet restore AdaptiveTrials.sln
 
-      - name: Build project
-        run: dotnet build AdaptiveTrials.slnx --no-restore --configuration Release
+      - name: Build
+        run: dotnet build AdaptiveTrials.sln --no-restore
 
-      - name: Run tests
-        run: dotnet test AdaptiveTrials.slnx --no-build --configuration Release
+      - name: Test
+        run: dotnet test AdaptiveTrials.sln --no-build --verbosity normal
