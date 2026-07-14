@@ -1,0 +1,36 @@
+# Ambiente virtual
+.venv/
+venv/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Ferramentas e IDEs
+.idea/
+.vscode/
+.pytest_cache/
+.mypy_cache/
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+
+# Dados locais
+data/raw/*
+data/processed/*
+
+# Mantém as pastas vazias versionadas
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# Modelos e resultados gerados
+models/*
+reports/figures/*
+reports/metrics/*
+
+!models/.gitkeep
+!reports/figures/.gitkeep
+!reports/metrics/.gitkeep
