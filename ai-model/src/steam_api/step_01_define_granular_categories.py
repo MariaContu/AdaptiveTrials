@@ -4,7 +4,7 @@ from src.steam_api.config import (
 
 
 def validate_granular_categories() -> None:
-    """Valida a estrutura das categorias granulares."""
+    """Valida as categorias granulares e sua ordem de prioridade."""
 
     print("\n" + "=" * 60)
     print("Validação das categorias granulares")
@@ -17,6 +17,11 @@ def validate_granular_categories() -> None:
     ):
         print(
             f"\nMacrocategoria: {macro_category}"
+        )
+
+        print(
+            "Ordem de prioridade: "
+            "mais específica → residual"
         )
 
         if not subcategories:

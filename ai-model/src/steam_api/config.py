@@ -110,32 +110,32 @@ FINAL_DATASET_SUMMARY_FILE = (
 
 GRANULAR_CATEGORY_TAGS = {
     "combat": {
-        "combat_action": [
-            "action",
-            "battle royale",
-        ],
         "combat_shooter": [
             "fps",
             "shooter",
+            "battle royale",
         ],
         "combat_melee": [
             "fighting",
             "hack and slash",
             "beat em up",
         ],
+        "combat_action": [
+            "action",
+        ],
     },
     "exploration": {
-        "exploration_adventure": [
-            "adventure",
-            "walking simulator",
+        "exploration_rpg": [
+            "rpg",
         ],
         "exploration_open_world": [
             "open world",
             "exploration",
             "sandbox",
         ],
-        "exploration_rpg": [
-            "rpg",
+        "exploration_adventure": [
+            "adventure",
+            "walking simulator",
         ],
     },
     "puzzle": {
