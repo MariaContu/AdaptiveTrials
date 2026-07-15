@@ -10,6 +10,7 @@ from src.steam_api.step_03_map_categories import (
     get_relevant_game_tags,
     map_mission_categories,
     normalize_text,
+    parse_weighted_tags,
 )
 
 
@@ -33,6 +34,30 @@ def identify_granular_category(
             steamspy_tags_weighted
         ),
     )
+
+    if (
+        macro_category == "exploration"
+        and "adventure" in game_tags
+        and parse_weighted_tags(
+            steamspy_tags_weighted
+        )
+    ):
+        adventure_support_tags = {
+            "story rich",
+            "atmospheric",
+            "narrative",
+            "choices matter",
+            "walking simulator",
+            "point & click",
+            "interactive fiction",
+        }
+
+        if not game_tags.intersection(
+            adventure_support_tags
+        ):
+            game_tags.discard(
+                "adventure"
+            )
 
     granular_categories = (
         GRANULAR_CATEGORY_TAGS[
