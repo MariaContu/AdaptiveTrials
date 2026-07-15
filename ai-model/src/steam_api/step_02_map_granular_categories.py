@@ -7,37 +7,50 @@ from src.steam_api.step_02_collect_app_metadata import (
     APP_METADATA_FILE,
 )
 from src.steam_api.step_03_map_categories import (
-    identify_mission_categories,
-    split_tags,
+    get_relevant_game_tags,
+    map_mission_categories,
+    normalize_text,
 )
 
 
 def identify_granular_category(
     genres: object,
     steamspy_tags: object,
+    steamspy_tags_weighted: object,
     macro_category: str,
 ) -> str | None:
-    """Identifica a subcategoria prioritária de uma macrocategoria."""
+    """
+    Identifica uma subcategoria dentro da macrocategoria.
 
-    game_tags = split_tags(genres)
-    game_tags.update(
-        split_tags(steamspy_tags)
+    A ordem definida no config representa a prioridade.
+    A primeira subcategoria compatível é selecionada.
+    """
+
+    game_tags = get_relevant_game_tags(
+        genres=genres,
+        steamspy_tags=steamspy_tags,
+        steamspy_tags_weighted=(
+            steamspy_tags_weighted
+        ),
     )
 
-    subcategories = GRANULAR_CATEGORY_TAGS[
-        macro_category
-    ]
+    granular_categories = (
+        GRANULAR_CATEGORY_TAGS[
+            macro_category
+        ]
+    )
 
-    for subcategory, category_tags in (
-        subcategories.items()
-    ):
-        normalized_tags = {
-            tag.lower()
+    for (
+        subcategory,
+        category_tags,
+    ) in granular_categories.items():
+        normalized_category_tags = {
+            normalize_text(tag)
             for tag in category_tags
         }
 
         if game_tags.intersection(
-            normalized_tags
+            normalized_category_tags
         ):
             return subcategory
 
@@ -47,103 +60,134 @@ def identify_granular_category(
 def map_granular_categories(
     metadata_dataframe: pd.DataFrame,
 ) -> pd.DataFrame:
-    """Mapeia cada jogo para uma subcategoria por macrocategoria."""
+    """Mapeia os jogos para suas subcategorias granulares."""
 
-    dataframe = metadata_dataframe.copy()
+    dataframe = map_mission_categories(
+        metadata_dataframe
+    )
 
-    print("\n" + "=" * 60)
-    print("Mapeamento das categorias granulares")
-    print("=" * 60)
+    for macro_category in (
+        GRANULAR_CATEGORY_TAGS
+    ):
+        granular_column = (
+            f"{macro_category}"
+            "_subcategory"
+        )
 
-    dataframe["mission_categories"] = (
-        dataframe.apply(
-            lambda row: identify_mission_categories(
-                genres=row["genres"],
-                steamspy_tags=row["steamspy_tags"],
+        dataframe[
+            granular_column
+        ] = dataframe.apply(
+            lambda row: (
+                identify_granular_category(
+                    genres=row["genres"],
+                    steamspy_tags=(
+                        row[
+                            "steamspy_tags"
+                        ]
+                    ),
+                    steamspy_tags_weighted=(
+                        row[
+                            "steamspy_tags_weighted"
+                        ]
+                    ),
+                    macro_category=(
+                        macro_category
+                    ),
+                )
+                if bool(
+                    row[macro_category]
+                )
+                else None
             ),
             axis=1,
         )
+
+    return dataframe
+
+
+def print_granular_summary(
+    dataframe: pd.DataFrame,
+) -> None:
+    """Exibe a cobertura e a distribuição granular."""
+
+    print("\n" + "=" * 60)
+    print(
+        "Mapeamento das categorias "
+        "granulares"
     )
+    print("=" * 60)
 
     print(
         f"AppIDs analisados: "
         f"{len(dataframe)}"
     )
 
-    for macro_category, subcategories in (
-        GRANULAR_CATEGORY_TAGS.items()
+    for macro_category in (
+        GRANULAR_CATEGORY_TAGS
     ):
         granular_column = (
-            f"{macro_category}_subcategory"
-        )
-
-        dataframe[granular_column] = (
-            dataframe.apply(
-                lambda row: (
-                    identify_granular_category(
-                        genres=row["genres"],
-                        steamspy_tags=row[
-                            "steamspy_tags"
-                        ],
-                        macro_category=macro_category,
-                    )
-                    if macro_category
-                    in row["mission_categories"]
-                    else None
-                ),
-                axis=1,
-            )
+            f"{macro_category}"
+            "_subcategory"
         )
 
         macro_games = dataframe[
-            dataframe["mission_categories"]
-            .apply(
-                lambda categories: (
-                    macro_category in categories
-                )
-            )
-        ]
-
-        granular_games = macro_games[
-            macro_games[granular_column]
-            .notna()
-        ]
-
-        games_without_subcategory = (
-            macro_games[
-                macro_games[granular_column]
-                .isna()
+            dataframe[
+                macro_category
             ]
+        ]
+
+        macro_count = len(
+            macro_games
+        )
+
+        categorized_count = int(
+            macro_games[
+                granular_column
+            ]
+            .notna()
+            .sum()
+        )
+
+        uncategorized_count = (
+            macro_count
+            - categorized_count
         )
 
         coverage = (
-            len(granular_games)
-            / len(macro_games)
+            categorized_count
+            / macro_count
             * 100
-            if len(macro_games) > 0
+            if macro_count > 0
             else 0
         )
 
-        print("\n" + "-" * 60)
+        print(
+            "\n" + "-" * 60
+        )
+
         print(
             f"Macrocategoria: "
             f"{macro_category}"
         )
-        print("-" * 60)
+
+        print(
+            "-" * 60
+        )
 
         print(
             f"Jogos na macrocategoria: "
-            f"{len(macro_games)}"
+            f"{macro_count}"
         )
 
         print(
             f"Jogos com subcategoria: "
-            f"{len(granular_games)}"
+            f"{categorized_count}"
         )
 
         print(
-            "Jogos sem subcategoria granular: "
-            f"{len(games_without_subcategory)}"
+            "Jogos sem subcategoria "
+            f"granular: "
+            f"{uncategorized_count}"
         )
 
         print(
@@ -152,16 +196,23 @@ def map_granular_categories(
         )
 
         print(
-            "\nDistribuição das subcategorias:"
+            "\nDistribuição "
+            "das subcategorias:"
         )
 
         distribution = (
-            granular_games[granular_column]
+            macro_games[
+                granular_column
+            ]
             .value_counts()
         )
 
-        for subcategory in subcategories:
-            subcategory_count = int(
+        for subcategory in (
+            GRANULAR_CATEGORY_TAGS[
+                macro_category
+            ]
+        ):
+            count = int(
                 distribution.get(
                     subcategory,
                     0,
@@ -169,42 +220,18 @@ def map_granular_categories(
             )
 
             percentage = (
-                subcategory_count
-                / len(granular_games)
+                count
+                / categorized_count
                 * 100
-                if len(granular_games) > 0
+                if categorized_count > 0
                 else 0
             )
 
             print(
                 f"{subcategory}: "
-                f"{subcategory_count} jogos "
+                f"{count} jogos "
                 f"({percentage:.2f}%)"
             )
-
-        if not games_without_subcategory.empty:
-            print(
-                "\nExemplos sem subcategoria granular:"
-            )
-
-            for _, row in (
-                games_without_subcategory
-                .head(10)
-                .iterrows()
-            ):
-                print(
-                    f"- {row['appid']} | "
-                    f"{row['name']} | "
-                    f"genres={row['genres']} | "
-                    f"tags={row['steamspy_tags']}"
-                )
-
-    print(
-        "\nMapeamento granular "
-        "concluído com sucesso."
-    )
-
-    return dataframe
 
 
 def main() -> None:
@@ -212,8 +239,19 @@ def main() -> None:
         APP_METADATA_FILE
     )
 
-    map_granular_categories(
-        metadata_dataframe
+    categorized_dataframe = (
+        map_granular_categories(
+            metadata_dataframe
+        )
+    )
+
+    print_granular_summary(
+        categorized_dataframe
+    )
+
+    print(
+        "\nMapeamento granular "
+        "concluído com sucesso."
     )
 
 

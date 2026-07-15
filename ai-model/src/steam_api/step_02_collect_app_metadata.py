@@ -29,6 +29,19 @@ STEAM_SPY_REQUEST_DELAY_SECONDS = 1.0
 MAX_REQUEST_RETRIES = 5
 
 
+def serialize_weighted_tags(
+    tags: object,
+) -> str:
+    """Preserva as tags e seus respectivos pesos."""
+
+    if not isinstance(tags, dict):
+        return "{}"
+
+    return json.dumps(
+        tags,
+        ensure_ascii=False,
+    )
+
 def request_app_metadata(
     appid: int,
 ) -> dict[str, Any] | None:
@@ -177,8 +190,14 @@ def collect_app_metadata() -> tuple[
                 ),
                 "genres": genres,
                 "steamspy_tags": tags,
+                "steamspy_tags_weighted": (
+                    serialize_weighted_tags(
+                        metadata.get("tags")
+                    )
+                ),
             }
         )
+
 
         print(
             f"\rAppIDs processados: "

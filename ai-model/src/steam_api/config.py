@@ -11,6 +11,7 @@ load_dotenv(PROJECT_ROOT / ".env")
 STEAM_API_KEY = os.getenv("STEAM_API_KEY")
 
 RAW_DATA_DIR = PROJECT_ROOT / "data" / "raw"
+PROCESSED_DATA_DIR = PROJECT_ROOT / "data" / "processed"
 METRICS_DIR = PROJECT_ROOT / "reports" / "metrics"
 
 OWNED_GAMES_FILE = (
@@ -52,6 +53,14 @@ MISSION_CATEGORY_TAGS = {
         "hack and slash",
         "beat em up",
         "battle royale",
+        "action roguelike",
+        "twin stick shooter",
+        "top-down shooter",
+        "third-person shooter",
+        "hero shooter",
+        "looter shooter",
+        "combat",
+        "moba",
     ],
     "exploration": [
         "adventure",
@@ -70,8 +79,6 @@ MISSION_CATEGORY_TAGS = {
         "turn based",
     ],
 }
-
-PROCESSED_DATA_DIR = PROJECT_ROOT / "data" / "processed"
 
 PROFILE_COLUMNS = [
     "combat",
@@ -114,14 +121,25 @@ GRANULAR_CATEGORY_TAGS = {
             "fps",
             "shooter",
             "battle royale",
+            "twin stick shooter",
+            "top-down shooter",
+            "third-person shooter",
+            "hero shooter",
+            "looter shooter",
         ],
-        "combat_melee": [
+        "combat_fighting": [
             "fighting",
             "hack and slash",
             "beat em up",
+            "souls-like",
+            "swordplay",
+            "martial arts",
         ],
         "combat_action": [
             "action",
+            "action roguelike",
+            "moba",
+            "combat",
         ],
     },
     "exploration": {
