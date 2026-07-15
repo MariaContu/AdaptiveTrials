@@ -8,7 +8,7 @@ from src.steam_api.step_02_collect_app_metadata import (
     APP_METADATA_FILE,
 )
 from src.steam_api.step_03_map_categories import (
-    map_app_categories,
+    map_mission_categories,
 )
 
 
@@ -81,7 +81,7 @@ def aggregate_profiles() -> pd.DataFrame:
         APP_METADATA_FILE
     )
 
-    categorized_metadata = map_app_categories(
+    categorized_metadata = map_mission_categories(
         metadata_dataframe
     )
 
