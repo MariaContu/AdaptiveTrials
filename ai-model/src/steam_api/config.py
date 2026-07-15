@@ -43,7 +43,6 @@ SEED_APP_IDS = [
     105600,
     367520,
 ]
-
 MISSION_CATEGORY_TAGS = {
     "combat": [
         "action",
@@ -72,11 +71,16 @@ MISSION_CATEGORY_TAGS = {
     ],
     "puzzle": [
         "puzzle",
-        "strategy",
         "logic",
-        "casual",
         "hidden object",
-        "turn based",
+        "puzzle-platformer",
+        "sokoban",
+        "match 3",
+        "word game",
+        "point & click",
+        "detective",
+        "mystery",
+        "escape room",
     ],
 }
 
@@ -157,17 +161,22 @@ GRANULAR_CATEGORY_TAGS = {
         ],
     },
     "puzzle": {
+        "puzzle_narrative": [
+            "point & click",
+            "detective",
+            "mystery",
+            "hidden object",
+            "escape room",
+            "word game",
+            "visual novel",
+        ],
+        "puzzle_spatial": [
+            "puzzle-platformer",
+            "sokoban",
+        ],
         "puzzle_logic": [
             "puzzle",
             "logic",
-            "hidden object",
-        ],
-        "puzzle_strategy": [
-            "strategy",
-            "turn based",
-        ],
-        "puzzle_casual": [
-            "casual",
         ],
     },
 }

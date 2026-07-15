@@ -13,19 +13,13 @@ from src.steam_api.step_03_map_categories import (
     parse_weighted_tags,
 )
 
-
 def identify_granular_category(
     genres: object,
     steamspy_tags: object,
     steamspy_tags_weighted: object,
     macro_category: str,
 ) -> str | None:
-    """
-    Identifica uma subcategoria dentro da macrocategoria.
-
-    A ordem definida no config representa a prioridade.
-    A primeira subcategoria compatível é selecionada.
-    """
+    """Identifica uma subcategoria dentro da macrocategoria."""
 
     game_tags = get_relevant_game_tags(
         genres=genres,
@@ -35,29 +29,98 @@ def identify_granular_category(
         ),
     )
 
-    if (
-        macro_category == "exploration"
-        and "adventure" in game_tags
-        and parse_weighted_tags(
-            steamspy_tags_weighted
-        )
-    ):
-        adventure_support_tags = {
-            "story rich",
-            "atmospheric",
-            "narrative",
-            "choices matter",
-            "walking simulator",
-            "point & click",
-            "interactive fiction",
+    if macro_category == "exploration":
+        if (
+            "adventure" in game_tags
+            and parse_weighted_tags(
+                steamspy_tags_weighted
+            )
+        ):
+            adventure_support_tags = {
+                "story rich",
+                "atmospheric",
+                "narrative",
+                "choices matter",
+                "walking simulator",
+                "point & click",
+                "interactive fiction",
+            }
+
+            if not game_tags.intersection(
+                adventure_support_tags
+            ):
+                game_tags.discard(
+                    "adventure"
+                )
+
+    if macro_category == "puzzle":
+        direct_narrative_tags = {
+            "hidden object",
+            "escape room",
+            "word game",
         }
 
-        if not game_tags.intersection(
-            adventure_support_tags
-        ):
-            game_tags.discard(
-                "adventure"
+        narrative_context_tags = {
+            "point & click",
+            "detective",
+            "mystery",
+            "visual novel",
+        }
+
+        puzzle_confirmation_tags = {
+            "puzzle",
+            "logic",
+            "hidden object",
+            "escape room",
+            "word game",
+        }
+
+        has_direct_narrative_tag = bool(
+            game_tags.intersection(
+                direct_narrative_tags
             )
+        )
+
+        has_confirmed_narrative_puzzle = (
+            bool(
+                game_tags.intersection(
+                    narrative_context_tags
+                )
+            )
+            and bool(
+                game_tags.intersection(
+                    puzzle_confirmation_tags
+                )
+            )
+        )
+
+        if (
+            has_direct_narrative_tag
+            or has_confirmed_narrative_puzzle
+        ):
+            return "puzzle_narrative"
+
+        spatial_tags = {
+            "puzzle-platformer",
+            "sokoban",
+        }
+
+        if game_tags.intersection(
+            spatial_tags
+        ):
+            return "puzzle_spatial"
+
+        logic_tags = {
+            "puzzle",
+            "logic",
+        }
+
+        if game_tags.intersection(
+            logic_tags
+        ):
+            return "puzzle_logic"
+
+        return None
 
     granular_categories = (
         GRANULAR_CATEGORY_TAGS[
