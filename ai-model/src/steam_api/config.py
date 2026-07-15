@@ -42,3 +42,31 @@ SEED_APP_IDS = [
     105600,
     367520,
 ]
+
+MISSION_CATEGORY_TAGS = {
+    "combat": [
+        "action",
+        "fps",
+        "shooter",
+        "fighting",
+        "hack and slash",
+        "beat em up",
+        "battle royale",
+    ],
+    "exploration": [
+        "adventure",
+        "rpg",
+        "open world",
+        "exploration",
+        "walking simulator",
+        "sandbox",
+    ],
+    "puzzle": [
+        "puzzle",
+        "strategy",
+        "logic",
+        "casual",
+        "hidden object",
+        "turn based",
+    ],
+}
