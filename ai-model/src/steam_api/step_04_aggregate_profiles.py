@@ -1,19 +1,14 @@
 import pandas as pd
 
 from src.steam_api.config import (
-    MISSION_CATEGORY_TAGS,
     OWNED_GAMES_FILE,
+    PROFILE_COLUMNS,
 )
 from src.steam_api.step_02_collect_app_metadata import (
     APP_METADATA_FILE,
 )
 from src.steam_api.step_03_map_categories import (
     map_app_categories,
-)
-
-
-PROFILE_COLUMNS = list(
-    MISSION_CATEGORY_TAGS.keys()
 )
 
 

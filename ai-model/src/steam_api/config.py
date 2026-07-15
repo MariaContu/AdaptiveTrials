@@ -70,3 +70,40 @@ MISSION_CATEGORY_TAGS = {
         "turn based",
     ],
 }
+
+PROCESSED_DATA_DIR = PROJECT_ROOT / "data" / "processed"
+
+PROFILE_COLUMNS = [
+    "combat",
+    "exploration",
+    "puzzle",
+]
+
+MODEL_FEATURES = [
+    "hours_combat",
+    "hours_exploration",
+    "hours_puzzle",
+    "games_combat",
+    "games_exploration",
+    "games_puzzle",
+    "total_playtime",
+    "num_games",
+    "avg_playtime_per_game",
+    "diversity",
+    "entropy",
+    "dominance",
+    "second_max",
+    "gap",
+]
+
+TARGET_CLASSES = PROFILE_COLUMNS
+
+FINAL_DATASET_FILE = (
+    PROCESSED_DATA_DIR
+    / "steam_api_mission_profiles.csv"
+)
+
+FINAL_DATASET_SUMMARY_FILE = (
+    METRICS_DIR
+    / "steam_api_dataset_summary.json"
+)
