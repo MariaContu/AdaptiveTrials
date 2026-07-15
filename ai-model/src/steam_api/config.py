@@ -107,3 +107,49 @@ FINAL_DATASET_SUMMARY_FILE = (
     METRICS_DIR
     / "steam_api_dataset_summary.json"
 )
+
+GRANULAR_CATEGORY_TAGS = {
+    "combat": {
+        "combat_action": [
+            "action",
+            "battle royale",
+        ],
+        "combat_shooter": [
+            "fps",
+            "shooter",
+        ],
+        "combat_melee": [
+            "fighting",
+            "hack and slash",
+            "beat em up",
+        ],
+    },
+    "exploration": {
+        "exploration_adventure": [
+            "adventure",
+            "walking simulator",
+        ],
+        "exploration_open_world": [
+            "open world",
+            "exploration",
+            "sandbox",
+        ],
+        "exploration_rpg": [
+            "rpg",
+        ],
+    },
+    "puzzle": {
+        "puzzle_logic": [
+            "puzzle",
+            "logic",
+            "hidden object",
+        ],
+        "puzzle_strategy": [
+            "strategy",
+            "turn based",
+        ],
+        "puzzle_casual": [
+            "casual",
+        ],
+    },
+}
