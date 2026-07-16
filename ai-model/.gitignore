@@ -20,14 +20,6 @@ __pycache__/
 .DS_Store
 Thumbs.db
 
-# Dados locais
-data/raw/*
-data/processed/*
-
-# Mantém as pastas vazias versionadas
-!data/raw/.gitkeep
-!data/processed/.gitkeep
-
 # Modelos e resultados gerados
 models/*
 reports/figures/*
