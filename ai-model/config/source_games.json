@@ -1,0 +1,96 @@
+{
+    "version": "1.0",
+    "description": "Jogos utilizados como pontos de entrada para coleta de autores de reviews públicas.",
+    "games": [
+        {
+            "appid": 1145360,
+            "name": "Hades",
+            "sampling_stratum": "combat"
+        },
+        {
+            "appid": 782330,
+            "name": "DOOM Eternal",
+            "sampling_stratum": "combat"
+        },
+        {
+            "appid": 588650,
+            "name": "Dead Cells",
+            "sampling_stratum": "combat"
+        },
+        {
+            "appid": 440,
+            "name": "Team Fortress 2",
+            "sampling_stratum": "combat"
+        },
+        {
+            "appid": 220,
+            "name": "Half-Life 2",
+            "sampling_stratum": "combat"
+        },
+        {
+            "appid": 264710,
+            "name": "Subnautica",
+            "sampling_stratum": "exploration"
+        },
+        {
+            "appid": 753640,
+            "name": "Outer Wilds",
+            "sampling_stratum": "exploration"
+        },
+        {
+            "appid": 383870,
+            "name": "Firewatch",
+            "sampling_stratum": "exploration"
+        },
+        {
+            "appid": 275850,
+            "name": "No Man's Sky",
+            "sampling_stratum": "exploration"
+        },
+        {
+            "appid": 489830,
+            "name": "The Elder Scrolls V: Skyrim Special Edition",
+            "sampling_stratum": "exploration"
+        },
+        {
+            "appid": 620,
+            "name": "Portal 2",
+            "sampling_stratum": "puzzle"
+        },
+        {
+            "appid": 210970,
+            "name": "The Witness",
+            "sampling_stratum": "puzzle"
+        },
+        {
+            "appid": 736260,
+            "name": "Baba Is You",
+            "sampling_stratum": "puzzle"
+        },
+        {
+            "appid": 257510,
+            "name": "The Talos Principle",
+            "sampling_stratum": "puzzle"
+        },
+        {
+            "appid": 653530,
+            "name": "Return of the Obra Dinn",
+            "sampling_stratum": "puzzle"
+        },
+        {
+            "appid": 105600,
+            "name": "Terraria",
+            "sampling_stratum": "hybrid"
+        },
+        {
+            "appid": 553420,
+            "name": "TUNIC",
+            "sampling_stratum": "hybrid"
+        },
+        {
+            "appid": 646570,
+            "name": "Slay the Spire",
+            "sampling_stratum": "hybrid"
+        }
+    ]
+}
