@@ -1,6 +1,6 @@
 {
-    "version": "1.1",
-    "description": "Regras iniciais para mapear jogos Steam às categorias macro e subgrupos do Adaptive Trials.",
+    "version": "1.2",
+    "description": "Regras versionadas para mapear jogos Steam às categorias macro e subgrupos do Adaptive Trials.",
     "methodology": {
         "primary_source": "steamspy_tags",
         "fallback_sources": ["steam_store_genres"],
@@ -11,6 +11,27 @@
         "multi_category_policy": "preserve_scores_and_assign_dominant_when_confident",
         "ambiguous_label": "ambiguous",
         "uncategorized_label": "uncategorized"
+    },
+    "global_exclusions": {
+        "genres": [
+            "Game Development",
+            "Software Training",
+            "Utilities",
+            "Design & Illustration",
+            "Animation & Modeling",
+            "Audio Production",
+            "Video Production"
+        ],
+        "tags": [
+            "Game Development",
+            "Software",
+            "Utilities",
+            "Design & Illustration",
+            "Animation & Modeling",
+            "Audio Production",
+            "Video Production"
+        ],
+        "reason": "Ferramentas e softwares não representam preferências por tipos de missão."
     },
     "categories": {
         "combat": {
@@ -109,19 +130,22 @@
         },
         "puzzle": {
             "description": "Jogos cuja atividade central envolve raciocínio, lógica, manipulação de regras ou resolução de problemas.",
-            "tags": {
+            "requires_core_tag": true,
+            "core_tags": {
                 "Puzzle": 3.0,
                 "Logic": 3.0,
-                "Programming": 2.5,
-                "Automation": 1.5,
-                "Point & Click": 2.0,
-                "Hidden Object": 2.0,
+                "Sokoban": 3.0,
                 "Escape Room": 3.0,
                 "Puzzle Platformer": 2.5,
-                "Sokoban": 3.0,
+                "Hidden Object": 2.0,
                 "Word Game": 2.5,
                 "Trivia": 2.0,
-                "Match 3": 2.0,
+                "Match 3": 2.0
+            },
+            "supporting_tags": {
+                "Programming": 2.0,
+                "Automation": 1.5,
+                "Point & Click": 1.5,
                 "Investigation": 1.0,
                 "Mystery": 0.75,
                 "Strategy": 0.5,
@@ -158,7 +182,6 @@
         "Singleplayer": "Modo de jogo, não representa diretamente uma preferência de conteúdo.",
         "Co-op": "Modo social e não categoria de missão.",
         "Indie": "Característica de produção, não mecânica.",
-        "Casual": "Termo amplo; usado apenas como fallback fraco para puzzle.",
         "Difficult": "Indica dificuldade, não tipo de atividade.",
         "Funny": "Tom temático, não mecânica.",
         "Retro": "Estilo ou período, não atividade principal.",
