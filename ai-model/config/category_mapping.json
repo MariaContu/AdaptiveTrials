@@ -1,0 +1,168 @@
+{
+    "version": "1.1",
+    "description": "Regras iniciais para mapear jogos Steam às categorias macro e subgrupos do Adaptive Trials.",
+    "methodology": {
+        "primary_source": "steamspy_tags",
+        "fallback_sources": ["steam_store_genres"],
+        "minimum_category_score": 1.0,
+        "minimum_dominance_ratio": 1.15,
+        "minimum_score_gap": 0.5,
+        "top_tags_limit": 20,
+        "multi_category_policy": "preserve_scores_and_assign_dominant_when_confident",
+        "ambiguous_label": "ambiguous",
+        "uncategorized_label": "uncategorized"
+    },
+    "categories": {
+        "combat": {
+            "description": "Jogos cuja atividade principal envolve confronto, ação ofensiva ou defesa contra oponentes.",
+            "tags": {
+                "Action": 1.0,
+                "Shooter": 2.0,
+                "FPS": 2.5,
+                "Third-Person Shooter": 2.5,
+                "Fighting": 3.0,
+                "Beat 'em up": 2.5,
+                "Hack and Slash": 2.5,
+                "Souls-like": 2.0,
+                "Battle Royale": 2.5,
+                "Arena Shooter": 2.5,
+                "Hero Shooter": 2.5,
+                "Bullet Hell": 2.0,
+                "Shoot 'Em Up": 2.5,
+                "Action RPG": 1.5,
+                "Tactical": 1.0,
+                "Military": 1.0,
+                "War": 1.0,
+                "PvP": 1.5,
+                "Combat": 3.0
+            },
+            "genres": {
+                "Action": 1.0
+            },
+            "subgroups": {
+                "shooter": [
+                    "Shooter",
+                    "FPS",
+                    "Third-Person Shooter",
+                    "Arena Shooter",
+                    "Hero Shooter",
+                    "Battle Royale"
+                ],
+                "melee": [
+                    "Fighting",
+                    "Beat 'em up",
+                    "Hack and Slash",
+                    "Souls-like"
+                ],
+                "action_other": [
+                    "Action",
+                    "Bullet Hell",
+                    "Shoot 'Em Up",
+                    "Action RPG",
+                    "Combat"
+                ]
+            }
+        },
+        "exploration": {
+            "description": "Jogos centrados em descoberta de ambientes, navegação, progressão espacial ou investigação.",
+            "tags": {
+                "Adventure": 1.0,
+                "Exploration": 3.0,
+                "Open World": 2.5,
+                "Open World Survival Craft": 2.0,
+                "Walking Simulator": 2.5,
+                "Atmospheric": 1.0,
+                "Story Rich": 1.0,
+                "RPG": 1.0,
+                "Action-Adventure": 1.5,
+                "Metroidvania": 1.5,
+                "Survival": 1.0,
+                "Mystery": 1.0,
+                "Investigation": 2.5,
+                "Nature": 1.0,
+                "Underwater": 1.5,
+                "Space": 1.0
+            },
+            "genres": {
+                "Adventure": 1.0,
+                "RPG": 0.75
+            },
+            "subgroups": {
+                "open_world": [
+                    "Open World",
+                    "Open World Survival Craft",
+                    "Survival"
+                ],
+                "narrative_exploration": [
+                    "Walking Simulator",
+                    "Story Rich",
+                    "Atmospheric",
+                    "Adventure"
+                ],
+                "investigation": [
+                    "Exploration",
+                    "Mystery",
+                    "Investigation",
+                    "Metroidvania"
+                ]
+            }
+        },
+        "puzzle": {
+            "description": "Jogos cuja atividade central envolve raciocínio, lógica, manipulação de regras ou resolução de problemas.",
+            "tags": {
+                "Puzzle": 3.0,
+                "Logic": 3.0,
+                "Programming": 2.5,
+                "Automation": 1.5,
+                "Point & Click": 2.0,
+                "Hidden Object": 2.0,
+                "Escape Room": 3.0,
+                "Puzzle Platformer": 2.5,
+                "Sokoban": 3.0,
+                "Word Game": 2.5,
+                "Trivia": 2.0,
+                "Match 3": 2.0,
+                "Investigation": 1.0,
+                "Mystery": 0.75,
+                "Strategy": 0.5,
+                "Turn-Based Strategy": 0.5
+            },
+            "genres": {
+                "Casual": 0.25,
+                "Strategy": 0.25
+            },
+            "subgroups": {
+                "logic": [
+                    "Puzzle",
+                    "Logic",
+                    "Sokoban",
+                    "Programming",
+                    "Automation"
+                ],
+                "environmental": [
+                    "Puzzle Platformer",
+                    "Escape Room",
+                    "Point & Click"
+                ],
+                "observation": [
+                    "Hidden Object",
+                    "Word Game",
+                    "Trivia",
+                    "Match 3"
+                ]
+            }
+        }
+    },
+    "excluded_tags": {
+        "Multiplayer": "Modo de jogo, não representa diretamente uma preferência de conteúdo.",
+        "Singleplayer": "Modo de jogo, não representa diretamente uma preferência de conteúdo.",
+        "Co-op": "Modo social e não categoria de missão.",
+        "Indie": "Característica de produção, não mecânica.",
+        "Casual": "Termo amplo; usado apenas como fallback fraco para puzzle.",
+        "Difficult": "Indica dificuldade, não tipo de atividade.",
+        "Funny": "Tom temático, não mecânica.",
+        "Retro": "Estilo ou período, não atividade principal.",
+        "Early Access": "Estado de publicação, não conteúdo.",
+        "Free to Play": "Modelo de monetização, não conteúdo."
+    }
+}
