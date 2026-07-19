@@ -30,3 +30,13 @@ Thumbs.db
 *.db
 *.db-shm
 *.db-wal
+
+# Godot
+**/.godot/
+**/.mono/
+**/bin/
+**/obj/
+
+# Godot exports
+**/export/
+**/build/
