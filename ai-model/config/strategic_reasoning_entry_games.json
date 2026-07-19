@@ -1,0 +1,138 @@
+{
+    "version": "2.0",
+    "description": "Jogos usados como pontos de entrada para a coleta complementar dirigida a perfis associados a raciocínio estratégico.",
+    "selection_criteria": [
+        "Priorizar jogos centrados em lógica, planejamento, gerenciamento, estratégia, dedução ou resolução de problemas.",
+        "Evitar títulos em que combate, plataforma ou exploração sejam atividades predominantes.",
+        "Preservar diversidade entre lógica, planejamento e estratégia para reduzir o viés de uma única comunidade.",
+        "O jogo de origem serve apenas como ponto de entrada e nunca define o target final do jogador."
+    ],
+    "games": [
+        {
+            "appid": 736260,
+            "name": "Baba Is You",
+            "subgroup": "logic_puzzle",
+            "enabled": true
+        },
+        {
+            "appid": 290260,
+            "name": "Sokobond",
+            "subgroup": "logic_puzzle",
+            "enabled": true
+        },
+        {
+            "appid": 709920,
+            "name": "Tametsi",
+            "subgroup": "logic_puzzle",
+            "enabled": true
+        },
+        {
+            "appid": 265890,
+            "name": "Hexcells",
+            "subgroup": "logic_puzzle",
+            "enabled": true
+        },
+        {
+            "appid": 341800,
+            "name": "Keep Talking and Nobody Explodes",
+            "subgroup": "observation_deduction",
+            "enabled": true
+        },
+        {
+            "appid": 1435790,
+            "name": "Escape Simulator",
+            "subgroup": "observation_deduction",
+            "enabled": true
+        },
+        {
+            "appid": 219890,
+            "name": "Antichamber",
+            "subgroup": "observation_deduction",
+            "enabled": true
+        },
+        {
+            "appid": 233450,
+            "name": "Prison Architect",
+            "subgroup": "planning_management",
+            "enabled": true
+        },
+        {
+            "appid": 979120,
+            "name": "Autonauts",
+            "subgroup": "planning_management",
+            "enabled": true
+        },
+        {
+            "appid": 1318690,
+            "name": "shapez",
+            "subgroup": "planning_management",
+            "enabled": true
+        },
+        {
+            "appid": 2379780,
+            "name": "Balatro",
+            "subgroup": "strategy_decision",
+            "enabled": true
+        },
+        {
+            "appid": 8930,
+            "name": "Sid Meier's Civilization V",
+            "subgroup": "strategy_decision",
+            "enabled": true
+        },
+        {
+            "appid": 294100,
+            "name": "RimWorld",
+            "subgroup": "strategy_decision",
+            "enabled": true
+        },
+        {
+            "appid": 646570,
+            "name": "Slay the Spire",
+            "subgroup": "strategy_decision",
+            "enabled": true
+        },
+        {
+            "appid": 387290,
+            "name": "Ori and the Blind Forest: Definitive Edition",
+            "subgroup": "excluded_hybrid_reference",
+            "enabled": false,
+            "reason": "Puzzle platformer com forte componente de exploração e ação."
+        },
+        {
+            "appid": 322680,
+            "name": "BLACKHOLE",
+            "subgroup": "excluded_hybrid_reference",
+            "enabled": false,
+            "reason": "Puzzle platformer com baixo rendimento de perfis estratégicos."
+        },
+        {
+            "appid": 499180,
+            "name": "Braid Anniversary Edition",
+            "subgroup": "excluded_hybrid_reference",
+            "enabled": false,
+            "reason": "Puzzle platformer com baixo rendimento de perfis estratégicos."
+        },
+        {
+            "appid": 65300,
+            "name": "Dustforce DX",
+            "subgroup": "excluded_hybrid_reference",
+            "enabled": false,
+            "reason": "Predominância de plataforma e habilidade mecânica."
+        },
+        {
+            "appid": 252410,
+            "name": "SteamWorld Dig",
+            "subgroup": "excluded_hybrid_reference",
+            "enabled": false,
+            "reason": "Forte componente de exploração e plataforma."
+        },
+        {
+            "appid": 847600,
+            "name": "Molecats",
+            "subgroup": "excluded_low_volume_reference",
+            "enabled": false,
+            "reason": "Quantidade insuficiente de avaliações para coleta em escala."
+        }
+    ]
+}
