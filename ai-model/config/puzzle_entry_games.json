@@ -1,0 +1,148 @@
+{
+    "version": "1.0",
+    "description": "Jogos usados como pontos de entrada para a coleta complementar dirigida a perfis associados a puzzle.",
+    "selection_criteria": [
+        "Presença de tags centrais de puzzle, lógica, Sokoban, escape room, hidden object ou puzzle platformer.",
+        "Baixa dependência de combate como atividade principal.",
+        "Evitar títulos híbridos usados na coleta inicial, como Portal e Teardown.",
+        "Diversificar subtipos de puzzle para reduzir viés de uma única comunidade."
+    ],
+    "games": [
+        {
+            "appid": 736260,
+            "name": "Baba Is You",
+            "subgroup": "logic"
+        },
+        {
+            "appid": 1435790,
+            "name": "Escape Simulator",
+            "subgroup": "environmental"
+        },
+        {
+            "appid": 341800,
+            "name": "Keep Talking and Nobody Explodes",
+            "subgroup": "environmental"
+        },
+        {
+            "appid": 709920,
+            "name": "Tametsi",
+            "subgroup": "logic"
+        },
+        {
+            "appid": 387290,
+            "name": "Ori and the Blind Forest: Definitive Edition",
+            "subgroup": "puzzle_platformer"
+        },
+        {
+            "appid": 105600,
+            "name": "Terraria",
+            "subgroup": "excluded_hybrid_reference",
+            "enabled": false
+        },
+        {
+            "appid": 250900,
+            "name": "The Binding of Isaac: Rebirth",
+            "subgroup": "excluded_hybrid_reference",
+            "enabled": false
+        },
+        {
+            "appid": 322680,
+            "name": "BLACKHOLE",
+            "subgroup": "puzzle_platformer"
+        },
+        {
+            "appid": 291410,
+            "name": "Duelyst",
+            "subgroup": "excluded_strategy_reference",
+            "enabled": false
+        },
+        {
+            "appid": 290260,
+            "name": "Sokobond",
+            "subgroup": "logic"
+        },
+        {
+            "appid": 753640,
+            "name": "Outer Wilds",
+            "subgroup": "excluded_exploration_reference",
+            "enabled": false
+        },
+        {
+            "appid": 499180,
+            "name": "Braid Anniversary Edition",
+            "subgroup": "puzzle_platformer"
+        },
+        {
+            "appid": 219890,
+            "name": "Antichamber",
+            "subgroup": "environmental"
+        },
+        {
+            "appid": 210970,
+            "name": "The Witness",
+            "subgroup": "environmental"
+        },
+        {
+            "appid": 400910,
+            "name": "Rabi-Ribi",
+            "subgroup": "excluded_combat_reference",
+            "enabled": false
+        },
+        {
+            "appid": 65300,
+            "name": "Dustforce DX",
+            "subgroup": "puzzle_platformer"
+        },
+        {
+            "appid": 305620,
+            "name": "The Long Dark",
+            "subgroup": "excluded_exploration_reference",
+            "enabled": false
+        },
+        {
+            "appid": 847600,
+            "name": "Molecats",
+            "subgroup": "logic"
+        },
+        {
+            "appid": 449680,
+            "name": "Solitairica",
+            "subgroup": "excluded_card_reference",
+            "enabled": false
+        },
+        {
+            "appid": 681280,
+            "name": "Descenders",
+            "subgroup": "excluded_sports_reference",
+            "enabled": false
+        },
+        {
+            "appid": 269310,
+            "name": "Infectonator: Survivors",
+            "subgroup": "excluded_strategy_reference",
+            "enabled": false
+        },
+        {
+            "appid": 252410,
+            "name": "SteamWorld Dig",
+            "subgroup": "puzzle_platformer"
+        },
+        {
+            "appid": 333640,
+            "name": "Caves of Qud",
+            "subgroup": "excluded_rpg_reference",
+            "enabled": false
+        },
+        {
+            "appid": 265890,
+            "name": "Hexcells",
+            "subgroup": "logic"
+        },
+        {
+            "appid": 317400,
+            "name": "Portal Stories: Mel",
+            "subgroup": "excluded_portal_reference",
+            "enabled": false
+        }
+    ]
+}
