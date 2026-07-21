@@ -9,16 +9,16 @@ namespace AdaptiveTrials.Game.Menu;
 public partial class WaveBackground : Control
 {
 	[Export]
-	public float AnimationSpeed { get; set; } = 0.18f;
+	public float AnimationSpeed { get; set; } = 0.5f;
 
 	[Export]
 	public float WaveAmplitude { get; set; } = 28.0f;
 
 	[Export]
-	public float WaveLength { get; set; } = 760.0f;
+	public float WaveLength { get; set; } = 900.0f;
 
 	[Export]
-	public float ShadowOffset { get; set; } = 14.0f;
+	public float ShadowOffset { get; set; } = 50.0f;
 
 	private float _time;
 
