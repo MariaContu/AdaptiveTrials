@@ -1,0 +1,234 @@
+[gd_scene format=3 uid="uid://r1aixannyivh"]
+
+[ext_resource type="Script" uid="uid://ro80t6pu52wg" path="res://scripts/menu/WaveBackground.cs" id="1_sl522"]
+[ext_resource type="Script" uid="uid://dqolekt603ar6" path="res://scripts/missions/MissionTransitionController.cs" id="2_pe2db"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_sl522"]
+bg_color = Color(0.74509805, 0.65882355, 0.6039216, 1)
+border_width_left = 10
+border_width_top = 10
+border_width_right = 10
+border_width_bottom = 10
+border_color = Color(0.5568628, 0.49019608, 0.5137255, 1)
+corner_radius_top_left = 28
+corner_radius_top_right = 28
+corner_radius_bottom_right = 28
+corner_radius_bottom_left = 28
+shadow_color = Color(0, 0, 0, 0.20784314)
+shadow_size = 16
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_t85gn"]
+bg_color = Color(0.18039216, 0.14117648, 0.1882353, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_32hna"]
+bg_color = Color(0.68235296, 0.59607846, 0.5921569, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.6313726, 0.54901963, 0.5529412, 1)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+shadow_color = Color(0, 0, 0, 0.14509805)
+shadow_size = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_r8cg4"]
+bg_color = Color(0.5882353, 0.5058824, 0.5568628, 1)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_5alc0"]
+bg_color = Color(0.56078434, 0.48235294, 0.5254902, 1)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.33333334, 0.2627451, 0.31764707, 1)
+corner_radius_top_left = 32
+corner_radius_top_right = 32
+corner_radius_bottom_right = 32
+corner_radius_bottom_left = 32
+shadow_color = Color(0, 0, 0, 0.14509805)
+shadow_size = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_e56fx"]
+bg_color = Color(0.4745098, 0.40784314, 0.4509804, 1)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.33333334, 0.2627451, 0.31764707, 1)
+corner_radius_top_left = 32
+corner_radius_top_right = 32
+corner_radius_bottom_right = 32
+corner_radius_bottom_left = 32
+shadow_color = Color(0, 0, 0, 0.14509805)
+shadow_size = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hxul1"]
+bg_color = Color(0.6392157, 0.5529412, 0.6, 1)
+border_width_left = 5
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 5
+border_color = Color(0.83137256, 0.74509805, 0.7607843, 1)
+corner_radius_top_left = 32
+corner_radius_top_right = 32
+corner_radius_bottom_right = 32
+corner_radius_bottom_left = 32
+shadow_color = Color(0, 0, 0, 0.14509805)
+shadow_size = 5
+
+[node name="MissionTransition" type="Control" unique_id=826645610]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="WaveBackground" type="Control" parent="." unique_id=1804418663]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_sl522")
+ShadowOffset = 0.0
+
+[node name="TopMargin" type="MarginContainer" parent="." unique_id=624547980]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="TopBar" type="HBoxContainer" parent="TopMargin" unique_id=1921006458]
+layout_mode = 2
+
+[node name="SettingsButton" type="Button" parent="TopMargin/TopBar" unique_id=492454639]
+layout_mode = 2
+
+[node name="TopSpacer" type="Control" parent="TopMargin/TopBar" unique_id=1749197946]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=1995486031]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MissionPanel" type="PanelContainer" parent="CenterContainer" unique_id=590592330]
+custom_minimum_size = Vector2(560, 500)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_sl522")
+
+[node name="PanelMargin" type="MarginContainer" parent="CenterContainer/MissionPanel" unique_id=1727834459]
+layout_mode = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 30
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 30
+
+[node name="Content" type="VBoxContainer" parent="CenterContainer/MissionPanel/PanelMargin" unique_id=323618436]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="MissionCounter" type="Label" parent="CenterContainer/MissionPanel/PanelMargin/Content" unique_id=1646452064]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.20784314, 0.16078432, 0.21176471, 1)
+theme_override_font_sizes/font_size = 38
+text = "Mission 1/6"
+horizontal_alignment = 1
+
+[node name="Separator" type="HSeparator" parent="CenterContainer/MissionPanel/PanelMargin/Content" unique_id=1542941575]
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxFlat_t85gn")
+
+[node name="MissionCard" type="PanelContainer" parent="CenterContainer/MissionPanel/PanelMargin/Content" unique_id=1222200824]
+custom_minimum_size = Vector2(490, 190)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_32hna")
+
+[node name="CardMargin" type="MarginContainer" parent="CenterContainer/MissionPanel/PanelMargin/Content/MissionCard" unique_id=293215973]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 18
+
+[node name="CardContent" type="HBoxContainer" parent="CenterContainer/MissionPanel/PanelMargin/Content/MissionCard/CardMargin" unique_id=354397930]
+layout_mode = 2
+theme_override_constants/separation = 22
+
+[node name="IconPanel" type="PanelContainer" parent="CenterContainer/MissionPanel/PanelMargin/Content/MissionCard/CardMargin/CardContent" unique_id=1743270421]
+custom_minimum_size = Vector2(120, 120)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_r8cg4")
+
+[node name="MissionIcon" type="Label" parent="CenterContainer/MissionPanel/PanelMargin/Content/MissionCard/CardMargin/CardContent/IconPanel" unique_id=1453483182]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.20784314, 0.16078432, 0.21176471, 1)
+theme_override_font_sizes/font_size = 60
+text = "⚔"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="MissionInfo" type="VBoxContainer" parent="CenterContainer/MissionPanel/PanelMargin/Content/MissionCard/CardMargin/CardContent" unique_id=1548177936]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="MissionTitle" type="Label" parent="CenterContainer/MissionPanel/PanelMargin/Content/MissionCard/CardMargin/CardContent/MissionInfo" unique_id=723945754]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.20784314, 0.16078432, 0.21176471, 1)
+theme_override_font_sizes/font_size = 28
+autowrap_mode = 3
+
+[node name="InfoSeparator" type="HSeparator" parent="CenterContainer/MissionPanel/PanelMargin/Content/MissionCard/CardMargin/CardContent/MissionInfo" unique_id=212680844]
+layout_mode = 2
+
+[node name="MissionCategory" type="Label" parent="CenterContainer/MissionPanel/PanelMargin/Content/MissionCard/CardMargin/CardContent/MissionInfo" unique_id=462046851]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.31764707, 0.2509804, 0.3019608, 1)
+theme_override_font_sizes/font_size = 20
+
+[node name="MissionDifficulty" type="Label" parent="CenterContainer/MissionPanel/PanelMargin/Content/MissionCard/CardMargin/CardContent/MissionInfo" unique_id=926519348]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.31764707, 0.2509804, 0.3019608, 1)
+theme_override_font_sizes/font_size = 17
+
+[node name="MissionDescription" type="Label" parent="CenterContainer/MissionPanel/PanelMargin/Content/MissionCard/CardMargin/CardContent/MissionInfo" unique_id=937140507]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.31764707, 0.2509804, 0.3019608, 1)
+autowrap_mode = 3
+
+[node name="StartCenter" type="CenterContainer" parent="CenterContainer/MissionPanel/PanelMargin/Content" unique_id=928155333]
+layout_mode = 2
+
+[node name="StartMissionButton" type="Button" parent="CenterContainer/MissionPanel/PanelMargin/Content/StartCenter" unique_id=1326326261]
+custom_minimum_size = Vector2(210, 68)
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_5alc0")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_e56fx")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hxul1")
+text = "LET'S GO"
+
+[node name="StatusLabel" type="Label" parent="CenterContainer/MissionPanel/PanelMargin/Content" unique_id=1281129982]
+layout_mode = 2
+horizontal_alignment = 1
+
+[node name="MissionTransitionController" type="Node" parent="." unique_id=940499595]
+script = ExtResource("2_pe2db")

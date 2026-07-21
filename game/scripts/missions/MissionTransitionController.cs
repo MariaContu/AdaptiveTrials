@@ -1,0 +1,263 @@
+using System;
+using AdaptiveTrials.Game.Dto;
+using AdaptiveTrials.Game.Enums;
+using AdaptiveTrials.Game.Session;
+using Godot;
+
+namespace AdaptiveTrials.Game.Missions;
+
+/// <summary>
+/// Exibe os dados da missão atual antes de sua execução.
+/// </summary>
+public partial class MissionTransitionController : Node
+{
+	private Label _missionCounter = null!;
+	private Label _missionIcon = null!;
+	private Label _missionTitle = null!;
+	private Label _missionCategory = null!;
+	private Label _missionDifficulty = null!;
+	private Label _missionDescription = null!;
+	private Label _statusLabel = null!;
+
+	private Button _settingsButton = null!;
+	private Button _startMissionButton = null!;
+
+	private SessionManager _sessionManager = null!;
+
+	public override void _Ready()
+	{
+		_missionCounter =
+			GetNode<Label>(
+				"../CenterContainer/MissionPanel/" +
+				"PanelMargin/Content/MissionCounter");
+
+		_missionIcon =
+			GetNode<Label>(
+				"../CenterContainer/MissionPanel/" +
+				"PanelMargin/Content/MissionCard/" +
+				"CardMargin/CardContent/IconPanel/MissionIcon");
+
+		_missionTitle =
+			GetNode<Label>(
+				"../CenterContainer/MissionPanel/" +
+				"PanelMargin/Content/MissionCard/" +
+				"CardMargin/CardContent/MissionInfo/MissionTitle");
+
+		_missionCategory =
+			GetNode<Label>(
+				"../CenterContainer/MissionPanel/" +
+				"PanelMargin/Content/MissionCard/" +
+				"CardMargin/CardContent/MissionInfo/MissionCategory");
+
+		_missionDifficulty =
+			GetNode<Label>(
+				"../CenterContainer/MissionPanel/" +
+				"PanelMargin/Content/MissionCard/" +
+				"CardMargin/CardContent/MissionInfo/MissionDifficulty");
+
+		_missionDescription =
+			GetNode<Label>(
+				"../CenterContainer/MissionPanel/" +
+				"PanelMargin/Content/MissionCard/" +
+				"CardMargin/CardContent/MissionInfo/MissionDescription");
+
+		_statusLabel =
+			GetNode<Label>(
+				"../CenterContainer/MissionPanel/" +
+				"PanelMargin/Content/StatusLabel");
+
+		_startMissionButton =
+			GetNode<Button>(
+				"../CenterContainer/MissionPanel/" +
+				"PanelMargin/Content/StartCenter/" +
+				"StartMissionButton");
+
+		_settingsButton =
+			GetNode<Button>(
+				"../TopMargin/TopBar/SettingsButton");
+
+		_sessionManager =
+			GetNode<SessionManager>("/root/SessionManager");
+
+		_startMissionButton.Pressed +=
+			OnStartMissionPressed;
+
+		_settingsButton.Pressed +=
+			OnSettingsPressed;
+
+		LoadCurrentMission();
+	}
+
+	private void LoadCurrentMission()
+	{
+		if (!_sessionManager.HasActiveSession)
+		{
+			ShowBlockingError(
+				"No active session was found.");
+
+			return;
+		}
+
+		MissionDto? mission =
+			_sessionManager.CurrentMission;
+
+		if (mission is null)
+		{
+			ShowBlockingError(
+				"No mission is available for this session.");
+
+			return;
+		}
+
+		int currentNumber =
+			_sessionManager.CurrentMissionIndex + 1;
+
+		_missionCounter.Text =
+			$"Mission {currentNumber}/" +
+			$"{_sessionManager.TotalMissionCount}";
+
+		_missionTitle.Text = mission.Name;
+
+		_missionCategory.Text =
+			GetCategoryText(mission.Type);
+
+		_missionDifficulty.Text =
+			$"Difficulty: {mission.Difficulty}";
+
+		_missionDescription.Text =
+			string.IsNullOrWhiteSpace(mission.Description)
+				? GetTemplateDescription(mission)
+				: mission.Description;
+
+		_missionIcon.Text =
+			GetCategoryIcon(mission.Type);
+
+		_statusLabel.Text = string.Empty;
+
+		GD.Print(
+			$"Tela de transição carregada: " +
+			$"MissionId={mission.Id}, " +
+			$"Type={mission.Type}, " +
+			$"Template={mission.Template}, " +
+			$"Difficulty={mission.Difficulty}");
+	}
+
+	private void OnStartMissionPressed()
+	{
+		MissionDto? mission =
+			_sessionManager.CurrentMission;
+
+		if (mission is null)
+		{
+			ShowBlockingError(
+				"The mission could not be started.");
+
+			return;
+		}
+
+		_startMissionButton.Disabled = true;
+
+		_statusLabel.Text =
+			"Preparing mission...";
+
+		GD.Print(
+			$"Iniciando missão {mission.Id}: " +
+			$"{mission.Name} | " +
+			$"{mission.Type} | " +
+			$"{mission.Template}");
+
+		/*
+		 * Na próxima etapa, este ponto carregará:
+		 *
+		 * Combat      -> cena de combate
+		 * Exploration -> cena de exploração
+		 * Puzzle      -> cena de quebra-cabeça
+		 */
+	}
+
+	private void OnSettingsPressed()
+	{
+		_statusLabel.Text =
+			"Settings will be implemented later.";
+	}
+
+	private void ShowBlockingError(string message)
+	{
+		_missionCounter.Text =
+			"Mission unavailable";
+
+		_missionTitle.Text = message;
+		_missionCategory.Text = string.Empty;
+		_missionDifficulty.Text = string.Empty;
+		_missionDescription.Text = string.Empty;
+		_missionIcon.Text = "!";
+
+		_statusLabel.Text =
+			"Return to the main menu and start a new session.";
+
+		_startMissionButton.Disabled = true;
+
+		GD.PushError(message);
+	}
+
+	private static string GetCategoryText(
+		MissionType type)
+	{
+		return type switch
+		{
+			MissionType.Combat => "Combat",
+			MissionType.Exploration => "Exploration",
+			MissionType.Puzzle => "Puzzle",
+			_ => "Unknown"
+		};
+	}
+
+	private static string GetCategoryIcon(
+		MissionType type)
+	{
+		return type switch
+		{
+			MissionType.Combat => "⚔",
+			MissionType.Exploration => "⌖",
+			MissionType.Puzzle => "◆",
+			_ => "?"
+		};
+	}
+
+	private static string GetTemplateDescription(
+		MissionDto mission)
+	{
+		return mission.Template switch
+		{
+			"Eliminar Alvo" =>
+				"Defeat the required enemies.",
+
+			"Sobreviver" =>
+				"Survive until time runs out.",
+
+			"Defender Objeto" =>
+				"Protect the objective.",
+
+			"Encontrar Objetos" =>
+				"Find the required objects.",
+
+			"Chegar ao Destino" =>
+				"Reach the indicated destination.",
+
+			"Evitar Inimigos" =>
+				"Reach the objective without being detected.",
+
+			"Repetir Sequência" =>
+				"Repeat the sequence in the correct order.",
+
+			"Conectar Pontos" =>
+				"Connect the elements correctly.",
+
+			"Decifrar Código" =>
+				"Discover the correct code.",
+
+			_ =>
+				mission.Template
+		};
+	}
+}

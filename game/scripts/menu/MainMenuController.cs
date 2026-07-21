@@ -1,18 +1,27 @@
+#nullable enable
+
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using AdaptiveTrials.Game.Api;
+using AdaptiveTrials.Game.Dto;
 using AdaptiveTrials.Game.Dto.Sessions;
 using AdaptiveTrials.Game.Enums;
+using AdaptiveTrials.Game.Missions.Providers;
 using AdaptiveTrials.Game.Session;
 using Godot;
-using System;
-using System.Threading.Tasks;
 
 namespace AdaptiveTrials.Game.Menu;
 
 /// <summary>
-/// Controla a escolha do modo e o início da sessão.
+/// Controla a escolha do modo, a criação da sessão
+/// e a preparação inicial do fluxo experimental.
 /// </summary>
 public partial class MainMenuController : Node
 {
+	private const string MissionTransitionScenePath =
+		"res://scenes/missions/MissionTransition.tscn";
+
 	private Button _settingsButton = null!;
 	private Button _exitButton = null!;
 	private Button _controlModeButton = null!;
@@ -24,6 +33,13 @@ public partial class MainMenuController : Node
 	private bool _isCreatingSession;
 
 	public override void _Ready()
+	{
+		GetInterfaceNodes();
+		ConnectSignals();
+		ResetInterface();
+	}
+
+	private void GetInterfaceNodes()
 	{
 		_settingsButton =
 			GetNode<Button>(
@@ -38,12 +54,14 @@ public partial class MainMenuController : Node
 		_controlModeButton =
 			GetNode<Button>(
 				"../InterfaceMargin/InterfaceRoot/" +
-				"ModeCardsCenter/ModeCards/ControlModeButton");
+				"ModeCardsCenter/ModeCards/" +
+				"ControlModeButton");
 
 		_adaptiveModeButton =
 			GetNode<Button>(
 				"../InterfaceMargin/InterfaceRoot/" +
-				"ModeCardsCenter/ModeCards/AdaptiveModeButton");
+				"ModeCardsCenter/ModeCards/" +
+				"AdaptiveModeButton");
 
 		_startButton =
 			GetNode<Button>(
@@ -52,16 +70,38 @@ public partial class MainMenuController : Node
 
 		_statusLabel =
 			GetNode<Label>(
-				"../InterfaceMargin/InterfaceRoot/StatusLabel");
+				"../InterfaceMargin/InterfaceRoot/" +
+				"StatusLabel");
+	}
 
+	private void ConnectSignals()
+	{
 		_settingsButton.Pressed += OnSettingsPressed;
 		_exitButton.Pressed += OnExitPressed;
-		_controlModeButton.Pressed += OnControlModePressed;
-		_adaptiveModeButton.Pressed += OnAdaptiveModePressed;
+
+		_controlModeButton.Pressed +=
+			OnControlModePressed;
+
+		_adaptiveModeButton.Pressed +=
+			OnAdaptiveModePressed;
+
 		_startButton.Pressed += OnStartPressed;
+	}
+
+	private void ResetInterface()
+	{
+		_selectedMode = null;
+		_isCreatingSession = false;
+
+		_controlModeButton.ButtonPressed = false;
+		_adaptiveModeButton.ButtonPressed = false;
+
+		_controlModeButton.Disabled = false;
+		_adaptiveModeButton.Disabled = false;
+
+		_startButton.Disabled = true;
 
 		_statusLabel.Text = string.Empty;
-		_startButton.Disabled = true;
 	}
 
 	private void OnControlModePressed()
@@ -82,7 +122,6 @@ public partial class MainMenuController : Node
 		}
 
 		_selectedMode = mode;
-		_startButton.Disabled = false;
 
 		bool controlSelected =
 			mode == GameMode.Control;
@@ -93,9 +132,14 @@ public partial class MainMenuController : Node
 		_adaptiveModeButton.ButtonPressed =
 			!controlSelected;
 
+		_startButton.Disabled = false;
+
 		_statusLabel.Text = controlSelected
 			? "Control mode selected."
 			: "Adaptive mode selected.";
+
+		GD.Print(
+			$"Modo selecionado: {mode} ({(int)mode})");
 	}
 
 	private void OnStartPressed()
@@ -118,7 +162,7 @@ public partial class MainMenuController : Node
 			return;
 		}
 
-		SetLoadingState(true);
+		SetLoadingState(true, "Creating session...");
 
 		try
 		{
@@ -126,8 +170,11 @@ public partial class MainMenuController : Node
 				GetNode<ApiClient>("/root/ApiClient");
 
 			SessionManager sessionManager =
-				GetNode<SessionManager>("/root/SessionManager");
+				GetNode<SessionManager>(
+					"/root/SessionManager");
 
+			// Garante que uma nova execução não reutilize
+			// informações da sessão anterior.
 			sessionManager.ClearSession();
 
 			CreateSessionRequest request = new()
@@ -146,81 +193,245 @@ public partial class MainMenuController : Node
 
 			if (!result.IsSuccess || result.Data is null)
 			{
-				_statusLabel.Text =
-					"The session could not be created.\n" +
-					result.ErrorMessage;
+				ShowRequestError(
+					"The session could not be created.",
+					result.ErrorMessage);
 
-				SetLoadingState(false);
 				return;
 			}
 
-			sessionManager.InitializeSession(
-				result.Data.SessionId,
-				result.Data.PlayerId,
-				result.Data.Mode);
+			CreateSessionResponse createdSession =
+				result.Data;
 
-			_statusLabel.Text =
-				"Session created successfully.\n" +
-				$"SessionId: {result.Data.SessionId}";
+			sessionManager.InitializeSession(
+				createdSession.SessionId,
+				createdSession.PlayerId,
+				createdSession.Mode);
 
 			GD.Print(
 				$"Sessão criada pelo menu: " +
-				$"SessionId={result.Data.SessionId}, " +
-				$"PlayerId={result.Data.PlayerId}, " +
-				$"Mode={result.Data.Mode} " +
-				$"({(int)result.Data.Mode})");
+				$"SessionId={createdSession.SessionId}, " +
+				$"PlayerId={createdSession.PlayerId}, " +
+				$"Mode={createdSession.Mode} " +
+				$"({(int)createdSession.Mode})");
 
-			/*
-			 * Na próxima etapa, a navegação ocorrerá daqui:
-			 *
-			 * Control:
-			 * preparar sequência fixa 2/2/2.
-			 *
-			 * Adaptive:
-			 * abrir fluxo de Steam ou preferências manuais.
-			 */
+			await ContinueAfterSessionCreationAsync(
+				apiClient,
+				sessionManager,
+				createdSession.Mode);
 		}
 		catch (Exception exception)
 		{
 			GD.PushError(
-				$"Erro inesperado ao criar sessão: {exception}");
+				$"Erro inesperado ao criar a sessão: " +
+				$"{exception}");
 
 			if (IsInstanceValid(this))
 			{
-				_statusLabel.Text =
-					"An unexpected error occurred while " +
-					"creating the session.";
-
-				SetLoadingState(false);
+				ShowRequestError(
+					"An unexpected error occurred " +
+					"while creating the session.",
+					exception.Message);
 			}
 		}
 	}
 
-	private void SetLoadingState(bool loading)
+	private async Task ContinueAfterSessionCreationAsync(
+		ApiClient apiClient,
+		SessionManager sessionManager,
+		GameMode mode)
+	{
+		switch (mode)
+		{
+			case GameMode.Control:
+				await StartControlFlowAsync(
+					apiClient,
+					sessionManager);
+				break;
+
+			case GameMode.Adaptive:
+				StartAdaptiveFlow();
+				break;
+
+			default:
+				ShowRequestError(
+					"The selected game mode is invalid.",
+					$"Mode received: {(int)mode}");
+				break;
+		}
+	}
+
+	private async Task StartControlFlowAsync(
+		ApiClient apiClient,
+		SessionManager sessionManager)
+	{
+		bool sequencePrepared =
+			await PrepareControlSessionAsync(
+				apiClient,
+				sessionManager);
+
+		if (!sequencePrepared)
+		{
+			SetLoadingState(false);
+			return;
+		}
+
+		NavigateToMissionTransition();
+	}
+
+	private async Task<bool> PrepareControlSessionAsync(
+		ApiClient apiClient,
+		SessionManager sessionManager)
+	{
+		SetLoadingState(
+			true,
+			"Preparing control missions...");
+
+		ApiResult<IReadOnlyList<MissionDto>>
+			catalogResult =
+				await apiClient.GetMissionsAsync();
+
+		if (!IsInstanceValid(this))
+		{
+			return false;
+		}
+
+		if (!catalogResult.IsSuccess ||
+			catalogResult.Data is null)
+		{
+			ShowRequestError(
+				"The mission catalog could not be loaded.",
+				catalogResult.ErrorMessage);
+
+			return false;
+		}
+
+		try
+		{
+			ControlMissionProvider provider = new();
+
+			IReadOnlyList<MissionDto> sequence =
+				provider.BuildSequence(
+					catalogResult.Data);
+
+			sessionManager.SetMissionSequence(sequence);
+
+			GD.Print(
+				$"Modo controle preparado com " +
+				$"{sequence.Count} missões.");
+
+			return true;
+		}
+		catch (Exception exception)
+		{
+			GD.PushError(
+				$"Erro ao preparar a sequência " +
+				$"do modo controle: {exception}");
+
+			ShowRequestError(
+				"The control mission sequence " +
+				"could not be prepared.",
+				exception.Message);
+
+			return false;
+		}
+	}
+
+	private void NavigateToMissionTransition()
+	{
+		SetLoadingState(
+			true,
+			"Opening the first mission...");
+
+		Error navigationError =
+			GetTree().ChangeSceneToFile(
+				MissionTransitionScenePath);
+
+		if (navigationError == Error.Ok)
+		{
+			return;
+		}
+
+		GD.PushError(
+			$"Não foi possível abrir a cena " +
+			$"{MissionTransitionScenePath}. " +
+			$"Erro: {navigationError}");
+
+		ShowRequestError(
+			"The mission screen could not be opened.",
+			navigationError.ToString());
+	}
+
+	private void StartAdaptiveFlow()
+	{
+		/*
+		 * O fluxo adaptativo será conectado depois:
+		 *
+		 * 1. tela de Steam ID;
+		 * 2. possibilidade de pular a Steam;
+		 * 3. preferências manuais;
+		 * 4. recomendação pela API.
+		 */
+
+		_statusLabel.Text =
+			"Adaptive profile setup will be " +
+			"implemented in the next stage.";
+
+		SetLoadingState(false);
+
+		GD.Print(
+			"Sessão adaptativa criada. " +
+			"Aguardando implementação do fluxo de perfil.");
+	}
+
+	private void SetLoadingState(
+		bool loading,
+		string? message = null)
 	{
 		_isCreatingSession = loading;
-
-		_startButton.Disabled =
-			loading || _selectedMode is null;
 
 		_controlModeButton.Disabled = loading;
 		_adaptiveModeButton.Disabled = loading;
 
-		if (loading)
+		_startButton.Disabled =
+			loading || _selectedMode is null;
+
+		if (!string.IsNullOrWhiteSpace(message))
 		{
-			_statusLabel.Text =
-				"Creating session...";
+			_statusLabel.Text = message;
 		}
+	}
+
+	private void ShowRequestError(
+		string title,
+		string details)
+	{
+		_statusLabel.Text =
+			string.IsNullOrWhiteSpace(details)
+				? title
+				: $"{title}\n{details}";
+
+		SetLoadingState(false);
 	}
 
 	private void OnSettingsPressed()
 	{
+		if (_isCreatingSession)
+		{
+			return;
+		}
+
 		_statusLabel.Text =
 			"Settings will be implemented later.";
 	}
 
 	private void OnExitPressed()
 	{
+		if (_isCreatingSession)
+		{
+			return;
+		}
+
 		GetTree().Quit();
 	}
 }
