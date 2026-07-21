@@ -11,16 +11,19 @@ config_version=5
 [application]
 
 config/name="game"
-run/main_scene="uid://3kefoiinmnv2"
+run/main_scene="uid://djoqrgrtd6n7a"
 config/features=PackedStringArray("4.7", "C#", "GL Compatibility")
 config/icon="res://icon.svg"
 
 [autoload]
 
 ApiClient="*uid://dspmtk4m64ebl"
+SessionManager="*uid://b1hgu65orhcpb"
 
 [display]
 
+window/size/viewport_width=1280
+window/size/viewport_height=720
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 
