@@ -5,7 +5,7 @@ using Godot;
 namespace AdaptiveTrials.Game.Player;
 
 /// <summary>
-/// Controla movimentação, animação e interação do jogador.
+/// Controla a movimentação, as animações e as interações do jogador.
 /// </summary>
 public partial class PlayerController : CharacterBody2D
 {
@@ -23,6 +23,8 @@ public partial class PlayerController : CharacterBody2D
 
 	private PlayerVisualMode _visualMode;
 	private PlayerDirection _direction = PlayerDirection.Down;
+
+	private bool _movementEnabled = true;
 
 	public override void _Ready()
 	{
@@ -43,6 +45,13 @@ public partial class PlayerController : CharacterBody2D
 
 	public override void _PhysicsProcess(double delta)
 	{
+		if (!_movementEnabled)
+		{
+			Velocity = Vector2.Zero;
+			MoveAndSlide();
+			return;
+		}
+
 		Vector2 inputDirection = Input.GetVector(
 			"move_left",
 			"move_right",
@@ -59,11 +68,51 @@ public partial class PlayerController : CharacterBody2D
 
 	public override void _UnhandledInput(InputEvent inputEvent)
 	{
+		if (!_movementEnabled)
+		{
+			return;
+		}
+
+		if (inputEvent.IsActionPressed("debug_normal_mode"))
+		{
+			SetVisualMode(PlayerVisualMode.Normal);
+			GetViewport().SetInputAsHandled();
+			return;
+		}
+
+		if (inputEvent.IsActionPressed("debug_combat_mode"))
+		{
+			SetVisualMode(PlayerVisualMode.Combat);
+			GetViewport().SetInputAsHandled();
+			return;
+		}
+
 		if (inputEvent.IsActionPressed("interact"))
 		{
 			TryInteract();
 			GetViewport().SetInputAsHandled();
 		}
+	}
+
+	/// <summary>
+	/// Ativa ou bloqueia a movimentação e as interações do jogador.
+	/// </summary>
+	public void SetMovementEnabled(bool enabled)
+	{
+		_movementEnabled = enabled;
+
+		if (enabled)
+		{
+			return;
+		}
+
+		Velocity = Vector2.Zero;
+		UpdateAnimation(Vector2.Zero);
+	}
+
+	public bool IsMovementEnabled()
+	{
+		return _movementEnabled;
 	}
 
 	public void SetVisualMode(PlayerVisualMode mode)
@@ -73,7 +122,12 @@ public partial class PlayerController : CharacterBody2D
 		GD.Print(
 			$"Modo visual do jogador alterado para: {_visualMode}");
 
-		UpdateAnimation(Velocity.Normalized());
+		Vector2 animationDirection =
+			Velocity.LengthSquared() > 0
+				? Velocity.Normalized()
+				: Vector2.Zero;
+
+		UpdateAnimation(animationDirection);
 	}
 
 	public PlayerVisualMode GetVisualMode()
@@ -138,19 +192,24 @@ public partial class PlayerController : CharacterBody2D
 			return;
 		}
 
-		if (_animatedSprite.Animation == animationName &&
-			_animatedSprite.IsPlaying() == isMoving)
+		if (isMoving)
 		{
+			if (_animatedSprite.Animation != animationName ||
+				!_animatedSprite.IsPlaying())
+			{
+				_animatedSprite.Play(animationName);
+			}
+
 			return;
 		}
 
-		_animatedSprite.Play(animationName);
-
-		if (!isMoving)
+		if (_animatedSprite.Animation != animationName)
 		{
-			_animatedSprite.Stop();
-			_animatedSprite.Frame = 0;
+			_animatedSprite.Play(animationName);
 		}
+
+		_animatedSprite.Stop();
+		_animatedSprite.Frame = 0;
 	}
 
 	private void TryInteract()
@@ -222,7 +281,8 @@ public partial class PlayerController : CharacterBody2D
 
 		_nearbyInteractables.Add(node);
 
-		GD.Print($"Objeto interativo próximo: {node.Name}");
+		GD.Print(
+			$"Objeto interativo próximo: {node.Name}");
 	}
 
 	private void UnregisterInteractable(Node node)

@@ -115,9 +115,12 @@ theme_override_constants/margin_bottom = 20
 
 [node name="TopBar" type="HBoxContainer" parent="TopMargin" unique_id=1921006458]
 layout_mode = 2
+size_flags_vertical = 0
 
-[node name="SettingsButton" type="Button" parent="TopMargin/TopBar" unique_id=492454639]
+[node name="SettingsButton" type="Button" parent="TopMargin/TopBar" unique_id=1637987693]
+custom_minimum_size = Vector2(52, 52)
 layout_mode = 2
+text = "⚙"
 
 [node name="TopSpacer" type="Control" parent="TopMargin/TopBar" unique_id=1749197946]
 layout_mode = 2
