@@ -30,6 +30,12 @@ public partial class ReachDestinationMissionController : Node
 	private const int DefaultMediumMaxFailures = 3;
 	private const int DefaultHardMaxFailures = 2;
 
+	/*
+	 * A cena possui dez pontos possíveis para hazards.
+	 * Esse limite evita solicitar mais obstáculos do que o mapa suporta.
+	 */
+	private const int MaximumHazards = 10;
+
 	private static readonly PackedScene DestinationScene =
 		GD.Load<PackedScene>(
 			"res://scenes/missions/shared/" +
@@ -58,8 +64,11 @@ public partial class ReachDestinationMissionController : Node
 
 	private DestinationArea _destination = null!;
 
-	private readonly List<CheckpointArea> _activeCheckpoints = new();
-	private readonly List<HazardArea> _activeHazards = new();
+	private readonly List<CheckpointArea> _activeCheckpoints =
+		new();
+
+	private readonly List<HazardArea> _activeHazards =
+		new();
 
 	private MissionDto _mission = null!;
 
@@ -71,12 +80,12 @@ public partial class ReachDestinationMissionController : Node
 	private int _failures;
 
 	private double _elapsedTime;
+
 	private bool _missionFinished;
+	private bool _isRecoveringFromHazard;
 
 	private Vector2 _lastSafePosition;
 	private string _objectiveText = string.Empty;
-	
-	private bool _isRecoveringFromHazard;
 
 	public MissionResult? Result { get; private set; }
 
@@ -85,7 +94,8 @@ public partial class ReachDestinationMissionController : Node
 		GetReferences();
 
 		_sessionManager =
-			GetNode<SessionManager>("/root/SessionManager");
+			GetNode<SessionManager>(
+				"/root/SessionManager");
 
 		_resultPopup.ContinueRequested +=
 			OnContinueRequested;
@@ -112,7 +122,6 @@ public partial class ReachDestinationMissionController : Node
 		}
 
 		ReadConfiguration();
-
 		ConfigureMission();
 	}
 
@@ -125,7 +134,8 @@ public partial class ReachDestinationMissionController : Node
 
 		_elapsedTime += delta;
 
-		_missionHud.SetElapsedTime(_elapsedTime);
+		_missionHud.SetElapsedTime(
+			_elapsedTime);
 	}
 
 	private void GetReferences()
@@ -168,17 +178,26 @@ public partial class ReachDestinationMissionController : Node
 		_reachedCheckpoints = 0;
 		_failures = 0;
 		_elapsedTime = 0;
+
 		_missionFinished = false;
 		_isRecoveringFromHazard = false;
+
+		Result = null;
+
+		_activeCheckpoints.Clear();
+		_activeHazards.Clear();
 
 		_objectiveText =
 			_requiredCheckpoints > 0
 				? $"Reach {_requiredCheckpoints} checkpoints " +
-                  "and arrive at the destination."
+				  "and arrive at the destination."
 				: "Reach the destination.";
 
 		_player.GlobalPosition =
 			_playerSpawn.GlobalPosition;
+
+		_player.Velocity =
+			Vector2.Zero;
 
 		_lastSafePosition =
 			_playerSpawn.GlobalPosition;
@@ -198,7 +217,7 @@ public partial class ReachDestinationMissionController : Node
 			0,
 			_requiredCheckpoints + 1,
 			"Route");
-			
+
 		_missionHud.SetAttempts(
 			_maxFailures,
 			_maxFailures);
@@ -207,7 +226,19 @@ public partial class ReachDestinationMissionController : Node
 		_resultPopup.HidePopup();
 
 		SpawnCheckpoints();
+
+		if (_missionFinished)
+		{
+			return;
+		}
+
 		SpawnHazards();
+
+		if (_missionFinished)
+		{
+			return;
+		}
+
 		SpawnDestination();
 
 		GD.Print(
@@ -227,7 +258,8 @@ public partial class ReachDestinationMissionController : Node
 				.OfType<Marker2D>()
 				.ToList();
 
-		if (spawnPoints.Count < _requiredCheckpoints)
+		if (spawnPoints.Count <
+			_requiredCheckpoints)
 		{
 			ShowInitializationError(
 				$"The map contains {spawnPoints.Count} " +
@@ -254,7 +286,12 @@ public partial class ReachDestinationMissionController : Node
 			checkpoint.CheckpointReached +=
 				OnCheckpointReached;
 
-			_dynamicObjects.AddChild(checkpoint);
+			/*
+			 * O nó é adicionado antes da posição global ser
+			 * configurada para evitar transformação incorreta.
+			 */
+			_dynamicObjects.AddChild(
+				checkpoint);
 
 			checkpoint.GlobalPosition =
 				spawnPoint.GlobalPosition;
@@ -262,7 +299,8 @@ public partial class ReachDestinationMissionController : Node
 			checkpoint.ConfigureIndex(
 				index + 1);
 
-			_activeCheckpoints.Add(checkpoint);
+			_activeCheckpoints.Add(
+				checkpoint);
 		}
 	}
 
@@ -274,7 +312,8 @@ public partial class ReachDestinationMissionController : Node
 				.OfType<Marker2D>()
 				.ToList();
 
-		if (spawnPoints.Count < _requiredHazards)
+		if (spawnPoints.Count <
+			_requiredHazards)
 		{
 			ShowInitializationError(
 				$"The map contains {spawnPoints.Count} " +
@@ -284,6 +323,10 @@ public partial class ReachDestinationMissionController : Node
 			return;
 		}
 
+		/*
+		 * Os dez pontos são embaralhados para que as posições
+		 * utilizadas possam variar entre execuções.
+		 */
 		Shuffle(spawnPoints);
 
 		for (int index = 0;
@@ -300,16 +343,17 @@ public partial class ReachDestinationMissionController : Node
 			hazard.Name =
 				$"Hazard{index + 1:00}";
 
-			hazard.GlobalPosition =
-				spawnPoint.GlobalPosition;
-
 			hazard.PlayerHit +=
 				OnPlayerHit;
 
-			_dynamicObjects.AddChild(hazard);
+			_dynamicObjects.AddChild(
+				hazard);
 
-			
-			_activeHazards.Add(hazard);
+			hazard.GlobalPosition =
+				spawnPoint.GlobalPosition;
+
+			_activeHazards.Add(
+				hazard);
 		}
 	}
 
@@ -325,7 +369,8 @@ public partial class ReachDestinationMissionController : Node
 		_destination.DestinationReached +=
 			OnDestinationReached;
 
-		_dynamicObjects.AddChild(_destination);
+		_dynamicObjects.AddChild(
+			_destination);
 
 		_destination.GlobalPosition =
 			_destinationSpawn.GlobalPosition;
@@ -351,7 +396,8 @@ public partial class ReachDestinationMissionController : Node
 
 		GD.Print(
 			$"Checkpoint alcançado: " +
-			$"{_reachedCheckpoints}/{_requiredCheckpoints}");
+			$"{_reachedCheckpoints}/" +
+			$"{_requiredCheckpoints}");
 	}
 
 	private void OnDestinationReached()
@@ -367,7 +413,8 @@ public partial class ReachDestinationMissionController : Node
 			GD.Print(
 				"Destino alcançado antes dos checkpoints.");
 
-			_destination.SetEnabledState(false);
+			_destination.SetEnabledState(
+				false);
 
 			GetTree()
 				.CreateTimer(0.75)
@@ -375,12 +422,14 @@ public partial class ReachDestinationMissionController : Node
 					() =>
 					{
 						if (_missionFinished ||
-							!IsInstanceValid(_destination))
+							!IsInstanceValid(
+								_destination))
 						{
 							return;
 						}
 
-						_destination.SetEnabledState(true);
+						_destination.SetEnabledState(
+							true);
 					};
 
 			return;
@@ -391,7 +440,8 @@ public partial class ReachDestinationMissionController : Node
 			_requiredCheckpoints + 1,
 			"Route");
 
-		FinishMission(success: true);
+		FinishMission(
+			success: true);
 	}
 
 	private void OnPlayerHit()
@@ -417,20 +467,27 @@ public partial class ReachDestinationMissionController : Node
 		GD.Print(
 			$"Falha registrada: " +
 			$"{_failures}/{_maxFailures}. " +
-			$"Tentativas restantes: {remainingAttempts}");
+			$"Tentativas restantes: " +
+			$"{remainingAttempts}");
 
-		if (_failures >= _maxFailures)
+		if (_failures >=
+			_maxFailures)
 		{
-			FinishMission(success: false);
+			FinishMission(
+				success: false);
+
 			return;
 		}
 
-		_player.SetMovementEnabled(false);
-		_player.Velocity = Vector2.Zero;
+		_player.SetMovementEnabled(
+			false);
+
+		_player.Velocity =
+			Vector2.Zero;
 
 		/*
-		 * O reposicionamento é feito de forma adiada para o
-		 * personagem sair corretamente da área perigosa atual.
+		 * O reposicionamento adiado evita que o jogador
+		 * continue sobre a área perigosa.
 		 */
 		CallDeferred(
 			MethodName.RecoverPlayerAfterHazard);
@@ -453,11 +510,15 @@ public partial class ReachDestinationMissionController : Node
 			return;
 		}
 
-		_player.SetMovementEnabled(true);
-		_isRecoveringFromHazard = false;
+		_player.SetMovementEnabled(
+			true);
+
+		_isRecoveringFromHazard =
+			false;
 	}
 
-	private void FinishMission(bool success)
+	private void FinishMission(
+		bool success)
 	{
 		if (_missionFinished)
 		{
@@ -467,14 +528,14 @@ public partial class ReachDestinationMissionController : Node
 		_missionFinished = true;
 		_isRecoveringFromHazard = false;
 
-		_player.SetMovementEnabled(false);
-		_player.Velocity = Vector2.Zero;
+		_player.SetMovementEnabled(
+			false);
 
-		/*
-		 * Desativa todos os elementos capazes de emitir sinais
-		 * após o encerramento da missão.
-		 */
-		foreach (HazardArea hazard in _activeHazards)
+		_player.Velocity =
+			Vector2.Zero;
+
+		foreach (HazardArea hazard
+				 in _activeHazards)
 		{
 			if (IsInstanceValid(hazard))
 			{
@@ -484,7 +545,8 @@ public partial class ReachDestinationMissionController : Node
 			}
 		}
 
-		foreach (CheckpointArea checkpoint in _activeCheckpoints)
+		foreach (CheckpointArea checkpoint
+				 in _activeCheckpoints)
 		{
 			if (IsInstanceValid(checkpoint))
 			{
@@ -496,17 +558,26 @@ public partial class ReachDestinationMissionController : Node
 
 		if (IsInstanceValid(_destination))
 		{
-			_destination.SetEnabledState(false);
+			_destination.SetEnabledState(
+				false);
 		}
 
-		_missionHud.SetVisibleState(false);
+		_missionHud.SetVisibleState(
+			false);
 
 		Result = new MissionResult
 		{
-			MissionId = _mission.Id,
-			CompletionTime = _elapsedTime,
-			Failures = _failures,
-			Success = success
+			MissionId =
+				_mission.Id,
+
+			CompletionTime =
+				_elapsedTime,
+
+			Failures =
+				_failures,
+
+			Success =
+				success
 		};
 
 		string statisticValue =
@@ -518,14 +589,20 @@ public partial class ReachDestinationMissionController : Node
 			missionName: _mission.Name,
 			objective: _objectiveText,
 			completionTime: _elapsedTime,
-			statisticTitle: "Checkpoints Reached",
-			statisticValue: statisticValue,
+			statisticTitle:
+				"Checkpoints Reached",
+			statisticValue:
+				statisticValue,
 			difficulty:
-				GetDifficultyText(_mission.Difficulty),
+				GetDifficultyText(
+					_mission.Difficulty),
 			failures: _failures);
 
-		GD.Print("Resultado da missão:");
-		GD.Print($"MissionId={Result.MissionId}");
+		GD.Print(
+			"Resultado da missão:");
+
+		GD.Print(
+			$"MissionId={Result.MissionId}");
 
 		GD.Print(
 			$"CompletionTime=" +
@@ -533,8 +610,11 @@ public partial class ReachDestinationMissionController : Node
 				"F2",
 				CultureInfo.InvariantCulture)}");
 
-		GD.Print($"Failures={Result.Failures}");
-		GD.Print($"Success={Result.Success}");
+		GD.Print(
+			$"Failures={Result.Failures}");
+
+		GD.Print(
+			$"Success={Result.Success}");
 	}
 
 	private void OnContinueRequested()
@@ -565,70 +645,104 @@ public partial class ReachDestinationMissionController : Node
 		_maxFailures =
 			defaults.MaxFailures;
 
-		if (string.IsNullOrWhiteSpace(
+		if (!string.IsNullOrWhiteSpace(
 				_mission.ParametersJson))
 		{
-			return;
+			try
+			{
+				using JsonDocument document =
+					JsonDocument.Parse(
+						_mission.ParametersJson);
+
+				JsonElement root =
+					document.RootElement;
+
+				/*
+				 * Checkpoints e tentativas continuam sendo
+				 * configuráveis pelo catálogo da API.
+				 */
+				_requiredCheckpoints =
+					ReadPositiveInteger(
+						root,
+						"checkpoints",
+						_requiredCheckpoints);
+
+				_maxFailures =
+					ReadPositiveInteger(
+						root,
+						"maxFailures",
+						_maxFailures);
+
+				/*
+				 * O valor da API pode aumentar a quantidade
+				 * de hazards, mas não pode reduzir o mínimo
+				 * previsto para a dificuldade atual.
+				 */
+				int apiHazards =
+					ReadPositiveInteger(
+						root,
+						"hazards",
+						_requiredHazards);
+
+				_requiredHazards =
+					Mathf.Max(
+						_requiredHazards,
+						apiHazards);
+			}
+			catch (JsonException exception)
+			{
+				GD.PushWarning(
+					$"ParametersJson inválido: " +
+					$"{exception.Message}");
+			}
 		}
 
-		try
-		{
-			using JsonDocument document =
-				JsonDocument.Parse(
-					_mission.ParametersJson);
+		_requiredHazards =
+			Mathf.Clamp(
+				_requiredHazards,
+				1,
+				MaximumHazards);
 
-			JsonElement root =
-				document.RootElement;
-
-			_requiredCheckpoints =
-				ReadPositiveInteger(
-					root,
-					"checkpoints",
-					_requiredCheckpoints);
-
-			_requiredHazards =
-				ReadPositiveInteger(
-					root,
-					"hazards",
-					_requiredHazards);
-
-			_maxFailures =
-				ReadPositiveInteger(
-					root,
-					"maxFailures",
-					_maxFailures);
-		}
-		catch (JsonException exception)
-		{
-			GD.PushWarning(
-				$"ParametersJson inválido: " +
-				$"{exception.Message}");
-		}
+		GD.Print(
+			$"Configuração da missão carregada: " +
+			$"Difficulty={_mission.Difficulty}, " +
+			$"Checkpoints={_requiredCheckpoints}, " +
+			$"Hazards={_requiredHazards}, " +
+			$"MaxFailures={_maxFailures}");
 	}
 
 	private void ShowInitializationError(
 		string message)
 	{
 		_missionFinished = true;
+		_isRecoveringFromHazard = false;
 
 		if (_player is not null)
 		{
-			_player.SetMovementEnabled(false);
+			_player.SetMovementEnabled(
+				false);
+
+			_player.Velocity =
+				Vector2.Zero;
 		}
 
 		if (_missionHud is not null)
 		{
-			_missionHud.SetVisibleState(false);
+			_missionHud.SetVisibleState(
+				false);
 		}
 
 		if (_resultPopup is not null)
 		{
 			_resultPopup.ShowResult(
 				success: false,
-				missionName: "Mission unavailable",
-				objective: message,
+				missionName:
+					"Mission unavailable",
+				objective:
+					message,
 				completionTime: 0,
-				statisticTitle: "Status",
+				statisticTitle:
+					"Status",
 				statisticValue:
 					"Initialization error",
 				difficulty: "-",
@@ -713,7 +827,9 @@ public partial class ReachDestinationMissionController : Node
 			 index--)
 		{
 			int swapIndex =
-				GD.RandRange(0, index);
+				GD.RandRange(
+					0,
+					index);
 
 			(values[index], values[swapIndex]) =
 				(values[swapIndex], values[index]);
