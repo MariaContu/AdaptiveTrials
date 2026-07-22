@@ -1,0 +1,16 @@
+[gd_scene format=3 uid="uid://b4f23cre4v66w"]
+
+[ext_resource type="Script" uid="uid://dbtk3nxjwxmmq" path="res://scripts/tests/TestInteractable.cs" id="1_d8eaj"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_4x27w"]
+size = Vector2(64, 64)
+
+[node name="TestInteractable" type="StaticBody2D" unique_id=646415353]
+collision_layer = 2
+script = ExtResource("1_d8eaj")
+
+[node name="Polygon2D" type="Polygon2D" parent="." unique_id=1393635788]
+polygon = PackedVector2Array(-32, -32, 32, -32, 32, 32, -32, 32)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=934321699]
+shape = SubResource("RectangleShape2D_4x27w")
