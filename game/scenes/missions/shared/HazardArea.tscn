@@ -1,0 +1,18 @@
+[gd_scene format=3 uid="uid://clmuv7buepvna"]
+
+[ext_resource type="Script" uid="uid://baohq4uwepq8q" path="res://scripts/missions/shared/HazardArea.cs" id="1_byqsl"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_trenn"]
+size = Vector2(90, 90)
+
+[node name="HazardArea" type="Area2D" unique_id=1945192312]
+collision_layer = 2
+script = ExtResource("1_byqsl")
+
+[node name="Visual" type="Polygon2D" parent="." unique_id=1596446225]
+z_index = 2
+color = Color(0.7764706, 0.43529412, 0.47058824, 1)
+polygon = PackedVector2Array(0, -35, 35, 0, 0, 35, -35, 0)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1865144482]
+shape = SubResource("RectangleShape2D_trenn")

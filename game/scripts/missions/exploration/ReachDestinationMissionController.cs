@@ -1,0 +1,647 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Text.Json;
+using AdaptiveTrials.Game.Components;
+using AdaptiveTrials.Game.Dto;
+using AdaptiveTrials.Game.Enums;
+using AdaptiveTrials.Game.Missions.Shared;
+using AdaptiveTrials.Game.Player;
+using AdaptiveTrials.Game.Session;
+using Godot;
+
+namespace AdaptiveTrials.Game.Missions.Exploration;
+
+/// <summary>
+/// Controla a missão de exploração baseada em alcançar um destino.
+/// </summary>
+public partial class ReachDestinationMissionController : Node
+{
+	private const int DefaultEasyCheckpoints = 1;
+	private const int DefaultMediumCheckpoints = 2;
+	private const int DefaultHardCheckpoints = 3;
+
+	private const int DefaultEasyHazards = 1;
+	private const int DefaultMediumHazards = 2;
+	private const int DefaultHardHazards = 4;
+
+	private const int DefaultEasyMaxFailures = 4;
+	private const int DefaultMediumMaxFailures = 3;
+	private const int DefaultHardMaxFailures = 2;
+
+	private static readonly PackedScene DestinationScene =
+		GD.Load<PackedScene>(
+			"res://scenes/missions/shared/" +
+			"DestinationArea.tscn");
+
+	private static readonly PackedScene CheckpointScene =
+		GD.Load<PackedScene>(
+			"res://scenes/missions/shared/" +
+			"CheckpointArea.tscn");
+
+	private static readonly PackedScene HazardScene =
+		GD.Load<PackedScene>(
+			"res://scenes/missions/shared/" +
+			"HazardArea.tscn");
+
+	private SessionManager _sessionManager = null!;
+	private PlayerController _player = null!;
+	private MissionHud _missionHud = null!;
+	private MissionResultPopup _resultPopup = null!;
+
+	private Marker2D _playerSpawn = null!;
+	private Marker2D _destinationSpawn = null!;
+	private Node2D _checkpointSpawns = null!;
+	private Node2D _hazardSpawns = null!;
+	private Node2D _dynamicObjects = null!;
+
+	private DestinationArea _destination = null!;
+
+	private readonly List<CheckpointArea> _activeCheckpoints = new();
+	private readonly List<HazardArea> _activeHazards = new();
+
+	private MissionDto _mission = null!;
+
+	private int _requiredCheckpoints;
+	private int _requiredHazards;
+	private int _maxFailures;
+
+	private int _reachedCheckpoints;
+	private int _failures;
+
+	private double _elapsedTime;
+	private bool _missionFinished;
+
+	private Vector2 _lastSafePosition;
+	private string _objectiveText = string.Empty;
+	
+
+	public MissionResult? Result { get; private set; }
+
+	public override void _Ready()
+	{
+		GetReferences();
+
+		_sessionManager =
+			GetNode<SessionManager>("/root/SessionManager");
+
+		_resultPopup.ContinueRequested +=
+			OnContinueRequested;
+
+		MissionDto? currentMission =
+			_sessionManager.CurrentMission;
+
+		if (currentMission is null)
+		{
+			ShowInitializationError(
+				"No active mission was found.");
+
+			return;
+		}
+
+		_mission = currentMission;
+
+		if (_mission.Type != MissionType.Exploration)
+		{
+			ShowInitializationError(
+				"The active mission is not an exploration mission.");
+
+			return;
+		}
+
+		ReadConfiguration();
+
+		ConfigureMission();
+	}
+
+	public override void _Process(double delta)
+	{
+		if (_missionFinished)
+		{
+			return;
+		}
+
+		_elapsedTime += delta;
+
+		_missionHud.SetElapsedTime(_elapsedTime);
+	}
+
+	private void GetReferences()
+	{
+		_player =
+			GetNode<PlayerController>(
+				"../Player");
+
+		_missionHud =
+			GetNode<MissionHud>(
+				"../MissionHud");
+
+		_resultPopup =
+			GetNode<MissionResultPopup>(
+				"../MissionResultPopup");
+
+		_playerSpawn =
+			GetNode<Marker2D>(
+				"../SpawnPoints/PlayerSpawn");
+
+		_destinationSpawn =
+			GetNode<Marker2D>(
+				"../SpawnPoints/DestinationSpawn");
+
+		_checkpointSpawns =
+			GetNode<Node2D>(
+				"../SpawnPoints/CheckpointSpawns");
+
+		_hazardSpawns =
+			GetNode<Node2D>(
+				"../SpawnPoints/HazardSpawns");
+
+		_dynamicObjects =
+			GetNode<Node2D>(
+				"../DynamicObjects");
+	}
+
+	private void ConfigureMission()
+	{
+		_reachedCheckpoints = 0;
+		_failures = 0;
+		_elapsedTime = 0;
+		_missionFinished = false;
+
+		_objectiveText =
+			_requiredCheckpoints > 0
+				? $"Reach {_requiredCheckpoints} checkpoints " +
+                  "and arrive at the destination."
+				: "Reach the destination.";
+
+		_player.GlobalPosition =
+			_playerSpawn.GlobalPosition;
+
+		_lastSafePosition =
+			_playerSpawn.GlobalPosition;
+
+		_player.SetVisualMode(
+			PlayerVisualMode.Normal);
+
+		_player.SetMovementEnabled(true);
+
+		_missionHud.Configure(
+			_mission.Name,
+			_mission.Type,
+			_objectiveText,
+			_requiredCheckpoints + 1);
+
+		_missionHud.SetProgress(
+			0,
+			_requiredCheckpoints + 1,
+			"Route");
+
+		_missionHud.SetVisibleState(true);
+		_resultPopup.HidePopup();
+
+		SpawnCheckpoints();
+		SpawnHazards();
+		SpawnDestination();
+
+		GD.Print(
+			$"Missão Chegar ao Destino iniciada: " +
+			$"MissionId={_mission.Id}, " +
+			$"Checkpoints={_requiredCheckpoints}, " +
+			$"Hazards={_requiredHazards}, " +
+			$"MaxFailures={_maxFailures}, " +
+			$"Difficulty={_mission.Difficulty}");
+	}
+
+	private void SpawnCheckpoints()
+	{
+		List<Marker2D> spawnPoints =
+			_checkpointSpawns
+				.GetChildren()
+				.OfType<Marker2D>()
+				.ToList();
+
+		if (spawnPoints.Count < _requiredCheckpoints)
+		{
+			ShowInitializationError(
+				$"The map contains {spawnPoints.Count} " +
+				$"checkpoint points, but the mission requires " +
+				$"{_requiredCheckpoints}.");
+
+			return;
+		}
+
+		for (int index = 0;
+			 index < _requiredCheckpoints;
+			 index++)
+		{
+			Marker2D spawnPoint =
+				spawnPoints[index];
+
+			CheckpointArea checkpoint =
+				CheckpointScene
+					.Instantiate<CheckpointArea>();
+
+			checkpoint.Name =
+				$"Checkpoint{index + 1:00}";
+
+			checkpoint.CheckpointReached +=
+				OnCheckpointReached;
+
+			_dynamicObjects.AddChild(checkpoint);
+
+			checkpoint.GlobalPosition =
+				spawnPoint.GlobalPosition;
+
+			checkpoint.ConfigureIndex(
+				index + 1);
+
+			_activeCheckpoints.Add(checkpoint);
+		}
+	}
+
+	private void SpawnHazards()
+	{
+		List<Marker2D> spawnPoints =
+			_hazardSpawns
+				.GetChildren()
+				.OfType<Marker2D>()
+				.ToList();
+
+		if (spawnPoints.Count < _requiredHazards)
+		{
+			ShowInitializationError(
+				$"The map contains {spawnPoints.Count} " +
+				$"hazard points, but the mission requires " +
+				$"{_requiredHazards}.");
+
+			return;
+		}
+
+		Shuffle(spawnPoints);
+
+		for (int index = 0;
+			 index < _requiredHazards;
+			 index++)
+		{
+			Marker2D spawnPoint =
+				spawnPoints[index];
+
+			HazardArea hazard =
+				HazardScene
+					.Instantiate<HazardArea>();
+
+			hazard.Name =
+				$"Hazard{index + 1:00}";
+
+			hazard.GlobalPosition =
+				spawnPoint.GlobalPosition;
+
+			hazard.PlayerHit +=
+				OnPlayerHit;
+
+			_dynamicObjects.AddChild(hazard);
+
+			
+			_activeHazards.Add(hazard);
+		}
+	}
+
+	private void SpawnDestination()
+	{
+		_destination =
+			DestinationScene
+				.Instantiate<DestinationArea>();
+
+		_destination.Name =
+			"Destination";
+
+		_destination.DestinationReached +=
+			OnDestinationReached;
+
+		_dynamicObjects.AddChild(_destination);
+
+		_destination.GlobalPosition =
+			_destinationSpawn.GlobalPosition;
+	}
+
+	private void OnCheckpointReached(
+		CheckpointArea checkpoint)
+	{
+		if (_missionFinished)
+		{
+			return;
+		}
+
+		_reachedCheckpoints++;
+
+		_lastSafePosition =
+			checkpoint.GlobalPosition;
+
+		_missionHud.SetProgress(
+			_reachedCheckpoints,
+			_requiredCheckpoints + 1,
+			"Route");
+
+		GD.Print(
+			$"Checkpoint alcançado: " +
+			$"{_reachedCheckpoints}/{_requiredCheckpoints}");
+	}
+
+	private void OnDestinationReached()
+	{
+		if (_missionFinished)
+		{
+			return;
+		}
+
+		if (_reachedCheckpoints <
+			_requiredCheckpoints)
+		{
+			GD.Print(
+				"Destino alcançado antes dos checkpoints.");
+
+			_destination.SetEnabledState(false);
+
+			GetTree()
+				.CreateTimer(0.75)
+				.Timeout +=
+					() =>
+						_destination.SetEnabledState(true);
+
+			return;
+		}
+
+		_missionHud.SetProgress(
+			_requiredCheckpoints + 1,
+			_requiredCheckpoints + 1,
+			"Route");
+
+		FinishMission(success: true);
+	}
+
+	private void OnPlayerHit()
+	{
+		if (_missionFinished)
+		{
+			return;
+		}
+
+		_failures++;
+
+		GD.Print(
+			$"Falha registrada: " +
+			$"{_failures}/{_maxFailures}");
+
+		if (_failures >= _maxFailures)
+		{
+			FinishMission(success: false);
+			return;
+		}
+
+		_player.GlobalPosition =
+			_lastSafePosition;
+
+		_player.Velocity =
+			Vector2.Zero;
+	}
+
+	private void FinishMission(bool success)
+	{
+		if (_missionFinished)
+		{
+			return;
+		}
+
+		_missionFinished = true;
+
+		_player.SetMovementEnabled(false);
+		_missionHud.SetVisibleState(false);
+
+		Result = new MissionResult
+		{
+			MissionId = _mission.Id,
+			CompletionTime = _elapsedTime,
+			Failures = _failures,
+			Success = success
+		};
+
+		string statisticValue =
+			$"{_reachedCheckpoints}/" +
+			$"{_requiredCheckpoints}";
+
+		_resultPopup.ShowResult(
+			success: success,
+			missionName: _mission.Name,
+			objective: _objectiveText,
+			completionTime: _elapsedTime,
+			statisticTitle: "Checkpoints Reached",
+			statisticValue: statisticValue,
+			difficulty:
+				GetDifficultyText(_mission.Difficulty),
+			failures: _failures);
+
+		GD.Print("Resultado da missão:");
+		GD.Print($"MissionId={Result.MissionId}");
+
+		GD.Print(
+			$"CompletionTime=" +
+			$"{Result.CompletionTime.ToString(
+				"F2",
+				CultureInfo.InvariantCulture)}");
+
+		GD.Print(
+			$"Failures={Result.Failures}");
+
+		GD.Print(
+			$"Success={Result.Success}");
+	}
+
+	private void OnContinueRequested()
+	{
+		if (!_missionFinished ||
+			Result is null)
+		{
+			return;
+		}
+
+		GD.Print(
+			"Resultado confirmado. " +
+			"Preparando avanço da sessão.");
+	}
+
+	private void ReadConfiguration()
+	{
+		MissionConfiguration defaults =
+			GetDefaultsByDifficulty(
+				_mission.Difficulty);
+
+		_requiredCheckpoints =
+			defaults.Checkpoints;
+
+		_requiredHazards =
+			defaults.Hazards;
+
+		_maxFailures =
+			defaults.MaxFailures;
+
+		if (string.IsNullOrWhiteSpace(
+				_mission.ParametersJson))
+		{
+			return;
+		}
+
+		try
+		{
+			using JsonDocument document =
+				JsonDocument.Parse(
+					_mission.ParametersJson);
+
+			JsonElement root =
+				document.RootElement;
+
+			_requiredCheckpoints =
+				ReadPositiveInteger(
+					root,
+					"checkpoints",
+					_requiredCheckpoints);
+
+			_requiredHazards =
+				ReadPositiveInteger(
+					root,
+					"hazards",
+					_requiredHazards);
+
+			_maxFailures =
+				ReadPositiveInteger(
+					root,
+					"maxFailures",
+					_maxFailures);
+		}
+		catch (JsonException exception)
+		{
+			GD.PushWarning(
+				$"ParametersJson inválido: " +
+				$"{exception.Message}");
+		}
+	}
+
+	private void ShowInitializationError(
+		string message)
+	{
+		_missionFinished = true;
+
+		if (_player is not null)
+		{
+			_player.SetMovementEnabled(false);
+		}
+
+		if (_missionHud is not null)
+		{
+			_missionHud.SetVisibleState(false);
+		}
+
+		if (_resultPopup is not null)
+		{
+			_resultPopup.ShowResult(
+				success: false,
+				missionName: "Mission unavailable",
+				objective: message,
+				completionTime: 0,
+				statisticTitle: "Status",
+				statisticValue:
+					"Initialization error",
+				difficulty: "-",
+				failures: 0);
+		}
+
+		GD.PushError(message);
+	}
+
+	private static int ReadPositiveInteger(
+		JsonElement root,
+		string propertyName,
+		int fallback)
+	{
+		if (!root.TryGetProperty(
+				propertyName,
+				out JsonElement value))
+		{
+			return fallback;
+		}
+
+		if (!value.TryGetInt32(
+				out int result))
+		{
+			return fallback;
+		}
+
+		return result > 0
+			? result
+			: fallback;
+	}
+
+	private static MissionConfiguration
+		GetDefaultsByDifficulty(
+			int difficulty)
+	{
+		return difficulty switch
+		{
+			1 =>
+				new MissionConfiguration(
+					DefaultEasyCheckpoints,
+					DefaultEasyHazards,
+					DefaultEasyMaxFailures),
+
+			2 =>
+				new MissionConfiguration(
+					DefaultMediumCheckpoints,
+					DefaultMediumHazards,
+					DefaultMediumMaxFailures),
+
+			3 =>
+				new MissionConfiguration(
+					DefaultHardCheckpoints,
+					DefaultHardHazards,
+					DefaultHardMaxFailures),
+
+			_ =>
+				new MissionConfiguration(
+					DefaultEasyCheckpoints,
+					DefaultEasyHazards,
+					DefaultEasyMaxFailures)
+		};
+	}
+
+	private static string GetDifficultyText(
+		int difficulty)
+	{
+		return difficulty switch
+		{
+			1 => "Easy",
+			2 => "Medium",
+			3 => "Hard",
+			_ => $"Level {difficulty}"
+		};
+	}
+
+	private static void Shuffle<T>(
+		IList<T> values)
+	{
+		for (int index = values.Count - 1;
+			 index > 0;
+			 index--)
+		{
+			int swapIndex =
+				GD.RandRange(0, index);
+
+			(values[index], values[swapIndex]) =
+				(values[swapIndex], values[index]);
+		}
+	}
+
+	private readonly record struct MissionConfiguration(
+		int Checkpoints,
+		int Hazards,
+		int MaxFailures);
+}

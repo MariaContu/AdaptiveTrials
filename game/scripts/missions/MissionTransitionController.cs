@@ -211,6 +211,14 @@ private static string? ResolveMissionScene(
 			"res://scenes/missions/exploration/" +
 			"FindObjectsMission.tscn",
 
+		"chegar ao destino" =>
+			"res://scenes/missions/exploration/" +
+			"ReachDestinationMission.tscn",
+
+		"reach destination" =>
+			"res://scenes/missions/exploration/" +
+			"ReachDestinationMission.tscn",
+
 		_ => null
 	};
 }
