@@ -14,6 +14,7 @@ public partial class MissionHud : CanvasLayer
 	private Label _objectiveLabel = null!;
 	private Label _progressValueLabel = null!;
 	private Label _progressLabel = null!;
+	private Label _attemptsLabel = null!;
 	private Label _timerLabel = null!;
 
 	private ProgressBar _progressBar = null!;
@@ -21,44 +22,52 @@ public partial class MissionHud : CanvasLayer
 
 	public override void _Ready()
 	{
+		string contentPath =
+			"TopCenter/HudPanel/HudMargin/HudContent/";
+
 		_categoryIconLabel =
 			GetNode<Label>(
-				"TopCenter/HudPanel/HudMargin/HudContent/" +
+				contentPath +
 				"Header/CategoryIconPanel/CategoryIconLabel");
 
 		_missionTitleLabel =
 			GetNode<Label>(
-				"TopCenter/HudPanel/HudMargin/HudContent/" +
+				contentPath +
 				"Header/MissionInfo/MissionTitleLabel");
 
 		_missionCategoryLabel =
 			GetNode<Label>(
-				"TopCenter/HudPanel/HudMargin/HudContent/" +
+				contentPath +
 				"Header/MissionInfo/MissionCategoryLabel");
 
 		_objectiveLabel =
 			GetNode<Label>(
-				"TopCenter/HudPanel/HudMargin/HudContent/" +
+				contentPath +
 				"ObjectiveLabel");
 
 		_progressBar =
 			GetNode<ProgressBar>(
-				"TopCenter/HudPanel/HudMargin/HudContent/" +
+				contentPath +
 				"ProgressArea/ProgressBar");
 
 		_progressValueLabel =
 			GetNode<Label>(
-				"TopCenter/HudPanel/HudMargin/HudContent/" +
+				contentPath +
 				"ProgressArea/ProgressValueLabel");
 
 		_progressLabel =
 			GetNode<Label>(
-				"TopCenter/HudPanel/HudMargin/HudContent/" +
+				contentPath +
 				"Footer/ProgressLabel");
+
+		_attemptsLabel =
+			GetNode<Label>(
+				contentPath +
+				"Footer/AttemptsLabel");
 
 		_timerLabel =
 			GetNode<Label>(
-				"TopCenter/HudPanel/HudMargin/HudContent/" +
+				contentPath +
 				"Footer/TimerLabel");
 
 		_settingsButton =
@@ -66,6 +75,8 @@ public partial class MissionHud : CanvasLayer
 				"SettingsMargin/SettingsButton");
 
 		_settingsButton.Pressed += OnSettingsPressed;
+
+		SetAttemptsVisible(false);
 	}
 
 	public void Configure(
@@ -97,10 +108,7 @@ public partial class MissionHud : CanvasLayer
 		_progressBar.MaxValue = safeMaximum;
 		_progressBar.Value = 0;
 
-		SetProgress(
-			current: 0,
-			total: safeMaximum);
-
+		SetProgress(0, safeMaximum);
 		SetElapsedTime(0);
 	}
 
@@ -113,10 +121,7 @@ public partial class MissionHud : CanvasLayer
 			Mathf.Max(1, total);
 
 		int safeCurrent =
-			Mathf.Clamp(
-				current,
-				0,
-				safeTotal);
+			Mathf.Clamp(current, 0, safeTotal);
 
 		_progressBar.MinValue = 0;
 		_progressBar.MaxValue = safeTotal;
@@ -127,6 +132,30 @@ public partial class MissionHud : CanvasLayer
 
 		_progressLabel.Text =
 			$"{noun}: {safeCurrent}/{safeTotal}";
+	}
+
+	public void SetAttempts(
+		int remaining,
+		int maximum)
+	{
+		int safeMaximum =
+			Mathf.Max(1, maximum);
+
+		int safeRemaining =
+			Mathf.Clamp(
+				remaining,
+				0,
+				safeMaximum);
+
+		_attemptsLabel.Text =
+			$"Attempts: {safeRemaining}/{safeMaximum}";
+
+		SetAttemptsVisible(true);
+	}
+
+	public void SetAttemptsVisible(bool visible)
+	{
+		_attemptsLabel.Visible = visible;
 	}
 
 	public void SetElapsedTime(double elapsedSeconds)
@@ -151,17 +180,10 @@ public partial class MissionHud : CanvasLayer
 	{
 		return missionType switch
 		{
-			MissionType.Combat =>
-				"Fight",
-
-			MissionType.Exploration =>
-				"Exploration",
-
-			MissionType.Puzzle =>
-				"Puzzle",
-
-			_ =>
-                "Unknown"
+			MissionType.Combat => "Fight",
+			MissionType.Exploration => "Exploration",
+			MissionType.Puzzle => "Puzzle",
+			_ => "Unknown"
 		};
 	}
 
@@ -170,17 +192,10 @@ public partial class MissionHud : CanvasLayer
 	{
 		return missionType switch
 		{
-			MissionType.Combat =>
-				"⚔",
-
-			MissionType.Exploration =>
-				"◆",
-
-			MissionType.Puzzle =>
-				"⌘",
-
-			_ =>
-                "?"
+			MissionType.Combat => "⚔",
+			MissionType.Exploration => "◆",
+			MissionType.Puzzle => "⌘",
+			_ => "?"
 		};
 	}
 

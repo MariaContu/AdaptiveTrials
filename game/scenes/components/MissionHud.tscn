@@ -130,6 +130,13 @@ theme_override_font_sizes/font_size = 12
 layout_mode = 2
 size_flags_horizontal = 3
 
+[node name="AttemptsLabel" type="Label" parent="TopCenter/HudPanel/HudMargin/HudContent/Footer" unique_id=1657230014]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "Attempts: 3/3"
+horizontal_alignment = 1
+
 [node name="TimerLabel" type="Label" parent="TopCenter/HudPanel/HudMargin/HudContent/Footer" unique_id=1576524781]
 layout_mode = 2
 theme_override_font_sizes/font_size = 12

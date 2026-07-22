@@ -70,7 +70,7 @@ position = Vector2(330, 470)
 position = Vector2(600, 330)
 
 [node name="Point03" type="Marker2D" parent="SpawnPoints/CheckpointSpawns" unique_id=1926693336]
-position = Vector2(830, 210)
+position = Vector2(830, 179)
 
 [node name="HazardSpawns" type="Node2D" parent="SpawnPoints" unique_id=1364334849]
 
@@ -84,7 +84,25 @@ position = Vector2(680, 420)
 position = Vector2(760, 270)
 
 [node name="Point04" type="Marker2D" parent="SpawnPoints/HazardSpawns" unique_id=1799242031]
-position = Vector2(910, 350)
+position = Vector2(887, 373)
+
+[node name="Point05" type="Marker2D" parent="SpawnPoints/HazardSpawns" unique_id=803588437]
+position = Vector2(534, 213)
+
+[node name="Point06" type="Marker2D" parent="SpawnPoints/HazardSpawns" unique_id=36726703]
+position = Vector2(731, 132)
+
+[node name="Point07" type="Marker2D" parent="SpawnPoints/HazardSpawns" unique_id=1494447010]
+position = Vector2(996, 236)
+
+[node name="Point08" type="Marker2D" parent="SpawnPoints/HazardSpawns" unique_id=1440352508]
+position = Vector2(703, 539)
+
+[node name="Point09" type="Marker2D" parent="SpawnPoints/HazardSpawns" unique_id=1909995951]
+position = Vector2(293, 347)
+
+[node name="Point10" type="Marker2D" parent="SpawnPoints/HazardSpawns" unique_id=131494446]
+position = Vector2(275, 194)
 
 [node name="DynamicObjects" type="Node2D" parent="." unique_id=1091248426]
 

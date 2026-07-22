@@ -22,9 +22,9 @@ public partial class ReachDestinationMissionController : Node
 	private const int DefaultMediumCheckpoints = 2;
 	private const int DefaultHardCheckpoints = 3;
 
-	private const int DefaultEasyHazards = 1;
-	private const int DefaultMediumHazards = 2;
-	private const int DefaultHardHazards = 4;
+	private const int DefaultEasyHazards = 2;
+	private const int DefaultMediumHazards = 4;
+	private const int DefaultHardHazards = 6;
 
 	private const int DefaultEasyMaxFailures = 4;
 	private const int DefaultMediumMaxFailures = 3;
@@ -76,6 +76,7 @@ public partial class ReachDestinationMissionController : Node
 	private Vector2 _lastSafePosition;
 	private string _objectiveText = string.Empty;
 	
+	private bool _isRecoveringFromHazard;
 
 	public MissionResult? Result { get; private set; }
 
@@ -168,6 +169,7 @@ public partial class ReachDestinationMissionController : Node
 		_failures = 0;
 		_elapsedTime = 0;
 		_missionFinished = false;
+		_isRecoveringFromHazard = false;
 
 		_objectiveText =
 			_requiredCheckpoints > 0
@@ -196,6 +198,10 @@ public partial class ReachDestinationMissionController : Node
 			0,
 			_requiredCheckpoints + 1,
 			"Route");
+			
+		_missionHud.SetAttempts(
+			_maxFailures,
+			_maxFailures);
 
 		_missionHud.SetVisibleState(true);
 		_resultPopup.HidePopup();
@@ -367,7 +373,15 @@ public partial class ReachDestinationMissionController : Node
 				.CreateTimer(0.75)
 				.Timeout +=
 					() =>
+					{
+						if (_missionFinished ||
+							!IsInstanceValid(_destination))
+						{
+							return;
+						}
+
 						_destination.SetEnabledState(true);
+					};
 
 			return;
 		}
@@ -382,16 +396,28 @@ public partial class ReachDestinationMissionController : Node
 
 	private void OnPlayerHit()
 	{
-		if (_missionFinished)
+		if (_missionFinished ||
+			_isRecoveringFromHazard)
 		{
 			return;
 		}
 
+		_isRecoveringFromHazard = true;
 		_failures++;
+
+		int remainingAttempts =
+			Mathf.Max(
+				0,
+				_maxFailures - _failures);
+
+		_missionHud.SetAttempts(
+			remainingAttempts,
+			_maxFailures);
 
 		GD.Print(
 			$"Falha registrada: " +
-			$"{_failures}/{_maxFailures}");
+			$"{_failures}/{_maxFailures}. " +
+			$"Tentativas restantes: {remainingAttempts}");
 
 		if (_failures >= _maxFailures)
 		{
@@ -399,11 +425,36 @@ public partial class ReachDestinationMissionController : Node
 			return;
 		}
 
+		_player.SetMovementEnabled(false);
+		_player.Velocity = Vector2.Zero;
+
+		/*
+		 * O reposicionamento é feito de forma adiada para o
+		 * personagem sair corretamente da área perigosa atual.
+		 */
+		CallDeferred(
+			MethodName.RecoverPlayerAfterHazard);
+	}
+
+	private async void RecoverPlayerAfterHazard()
+	{
 		_player.GlobalPosition =
 			_lastSafePosition;
 
 		_player.Velocity =
 			Vector2.Zero;
+
+		await ToSignal(
+			GetTree().CreateTimer(0.45),
+			SceneTreeTimer.SignalName.Timeout);
+
+		if (_missionFinished)
+		{
+			return;
+		}
+
+		_player.SetMovementEnabled(true);
+		_isRecoveringFromHazard = false;
 	}
 
 	private void FinishMission(bool success)
@@ -414,8 +465,40 @@ public partial class ReachDestinationMissionController : Node
 		}
 
 		_missionFinished = true;
+		_isRecoveringFromHazard = false;
 
 		_player.SetMovementEnabled(false);
+		_player.Velocity = Vector2.Zero;
+
+		/*
+		 * Desativa todos os elementos capazes de emitir sinais
+		 * após o encerramento da missão.
+		 */
+		foreach (HazardArea hazard in _activeHazards)
+		{
+			if (IsInstanceValid(hazard))
+			{
+				hazard.SetDeferred(
+					Area2D.PropertyName.Monitoring,
+					false);
+			}
+		}
+
+		foreach (CheckpointArea checkpoint in _activeCheckpoints)
+		{
+			if (IsInstanceValid(checkpoint))
+			{
+				checkpoint.SetDeferred(
+					Area2D.PropertyName.Monitoring,
+					false);
+			}
+		}
+
+		if (IsInstanceValid(_destination))
+		{
+			_destination.SetEnabledState(false);
+		}
+
 		_missionHud.SetVisibleState(false);
 
 		Result = new MissionResult
@@ -450,11 +533,8 @@ public partial class ReachDestinationMissionController : Node
 				"F2",
 				CultureInfo.InvariantCulture)}");
 
-		GD.Print(
-			$"Failures={Result.Failures}");
-
-		GD.Print(
-			$"Success={Result.Success}");
+		GD.Print($"Failures={Result.Failures}");
+		GD.Print($"Success={Result.Success}");
 	}
 
 	private void OnContinueRequested()
