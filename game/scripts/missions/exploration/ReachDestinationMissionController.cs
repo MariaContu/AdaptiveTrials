@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json;
+using System.Threading.Tasks;
 using AdaptiveTrials.Game.Components;
 using AdaptiveTrials.Game.Dto;
 using AdaptiveTrials.Game.Enums;
@@ -30,10 +31,6 @@ public partial class ReachDestinationMissionController : Node
 	private const int DefaultMediumMaxFailures = 3;
 	private const int DefaultHardMaxFailures = 2;
 
-	/*
-	 * A cena possui dez pontos possíveis para hazards.
-	 * Esse limite evita solicitar mais obstáculos do que o mapa suporta.
-	 */
 	private const int MaximumHazards = 10;
 
 	private static readonly PackedScene DestinationScene =
@@ -64,11 +61,11 @@ public partial class ReachDestinationMissionController : Node
 
 	private DestinationArea _destination = null!;
 
-	private readonly List<CheckpointArea> _activeCheckpoints =
-		new();
+	private readonly List<CheckpointArea>
+		_activeCheckpoints = new();
 
-	private readonly List<HazardArea> _activeHazards =
-		new();
+	private readonly List<HazardArea>
+		_activeHazards = new();
 
 	private MissionDto _mission = null!;
 
@@ -82,7 +79,9 @@ public partial class ReachDestinationMissionController : Node
 	private double _elapsedTime;
 
 	private bool _missionFinished;
+	private bool _isFinalizingMission;
 	private bool _isRecoveringFromHazard;
+	private bool _resultRegistered;
 
 	private Vector2 _lastSafePosition;
 	private string _objectiveText = string.Empty;
@@ -127,7 +126,8 @@ public partial class ReachDestinationMissionController : Node
 
 	public override void _Process(double delta)
 	{
-		if (_missionFinished)
+		if (_missionFinished ||
+			_isFinalizingMission)
 		{
 			return;
 		}
@@ -180,7 +180,9 @@ public partial class ReachDestinationMissionController : Node
 		_elapsedTime = 0;
 
 		_missionFinished = false;
+		_isFinalizingMission = false;
 		_isRecoveringFromHazard = false;
+		_resultRegistered = false;
 
 		Result = null;
 
@@ -205,7 +207,8 @@ public partial class ReachDestinationMissionController : Node
 		_player.SetVisualMode(
 			PlayerVisualMode.Normal);
 
-		_player.SetMovementEnabled(true);
+		_player.SetMovementEnabled(
+			true);
 
 		_missionHud.Configure(
 			_mission.Name,
@@ -222,7 +225,9 @@ public partial class ReachDestinationMissionController : Node
 			_maxFailures,
 			_maxFailures);
 
-		_missionHud.SetVisibleState(true);
+		_missionHud.SetVisibleState(
+			true);
+
 		_resultPopup.HidePopup();
 
 		SpawnCheckpoints();
@@ -286,10 +291,6 @@ public partial class ReachDestinationMissionController : Node
 			checkpoint.CheckpointReached +=
 				OnCheckpointReached;
 
-			/*
-			 * O nó é adicionado antes da posição global ser
-			 * configurada para evitar transformação incorreta.
-			 */
 			_dynamicObjects.AddChild(
 				checkpoint);
 
@@ -323,10 +324,6 @@ public partial class ReachDestinationMissionController : Node
 			return;
 		}
 
-		/*
-		 * Os dez pontos são embaralhados para que as posições
-		 * utilizadas possam variar entre execuções.
-		 */
 		Shuffle(spawnPoints);
 
 		for (int index = 0;
@@ -379,7 +376,8 @@ public partial class ReachDestinationMissionController : Node
 	private void OnCheckpointReached(
 		CheckpointArea checkpoint)
 	{
-		if (_missionFinished)
+		if (_missionFinished ||
+			_isFinalizingMission)
 		{
 			return;
 		}
@@ -402,7 +400,8 @@ public partial class ReachDestinationMissionController : Node
 
 	private void OnDestinationReached()
 	{
-		if (_missionFinished)
+		if (_missionFinished ||
+			_isFinalizingMission)
 		{
 			return;
 		}
@@ -422,6 +421,7 @@ public partial class ReachDestinationMissionController : Node
 					() =>
 					{
 						if (_missionFinished ||
+							_isFinalizingMission ||
 							!IsInstanceValid(
 								_destination))
 						{
@@ -440,13 +440,14 @@ public partial class ReachDestinationMissionController : Node
 			_requiredCheckpoints + 1,
 			"Route");
 
-		FinishMission(
+		_ = FinishMissionAsync(
 			success: true);
 	}
 
 	private void OnPlayerHit()
 	{
 		if (_missionFinished ||
+			_isFinalizingMission ||
 			_isRecoveringFromHazard)
 		{
 			return;
@@ -473,7 +474,7 @@ public partial class ReachDestinationMissionController : Node
 		if (_failures >=
 			_maxFailures)
 		{
-			FinishMission(
+			_ = FinishMissionAsync(
 				success: false);
 
 			return;
@@ -485,10 +486,6 @@ public partial class ReachDestinationMissionController : Node
 		_player.Velocity =
 			Vector2.Zero;
 
-		/*
-		 * O reposicionamento adiado evita que o jogador
-		 * continue sobre a área perigosa.
-		 */
 		CallDeferred(
 			MethodName.RecoverPlayerAfterHazard);
 	}
@@ -505,7 +502,8 @@ public partial class ReachDestinationMissionController : Node
 			GetTree().CreateTimer(0.45),
 			SceneTreeTimer.SignalName.Timeout);
 
-		if (_missionFinished)
+		if (_missionFinished ||
+			_isFinalizingMission)
 		{
 			return;
 		}
@@ -517,15 +515,16 @@ public partial class ReachDestinationMissionController : Node
 			false;
 	}
 
-	private void FinishMission(
+	private async Task FinishMissionAsync(
 		bool success)
 	{
-		if (_missionFinished)
+		if (_missionFinished ||
+			_isFinalizingMission)
 		{
 			return;
 		}
 
-		_missionFinished = true;
+		_isFinalizingMission = true;
 		_isRecoveringFromHazard = false;
 
 		_player.SetMovementEnabled(
@@ -534,6 +533,62 @@ public partial class ReachDestinationMissionController : Node
 		_player.Velocity =
 			Vector2.Zero;
 
+		DisableMissionAreas();
+
+		_missionHud.SetVisibleState(
+			false);
+
+		Result = new MissionResult
+		{
+			MissionId =
+				_mission.Id,
+
+			CompletionTime =
+				_elapsedTime,
+
+			Failures =
+				_failures,
+
+			Success =
+				success,
+
+			Persistence =
+				CalculatePersistence(
+					_failures)
+		};
+
+		_resultRegistered =
+			await _sessionManager
+				.RegisterCurrentMissionResultAsync(
+					Result);
+
+		_missionFinished = true;
+		_isFinalizingMission = false;
+
+		string statisticValue =
+			$"{_reachedCheckpoints}/" +
+			$"{_requiredCheckpoints}";
+
+		_resultPopup.ShowResult(
+			success: success,
+			missionName: _mission.Name,
+			objective: _objectiveText,
+			completionTime: _elapsedTime,
+			statisticTitle:
+				"Checkpoints Reached",
+			statisticValue:
+				statisticValue,
+			difficulty:
+				GetDifficultyText(
+					_mission.Difficulty),
+			failures:
+				_failures);
+
+		PrintMissionResult();
+	}
+
+	private void DisableMissionAreas()
+	{
 		foreach (HazardArea hazard
 				 in _activeHazards)
 		{
@@ -561,42 +616,54 @@ public partial class ReachDestinationMissionController : Node
 			_destination.SetEnabledState(
 				false);
 		}
+	}
 
-		_missionHud.SetVisibleState(
-			false);
-
-		Result = new MissionResult
+	private void OnContinueRequested()
+	{
+		if (!_missionFinished ||
+			Result is null)
 		{
-			MissionId =
-				_mission.Id,
+			return;
+		}
 
-			CompletionTime =
-				_elapsedTime,
+		if (!_resultRegistered)
+		{
+			GD.PushError(
+				"O evento comportamental não foi " +
+				"registrado. Não é possível avançar.");
 
-			Failures =
-				_failures,
+			return;
+		}
 
-			Success =
-				success
-		};
+		if (_sessionManager.IsLastMission)
+		{
+			GD.Print(
+				"Última missão concluída. " +
+				"A sessão pode ser encerrada.");
 
-		string statisticValue =
-			$"{_reachedCheckpoints}/" +
-			$"{_requiredCheckpoints}";
+			return;
+		}
 
-		_resultPopup.ShowResult(
-			success: success,
-			missionName: _mission.Name,
-			objective: _objectiveText,
-			completionTime: _elapsedTime,
-			statisticTitle:
-				"Checkpoints Reached",
-			statisticValue:
-				statisticValue,
-			difficulty:
-				GetDifficultyText(
-					_mission.Difficulty),
-			failures: _failures);
+		if (!_sessionManager.TryAdvanceToNextMission())
+		{
+			GD.PushError(
+				"Não foi possível avançar para " +
+				"a próxima missão.");
+
+			return;
+		}
+
+		GD.Print(
+			"Evento registrado. Próxima missão: " +
+			$"{_sessionManager.CurrentMission?.Name}");
+	}
+
+	private void PrintMissionResult()
+	{
+		if (Result is null)
+		{
+			return;
+		}
 
 		GD.Print(
 			"Resultado da missão:");
@@ -615,19 +682,16 @@ public partial class ReachDestinationMissionController : Node
 
 		GD.Print(
 			$"Success={Result.Success}");
-	}
-
-	private void OnContinueRequested()
-	{
-		if (!_missionFinished ||
-			Result is null)
-		{
-			return;
-		}
 
 		GD.Print(
-			"Resultado confirmado. " +
-			"Preparando avanço da sessão.");
+			$"Persistence=" +
+			$"{Result.Persistence.ToString(
+				"F2",
+				CultureInfo.InvariantCulture)}");
+
+		GD.Print(
+			$"EventRegistered=" +
+			$"{_resultRegistered}");
 	}
 
 	private void ReadConfiguration()
@@ -657,10 +721,6 @@ public partial class ReachDestinationMissionController : Node
 				JsonElement root =
 					document.RootElement;
 
-				/*
-				 * Checkpoints e tentativas continuam sendo
-				 * configuráveis pelo catálogo da API.
-				 */
 				_requiredCheckpoints =
 					ReadPositiveInteger(
 						root,
@@ -673,11 +733,6 @@ public partial class ReachDestinationMissionController : Node
 						"maxFailures",
 						_maxFailures);
 
-				/*
-				 * O valor da API pode aumentar a quantidade
-				 * de hazards, mas não pode reduzir o mínimo
-				 * previsto para a dificuldade atual.
-				 */
 				int apiHazards =
 					ReadPositiveInteger(
 						root,
@@ -715,6 +770,7 @@ public partial class ReachDestinationMissionController : Node
 		string message)
 	{
 		_missionFinished = true;
+		_isFinalizingMission = false;
 		_isRecoveringFromHazard = false;
 
 		if (_player is not null)
@@ -750,6 +806,15 @@ public partial class ReachDestinationMissionController : Node
 		}
 
 		GD.PushError(message);
+	}
+
+	private static double CalculatePersistence(
+		int failures)
+	{
+		return Math.Clamp(
+			1.0 - failures * 0.2,
+			0,
+			1);
 	}
 
 	private static int ReadPositiveInteger(

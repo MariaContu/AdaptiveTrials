@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json;
+using System.Threading.Tasks;
 using AdaptiveTrials.Game.Components;
 using AdaptiveTrials.Game.Dto;
 using AdaptiveTrials.Game.Enums;
@@ -41,7 +42,10 @@ public partial class FindObjectsMissionController : Node
 	private int _failures;
 
 	private double _elapsedTime;
+
 	private bool _missionFinished;
+	private bool _isFinalizingMission;
+	private bool _resultRegistered;
 
 	private string _objectiveText = string.Empty;
 
@@ -52,7 +56,8 @@ public partial class FindObjectsMissionController : Node
 		GetReferences();
 
 		_sessionManager =
-			GetNode<SessionManager>("/root/SessionManager");
+			GetNode<SessionManager>(
+				"/root/SessionManager");
 
 		_resultPopup.ContinueRequested +=
 			OnContinueRequested;
@@ -79,21 +84,24 @@ public partial class FindObjectsMissionController : Node
 		}
 
 		_requiredItems =
-			ReadRequiredItems(_mission.ParametersJson);
+			ReadRequiredItems(
+				_mission.ParametersJson);
 
 		ConfigureMission();
 	}
 
 	public override void _Process(double delta)
 	{
-		if (_missionFinished)
+		if (_missionFinished ||
+			_isFinalizingMission)
 		{
 			return;
 		}
 
 		_elapsedTime += delta;
 
-		_missionHud.SetElapsedTime(_elapsedTime);
+		_missionHud.SetElapsedTime(
+			_elapsedTime);
 	}
 
 	private void GetReferences()
@@ -116,7 +124,8 @@ public partial class FindObjectsMissionController : Node
 
 		_spawnPointsContainer =
 			GetNode<Node2D>(
-				"../SpawnPoints/CollectibleSpawnPoints");
+				"../SpawnPoints/" +
+				"CollectibleSpawnPoints");
 
 		_playerSpawn =
 			GetNode<Marker2D>(
@@ -128,7 +137,12 @@ public partial class FindObjectsMissionController : Node
 		_collectedItems = 0;
 		_failures = 0;
 		_elapsedTime = 0;
+
 		_missionFinished = false;
+		_isFinalizingMission = false;
+		_resultRegistered = false;
+
+		Result = null;
 
 		_objectiveText =
 			$"Find and collect {_requiredItems} objects " +
@@ -137,10 +151,14 @@ public partial class FindObjectsMissionController : Node
 		_player.GlobalPosition =
 			_playerSpawn.GlobalPosition;
 
+		_player.Velocity =
+			Vector2.Zero;
+
 		_player.SetVisualMode(
 			PlayerVisualMode.Normal);
 
-		_player.SetMovementEnabled(true);
+		_player.SetMovementEnabled(
+			true);
 
 		_missionHud.Configure(
 			_mission.Name,
@@ -153,7 +171,12 @@ public partial class FindObjectsMissionController : Node
 			_requiredItems,
 			"Objects");
 
-		_missionHud.SetVisibleState(true);
+		_missionHud.SetAttemptsVisible(
+			false);
+
+		_missionHud.SetVisibleState(
+			true);
+
 		_resultPopup.HidePopup();
 
 		SpawnCollectibles();
@@ -173,7 +196,8 @@ public partial class FindObjectsMissionController : Node
 				.OfType<Marker2D>()
 				.ToList();
 
-		if (spawnPoints.Count < _requiredItems)
+		if (spawnPoints.Count <
+			_requiredItems)
 		{
 			ShowInitializationError(
 				$"The map contains {spawnPoints.Count} " +
@@ -199,20 +223,22 @@ public partial class FindObjectsMissionController : Node
 			collectible.Name =
 				$"Collectible{index + 1:00}";
 
-			collectible.GlobalPosition =
-				spawnPoint.GlobalPosition;
-
 			collectible.Collected +=
 				OnCollectibleCollected;
 
-			_dynamicObjects.AddChild(collectible);
+			_dynamicObjects.AddChild(
+				collectible);
+
+			collectible.GlobalPosition =
+				spawnPoint.GlobalPosition;
 		}
 	}
 
 	private void OnCollectibleCollected(
 		CollectibleObject collectible)
 	{
-		if (_missionFinished)
+		if (_missionFinished ||
+			_isFinalizingMission)
 		{
 			return;
 		}
@@ -226,48 +252,133 @@ public partial class FindObjectsMissionController : Node
 
 		GD.Print(
 			$"Progresso: " +
-			$"{_collectedItems}/{_requiredItems}");
+			$"{_collectedItems}/" +
+			$"{_requiredItems}");
 
-		if (_collectedItems >= _requiredItems)
+		if (_collectedItems >=
+			_requiredItems)
 		{
-			CompleteMission();
+			_ = CompleteMissionAsync();
 		}
 	}
 
-	private void CompleteMission()
+	private async Task CompleteMissionAsync()
 	{
-		if (_missionFinished)
+		if (_missionFinished ||
+			_isFinalizingMission)
 		{
 			return;
 		}
 
-		_missionFinished = true;
+		_isFinalizingMission = true;
 
-		_player.SetMovementEnabled(false);
-		_missionHud.SetVisibleState(false);
+		_player.SetMovementEnabled(
+			false);
+
+		_player.Velocity =
+			Vector2.Zero;
 
 		Result = new MissionResult
 		{
-			MissionId = _mission.Id,
-			CompletionTime = _elapsedTime,
-			Failures = _failures,
-			Success = true
+			MissionId =
+				_mission.Id,
+
+			CompletionTime =
+				_elapsedTime,
+
+			Failures =
+				_failures,
+
+			Success =
+				true,
+
+			Persistence =
+				CalculatePersistence(
+					_failures)
 		};
+
+		_resultRegistered =
+			await _sessionManager
+				.RegisterCurrentMissionResultAsync(
+					Result);
+
+		_missionFinished = true;
+		_isFinalizingMission = false;
+
+		_missionHud.SetVisibleState(
+			false);
 
 		_resultPopup.ShowResult(
 			success: true,
 			missionName: _mission.Name,
 			objective: _objectiveText,
 			completionTime: _elapsedTime,
-			statisticTitle: "Objects Collected",
+			statisticTitle:
+				"Objects Collected",
 			statisticValue:
-				$"{_collectedItems}/{_requiredItems}",
+				$"{_collectedItems}/" +
+				$"{_requiredItems}",
 			difficulty:
-				GetDifficultyText(_mission.Difficulty),
-			failures: _failures);
+				GetDifficultyText(
+					_mission.Difficulty),
+			failures:
+				_failures);
 
-		GD.Print("Resultado da missão:");
-		GD.Print($"MissionId={Result.MissionId}");
+		PrintMissionResult();
+	}
+
+	private void OnContinueRequested()
+	{
+		if (!_missionFinished ||
+			Result is null)
+		{
+			return;
+		}
+
+		if (!_resultRegistered)
+		{
+			GD.PushError(
+				"O evento comportamental não foi " +
+				"registrado. Não é possível avançar.");
+
+			return;
+		}
+
+		if (_sessionManager.IsLastMission)
+		{
+			GD.Print(
+				"Última missão concluída. " +
+				"A sessão pode ser encerrada.");
+
+			return;
+		}
+
+		if (!_sessionManager.TryAdvanceToNextMission())
+		{
+			GD.PushError(
+				"Não foi possível avançar para " +
+				"a próxima missão.");
+
+			return;
+		}
+
+		GD.Print(
+			"Evento registrado. Próxima missão: " +
+			$"{_sessionManager.CurrentMission?.Name}");
+	}
+
+	private void PrintMissionResult()
+	{
+		if (Result is null)
+		{
+			return;
+		}
+
+		GD.Print(
+			"Resultado da missão:");
+
+		GD.Print(
+			$"MissionId={Result.MissionId}");
 
 		GD.Print(
 			$"CompletionTime=" +
@@ -275,55 +386,57 @@ public partial class FindObjectsMissionController : Node
 				"F2",
 				CultureInfo.InvariantCulture)}");
 
-		GD.Print($"Failures={Result.Failures}");
-		GD.Print($"Success={Result.Success}");
-	}
-
-	private void OnContinueRequested()
-	{
-		if (!_missionFinished || Result is null)
-		{
-			return;
-		}
+		GD.Print(
+			$"Failures={Result.Failures}");
 
 		GD.Print(
-			"Resultado confirmado. " +
-			"Preparando avanço da sessão.");
+			$"Success={Result.Success}");
 
-		/*
-		 * Nesta issue, apenas confirmamos o resultado.
-		 *
-		 * Na próxima etapa, este ponto:
-		 * 1. armazenará o resultado no SessionManager;
-		 * 2. enviará o evento comportamental;
-		 * 3. avançará para a próxima missão;
-		 * 4. abrirá a tela de transição.
-		 */
+		GD.Print(
+			$"Persistence=" +
+			$"{Result.Persistence.ToString(
+				"F2",
+				CultureInfo.InvariantCulture)}");
+
+		GD.Print(
+			$"EventRegistered=" +
+			$"{_resultRegistered}");
 	}
 
-	private void ShowInitializationError(string message)
+	private void ShowInitializationError(
+		string message)
 	{
 		_missionFinished = true;
+		_isFinalizingMission = false;
 
 		if (_player is not null)
 		{
-			_player.SetMovementEnabled(false);
+			_player.SetMovementEnabled(
+				false);
+
+			_player.Velocity =
+				Vector2.Zero;
 		}
 
 		if (_missionHud is not null)
 		{
-			_missionHud.SetVisibleState(false);
+			_missionHud.SetVisibleState(
+				false);
 		}
 
 		if (_resultPopup is not null)
 		{
 			_resultPopup.ShowResult(
 				success: false,
-				missionName: "Mission unavailable",
-				objective: message,
+				missionName:
+					"Mission unavailable",
+				objective:
+					message,
 				completionTime: 0,
-				statisticTitle: "Status",
-				statisticValue: "Initialization error",
+				statisticTitle:
+					"Status",
+				statisticValue:
+					"Initialization error",
 				difficulty: "-",
 				failures: 0);
 		}
@@ -331,10 +444,20 @@ public partial class FindObjectsMissionController : Node
 		GD.PushError(message);
 	}
 
+	private static double CalculatePersistence(
+		int failures)
+	{
+		return Math.Clamp(
+			1.0 - failures * 0.2,
+			0,
+			1);
+	}
+
 	private static int ReadRequiredItems(
 		string parametersJson)
 	{
-		if (string.IsNullOrWhiteSpace(parametersJson))
+		if (string.IsNullOrWhiteSpace(
+				parametersJson))
 		{
 			return DefaultRequiredItems;
 		}
@@ -342,7 +465,8 @@ public partial class FindObjectsMissionController : Node
 		try
 		{
 			using JsonDocument document =
-				JsonDocument.Parse(parametersJson);
+				JsonDocument.Parse(
+					parametersJson);
 
 			JsonElement root =
 				document.RootElement;
@@ -353,10 +477,11 @@ public partial class FindObjectsMissionController : Node
 				"itemCount",
 				"objects",
 				"objectCount",
-                "requiredItems"
+				"requiredItems"
 			};
 
-			foreach (string propertyName in possibleNames)
+			foreach (string propertyName
+					 in possibleNames)
 			{
 				if (!root.TryGetProperty(
 						propertyName,
@@ -365,7 +490,8 @@ public partial class FindObjectsMissionController : Node
 					continue;
 				}
 
-				if (value.TryGetInt32(out int amount) &&
+				if (value.TryGetInt32(
+						out int amount) &&
 					amount > 0)
 				{
 					return amount;
@@ -382,7 +508,8 @@ public partial class FindObjectsMissionController : Node
 		return DefaultRequiredItems;
 	}
 
-	private static string GetDifficultyText(int difficulty)
+	private static string GetDifficultyText(
+		int difficulty)
 	{
 		return difficulty switch
 		{
@@ -393,14 +520,17 @@ public partial class FindObjectsMissionController : Node
 		};
 	}
 
-	private static void Shuffle<T>(IList<T> values)
+	private static void Shuffle<T>(
+		IList<T> values)
 	{
 		for (int index = values.Count - 1;
 			 index > 0;
 			 index--)
 		{
 			int swapIndex =
-				GD.RandRange(0, index);
+				GD.RandRange(
+					0,
+					index);
 
 			(values[index], values[swapIndex]) =
 				(values[swapIndex], values[index]);
