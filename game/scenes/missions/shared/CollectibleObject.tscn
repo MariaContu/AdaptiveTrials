@@ -1,0 +1,19 @@
+[gd_scene format=3 uid="uid://dn5sn33keh8ov"]
+
+[ext_resource type="Script" uid="uid://qhskyw4o4str" path="res://scripts/missions/shared/CollectibleObject.cs" id="1_06vjh"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_x1cdp"]
+radius = 24.0
+
+[node name="CollectibleObject" type="Area2D" unique_id=1288252980]
+collision_layer = 2
+collision_mask = 0
+script = ExtResource("1_06vjh")
+
+[node name="Visual" type="Polygon2D" parent="." unique_id=184930803]
+polygon = PackedVector2Array(0, -22, 16, 0, 0, 22, -16, 0)
+
+[node name="Glow" type="PointLight2D" parent="." unique_id=248694627]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=2084934479]
+shape = SubResource("CircleShape2D_x1cdp")

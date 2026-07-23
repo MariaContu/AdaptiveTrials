@@ -143,37 +143,93 @@ public partial class MissionTransitionController : Node
 	}
 
 	private void OnStartMissionPressed()
+{
+	MissionDto? mission =
+		_sessionManager.CurrentMission;
+
+	if (mission is null)
 	{
-		MissionDto? mission =
-			_sessionManager.CurrentMission;
+		ShowBlockingError(
+			"The mission could not be started.");
 
-		if (mission is null)
-		{
-			ShowBlockingError(
-				"The mission could not be started.");
+		return;
+	}
 
-			return;
-		}
+	_startMissionButton.Disabled = true;
 
-		_startMissionButton.Disabled = true;
+	_statusLabel.Text =
+		"Preparing mission...";
 
+	string? scenePath =
+		ResolveMissionScene(mission);
+
+	if (scenePath is null)
+	{
 		_statusLabel.Text =
-			"Preparing mission...";
+			"This mission template has not been implemented yet.";
 
-		GD.Print(
-			$"Iniciando missão {mission.Id}: " +
-			$"{mission.Name} | " +
-			$"{mission.Type} | " +
+		_startMissionButton.Disabled = false;
+
+		GD.PushWarning(
+			$"Template sem cena implementada: " +
 			$"{mission.Template}");
 
-		/*
-		 * Na próxima etapa, este ponto carregará:
-		 *
-		 * Combat      -> cena de combate
-		 * Exploration -> cena de exploração
-		 * Puzzle      -> cena de quebra-cabeça
-		 */
+		return;
 	}
+
+	Error navigationError =
+		GetTree().ChangeSceneToFile(scenePath);
+
+	if (navigationError != Error.Ok)
+	{
+		_statusLabel.Text =
+			"The mission could not be opened.";
+
+		_startMissionButton.Disabled = false;
+
+		GD.PushError(
+			$"Erro ao abrir missão: " +
+			$"{navigationError}");
+	}
+}
+
+private static string? ResolveMissionScene(
+	MissionDto mission)
+{
+	string normalizedTemplate =
+		mission.Template
+			.Trim()
+			.ToLowerInvariant();
+
+	return normalizedTemplate switch
+	{
+		"encontrar objetos" =>
+			"res://scenes/missions/exploration/" +
+			"FindObjectsMission.tscn",
+
+		"find objects" =>
+			"res://scenes/missions/exploration/" +
+			"FindObjectsMission.tscn",
+
+		"chegar ao destino" =>
+			"res://scenes/missions/exploration/" +
+			"ReachDestinationMission.tscn",
+
+		"reach destination" =>
+			"res://scenes/missions/exploration/" +
+			"ReachDestinationMission.tscn",
+			
+		"evitar inimigos" =>
+			"res://scenes/missions/exploration/" +
+			"AvoidEnemiesMission.tscn",
+
+		"avoid enemies" =>
+			"res://scenes/missions/exploration/" +
+			"AvoidEnemiesMission.tscn",
+
+		_ => null
+	};
+}
 
 	private void OnSettingsPressed()
 	{

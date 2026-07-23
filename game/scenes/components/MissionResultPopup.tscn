@@ -1,0 +1,196 @@
+[gd_scene format=3 uid="uid://c8uypusmn28mx"]
+
+[ext_resource type="Script" uid="uid://c8ujbgun0h76h" path="res://scripts/components/MissionResultPopup.cs" id="1_c4lua"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_64xp1"]
+bg_color = Color(0.84313726, 0.8901961, 0.87058824, 1)
+border_width_left = 8
+border_width_top = 8
+border_width_right = 8
+border_width_bottom = 8
+border_color = Color(0.5568628, 0.7254902, 0.62352943, 1)
+corner_radius_top_left = 24
+corner_radius_top_right = 24
+corner_radius_bottom_right = 24
+corner_radius_bottom_left = 24
+shadow_color = Color(0, 0, 0, 0.14509805)
+shadow_size = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_x1cdp"]
+bg_color = Color(0.5803922, 0.7294118, 0.6431373, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.42352942, 0.6117647, 0.5058824, 1)
+corner_radius_top_left = 24
+corner_radius_top_right = 24
+corner_radius_bottom_right = 24
+corner_radius_bottom_left = 24
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_5n14n"]
+bg_color = Color(0.49019608, 0.6392157, 0.5529412, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.42352942, 0.6117647, 0.5058824, 1)
+corner_radius_top_left = 24
+corner_radius_top_right = 24
+corner_radius_bottom_right = 24
+corner_radius_bottom_left = 24
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_euaam"]
+bg_color = Color(0.65882355, 0.8, 0.7176471, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.3019608, 0.5019608, 0.39215687, 1)
+corner_radius_top_left = 24
+corner_radius_top_right = 24
+corner_radius_bottom_right = 24
+corner_radius_bottom_left = 24
+
+[node name="MissionResultPopup" type="CanvasLayer" unique_id=1311010905]
+script = ExtResource("1_c4lua")
+
+[node name="Overlay" type="ColorRect" parent="." unique_id=1619028526]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.11372549, 0.09411765, 0.1254902, 0.6509804)
+
+[node name="CenterContainer" type="CenterContainer" parent="Overlay" unique_id=788496249]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ResultPanel" type="PanelContainer" parent="Overlay/CenterContainer" unique_id=601368629]
+custom_minimum_size = Vector2(520, 430)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_64xp1")
+
+[node name="ResultMargin" type="MarginContainer" parent="Overlay/CenterContainer/ResultPanel" unique_id=1809198095]
+layout_mode = 2
+theme_override_constants/margin_left = 34
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 34
+theme_override_constants/margin_bottom = 24
+
+[node name="ResultContent" type="VBoxContainer" parent="Overlay/CenterContainer/ResultPanel/ResultMargin" unique_id=1721539857]
+layout_mode = 2
+theme_override_constants/separation = 13
+
+[node name="ResultTitleLabel" type="Label" parent="Overlay/CenterContainer/ResultPanel/ResultMargin/ResultContent" unique_id=1147262103]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.02745098, 0.3254902, 0.10980392, 1)
+theme_override_font_sizes/font_size = 34
+text = "SUCCESS"
+horizontal_alignment = 1
+
+[node name="MissionNameLabel" type="Label" parent="Overlay/CenterContainer/ResultPanel/ResultMargin/ResultContent" unique_id=1866267126]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.14117648, 0.21568628, 0.17254902, 1)
+theme_override_font_sizes/font_size = 20
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="Separator" type="HSeparator" parent="Overlay/CenterContainer/ResultPanel/ResultMargin/ResultContent" unique_id=1651640005]
+layout_mode = 2
+
+[node name="ObjectiveTitleLabel" type="Label" parent="Overlay/CenterContainer/ResultPanel/ResultMargin/ResultContent" unique_id=1388533311]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3254902, 0.4392157, 0.3764706, 1)
+theme_override_font_sizes/font_size = 14
+text = "Objective"
+
+[node name="ObjectiveLabel" type="Label" parent="Overlay/CenterContainer/ResultPanel/ResultMargin/ResultContent" unique_id=1098361909]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.14117648, 0.21568628, 0.17254902, 1)
+theme_override_font_sizes/font_size = 15
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="StatisticsGrid" type="GridContainer" parent="Overlay/CenterContainer/ResultPanel/ResultMargin/ResultContent" unique_id=527099878]
+layout_mode = 2
+theme_override_constants/h_separation = 35
+theme_override_constants/v_separation = 14
+columns = 2
+
+[node name="TimeTitleLabel" type="Label" parent="Overlay/CenterContainer/ResultPanel/ResultMargin/ResultContent/StatisticsGrid" unique_id=1225166941]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.12941177, 0.26666668, 0.18039216, 1)
+theme_override_font_sizes/font_size = 0
+text = "Time Spent"
+
+[node name="TimeValueLabel" type="Label" parent="Overlay/CenterContainer/ResultPanel/ResultMargin/ResultContent/StatisticsGrid" unique_id=2118138660]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.02745098, 0.3254902, 0.10980392, 1)
+theme_override_font_sizes/font_size = 0
+text = "00:00"
+horizontal_alignment = 2
+
+[node name="StatisticTitleLabel" type="Label" parent="Overlay/CenterContainer/ResultPanel/ResultMargin/ResultContent/StatisticsGrid" unique_id=2068677606]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.12941177, 0.26666668, 0.18039216, 1)
+theme_override_font_sizes/font_size = 0
+text = "Basic Statistic"
+
+[node name="StatisticValueLabel" type="Label" parent="Overlay/CenterContainer/ResultPanel/ResultMargin/ResultContent/StatisticsGrid" unique_id=510724909]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.02745098, 0.3254902, 0.10980392, 1)
+theme_override_font_sizes/font_size = 0
+text = "0/0"
+horizontal_alignment = 2
+
+[node name="DifficultyTitleLabel" type="Label" parent="Overlay/CenterContainer/ResultPanel/ResultMargin/ResultContent/StatisticsGrid" unique_id=304050894]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.12941177, 0.26666668, 0.18039216, 1)
+theme_override_font_sizes/font_size = 0
+text = "Difficulty"
+
+[node name="DifficultyValueLabel" type="Label" parent="Overlay/CenterContainer/ResultPanel/ResultMargin/ResultContent/StatisticsGrid" unique_id=637717324]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.02745098, 0.3254902, 0.10980392, 1)
+theme_override_font_sizes/font_size = 0
+text = "Easy"
+horizontal_alignment = 2
+
+[node name="FailuresTitleLabel" type="Label" parent="Overlay/CenterContainer/ResultPanel/ResultMargin/ResultContent/StatisticsGrid" unique_id=205086980]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.12941177, 0.26666668, 0.18039216, 1)
+theme_override_font_sizes/font_size = 0
+text = "Failures"
+
+[node name="FailuresValueLabel" type="Label" parent="Overlay/CenterContainer/ResultPanel/ResultMargin/ResultContent/StatisticsGrid" unique_id=2065254861]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.02745098, 0.3254902, 0.10980392, 1)
+theme_override_font_sizes/font_size = 0
+text = "0"
+horizontal_alignment = 2
+
+[node name="ContinueCenter" type="CenterContainer" parent="Overlay/CenterContainer/ResultPanel/ResultMargin/ResultContent" unique_id=1764560509]
+layout_mode = 2
+
+[node name="ContinueButton" type="Button" parent="Overlay/CenterContainer/ResultPanel/ResultMargin/ResultContent/ContinueCenter" unique_id=916457421]
+custom_minimum_size = Vector2(190, 52)
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_x1cdp")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_5n14n")
+theme_override_styles/hover = SubResource("StyleBoxFlat_euaam")
+text = "LET'S GO"

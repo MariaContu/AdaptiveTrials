@@ -374,7 +374,12 @@ height = 52.0
 [sub_resource type="CircleShape2D" id="CircleShape2D_wr5hl"]
 radius = 55.0
 
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_4kuee"]
+radius = 20.0
+height = 120.0
+
 [node name="Player" type="CharacterBody2D" unique_id=632016709]
+scale = Vector2(0.8, 0.8)
 script = ExtResource("1_4kuee")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1190335669]
@@ -396,6 +401,15 @@ monitorable = false
 [node name="CollisionShape2D" type="CollisionShape2D" parent="InteractionArea" unique_id=1428464016]
 position = Vector2(0, 4)
 shape = SubResource("CircleShape2D_wr5hl")
+
+[node name="DetectionHitbox" type="Area2D" parent="." unique_id=2117049826]
+collision_layer = 2
+collision_mask = 0
+monitoring = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="DetectionHitbox" unique_id=1380997479]
+position = Vector2(-1.25, -46.25)
+shape = SubResource("CapsuleShape2D_4kuee")
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=895592923]
 position_smoothing_enabled = true

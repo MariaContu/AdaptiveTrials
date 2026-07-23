@@ -187,6 +187,28 @@ public async Task<ApiResult<CreateSessionResponse>> CreateSessionAsync(
 	}
 }
 
+/// <summary>
+/// Registra o resultado comportamental de uma missão.
+/// </summary>
+public Task<ApiResult<bool>> RegisterSessionEventAsync(
+	int sessionId,
+	RegisterSessionEventRequest eventRequest)
+{
+	if (sessionId <= 0)
+	{
+		return Task.FromResult(
+			ApiResult<bool>.Failure(
+				"O identificador da sessão é inválido."));
+	}
+
+	ArgumentNullException.ThrowIfNull(eventRequest);
+
+	return SendWithoutResponseAsync(
+		HttpClient.Method.Post,
+		$"/api/sessions/{sessionId}/events",
+		eventRequest);
+}
+
 	/// <summary>
 	/// Realiza uma chamada HTTP e converte a resposta para o tipo esperado.
 	/// </summary>
@@ -383,6 +405,151 @@ public async Task<ApiResult<CreateSessionResponse>> CreateSessionAsync(
 				statusCode);
 		}
 	}
+	
+	/// <summary>
+/// Realiza uma chamada para endpoints que podem responder
+/// sem um corpo JSON.
+/// </summary>
+private async Task<ApiResult<bool>> SendWithoutResponseAsync(
+	HttpClient.Method method,
+	string endpoint,
+	object? requestBody = null)
+{
+	string url =
+		$"{_settings.GetNormalizedBaseUrl()}{endpoint}";
+
+	HttpRequest request = new()
+	{
+		Timeout = _settings.TimeoutSeconds
+	};
+
+	AddChild(request);
+
+	string[] headers =
+	{
+		"Content-Type: application/json",
+		"Accept: application/json"
+	};
+
+	string serializedBody =
+		requestBody is null
+			? string.Empty
+			: JsonSerializer.Serialize(
+				requestBody,
+				_jsonOptions);
+
+	GD.Print(
+		$"Enviando {method} para: {url}");
+
+	if (!string.IsNullOrWhiteSpace(serializedBody))
+	{
+		GD.Print(
+			$"Payload enviado: {serializedBody}");
+	}
+
+	Error requestError =
+		request.Request(
+			url,
+			headers,
+			method,
+			serializedBody);
+
+	if (requestError != Error.Ok)
+	{
+		request.QueueFree();
+
+		string message =
+			$"A requisição não pôde ser iniciada. " +
+			$"Erro interno: {requestError}.";
+
+		GD.PushError(message);
+
+		return ApiResult<bool>.Failure(message);
+	}
+
+	Variant[] response;
+
+	try
+	{
+		response = await ToSignal(
+			request,
+			HttpRequest.SignalName.RequestCompleted);
+	}
+	catch (Exception exception)
+	{
+		request.QueueFree();
+
+		const string message =
+			"Ocorreu um erro ao aguardar a resposta da API.";
+
+		GD.PushError(
+			$"{message} Detalhes: {exception}");
+
+		return ApiResult<bool>.Failure(message);
+	}
+
+	request.QueueFree();
+
+	HttpRequest.Result result =
+		(HttpRequest.Result)response[0].AsInt32();
+
+	int statusCode =
+		response[1].AsInt32();
+
+	byte[] responseBodyBytes =
+		response[3].AsByteArray();
+
+	string responseBody =
+		Encoding.UTF8.GetString(
+			responseBodyBytes);
+
+	GD.Print(
+		$"Resposta da API: " +
+		$"result={result}, status={statusCode}");
+
+	if (!string.IsNullOrWhiteSpace(responseBody))
+	{
+		GD.Print(
+			$"Corpo recebido: {responseBody}");
+	}
+
+	if (result != HttpRequest.Result.Success)
+	{
+		string message =
+			GetRequestErrorMessage(result);
+
+		GD.PushError(
+			$"{message} Endpoint: {url}. " +
+			$"Código interno: {result}");
+
+		return ApiResult<bool>.Failure(
+			message,
+			statusCode > 0
+				? statusCode
+				: null);
+	}
+
+	if (statusCode < 200 ||
+		statusCode >= 300)
+	{
+		string message =
+			TryGetApiErrorMessage(responseBody) ??
+			$"A API respondeu com o status HTTP " +
+			$"{statusCode}.";
+
+		GD.PushError(
+			$"{message} Endpoint: {url}. " +
+			$"Resposta: {responseBody}");
+
+		return ApiResult<bool>.Failure(
+			message,
+			statusCode);
+	}
+
+	return ApiResult<bool>.Success(
+		true,
+		statusCode);
+}
 
 	private void LoadSettings()
 	{

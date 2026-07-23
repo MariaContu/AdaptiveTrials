@@ -1,7 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using AdaptiveTrials.Game.Api;
 using AdaptiveTrials.Game.Dto;
+using AdaptiveTrials.Game.Dto.Sessions;
 using AdaptiveTrials.Game.Enums;
+using AdaptiveTrials.Game.Missions.Shared;
 using Godot;
 
 namespace AdaptiveTrials.Game.Session;
@@ -11,7 +15,15 @@ namespace AdaptiveTrials.Game.Session;
 /// </summary>
 public partial class SessionManager : Node
 {
-	private readonly List<MissionDto> _missionSequence = new();
+	private readonly List<MissionDto> _missionSequence =
+		new();
+
+	private readonly HashSet<int> _registeredMissionIndexes =
+		new();
+
+	private ApiClient _apiClient = null!;
+
+	private bool _isRegisteringMissionResult;
 
 	public int? SessionId { get; private set; }
 
@@ -23,7 +35,8 @@ public partial class SessionManager : Node
 
 	public int CompletedMissionCount { get; private set; }
 
-	public int TotalMissionCount => _missionSequence.Count;
+	public int TotalMissionCount =>
+		_missionSequence.Count;
 
 	public IReadOnlyList<MissionDto> MissionSequence =>
 		_missionSequence;
@@ -42,12 +55,23 @@ public partial class SessionManager : Node
 
 	public bool IsLastMission =>
 		HasCurrentMission &&
-		CurrentMissionIndex == _missionSequence.Count - 1;
+		CurrentMissionIndex ==
+		_missionSequence.Count - 1;
+
+	public bool IsRegisteringMissionResult =>
+		_isRegisteringMissionResult;
 
 	public MissionDto? CurrentMission =>
 		HasCurrentMission
 			? _missionSequence[CurrentMissionIndex]
 			: null;
+
+	public override void _Ready()
+	{
+		_apiClient =
+			GetNode<ApiClient>(
+				"/root/ApiClient");
+	}
 
 	public void InitializeSession(
 		int sessionId,
@@ -70,7 +94,8 @@ public partial class SessionManager : Node
 	public void SetMissionSequence(
 		IReadOnlyList<MissionDto> missions)
 	{
-		ArgumentNullException.ThrowIfNull(missions);
+		ArgumentNullException.ThrowIfNull(
+			missions);
 
 		if (missions.Count == 0)
 		{
@@ -82,6 +107,8 @@ public partial class SessionManager : Node
 		_missionSequence.Clear();
 		_missionSequence.AddRange(missions);
 
+		_registeredMissionIndexes.Clear();
+
 		CurrentMissionIndex = 0;
 		CompletedMissionCount = 0;
 
@@ -90,10 +117,152 @@ public partial class SessionManager : Node
 			$"{_missionSequence.Count} missões.");
 	}
 
+	/// <summary>
+	/// Envia o resultado da missão atual para a API.
+	/// </summary>
+	public async Task<bool> RegisterCurrentMissionResultAsync(
+		MissionResult missionResult)
+	{
+		ArgumentNullException.ThrowIfNull(
+			missionResult);
+
+		if (!HasActiveSession ||
+			!SessionId.HasValue)
+		{
+			GD.PushError(
+				"Não existe uma sessão ativa para " +
+				"registrar o evento.");
+
+			return false;
+		}
+
+		if (!HasCurrentMission)
+		{
+			GD.PushError(
+				"Não existe uma missão atual para " +
+				"registrar o evento.");
+
+			return false;
+		}
+
+		if (_registeredMissionIndexes.Contains(
+				CurrentMissionIndex))
+		{
+			GD.PushWarning(
+				"O resultado desta missão já foi registrado.");
+
+			return true;
+		}
+
+		if (_isRegisteringMissionResult)
+		{
+			GD.PushWarning(
+				"Já existe um evento comportamental " +
+				"sendo registrado.");
+
+			return false;
+		}
+
+		if (missionResult.MissionId !=
+			CurrentMission!.Id)
+		{
+			GD.PushError(
+				"O resultado recebido não pertence à " +
+				"missão atual.");
+
+			return false;
+		}
+
+		_isRegisteringMissionResult = true;
+
+		try
+		{
+			RegisterSessionEventRequest request =
+				new()
+				{
+					MissionId =
+						missionResult.MissionId,
+
+					CompletionTime =
+						Math.Max(
+							0,
+							missionResult.CompletionTime),
+
+					Failures =
+						Math.Max(
+							0,
+							missionResult.Failures),
+
+					Success =
+						missionResult.Success,
+
+					Persistence =
+						Math.Clamp(
+							missionResult.Persistence,
+							0,
+							1)
+				};
+
+			ApiResult<bool> apiResult =
+				await _apiClient
+					.RegisterSessionEventAsync(
+						SessionId.Value,
+						request);
+
+			if (!apiResult.IsSuccess)
+			{
+				GD.PushError(
+					$"Não foi possível registrar o " +
+					$"evento comportamental. " +
+					$"{apiResult.ErrorMessage}");
+
+				return false;
+			}
+
+			_registeredMissionIndexes.Add(
+				CurrentMissionIndex);
+
+			MarkCurrentMissionCompleted();
+
+			GD.Print(
+				$"Evento comportamental registrado: " +
+				$"SessionId={SessionId.Value}, " +
+				$"MissionId={missionResult.MissionId}, " +
+				$"Success={missionResult.Success}, " +
+				$"Failures={missionResult.Failures}, " +
+				$"Persistence=" +
+				$"{missionResult.Persistence:F2}");
+
+			return true;
+		}
+		catch (Exception exception)
+		{
+			GD.PushError(
+				"Erro inesperado ao registrar o evento " +
+				$"comportamental: {exception}");
+
+			return false;
+		}
+		finally
+		{
+			_isRegisteringMissionResult = false;
+		}
+	}
+
 	public bool TryAdvanceToNextMission()
 	{
 		if (!HasCurrentMission)
 		{
+			return false;
+		}
+
+		if (!_registeredMissionIndexes.Contains(
+				CurrentMissionIndex))
+		{
+			GD.PushWarning(
+				"A missão atual ainda não possui um " +
+				"evento comportamental registrado.");
+
 			return false;
 		}
 
@@ -119,7 +288,8 @@ public partial class SessionManager : Node
 
 		GD.Print(
 			$"Missão concluída. Total: " +
-			$"{CompletedMissionCount}/{TotalMissionCount}");
+			$"{CompletedMissionCount}/" +
+			$"{TotalMissionCount}");
 	}
 
 	public void ClearSession()
@@ -130,14 +300,18 @@ public partial class SessionManager : Node
 
 		ClearMissionProgress();
 
-		GD.Print("Estado da sessão removido.");
+		GD.Print(
+			"Estado da sessão removido.");
 	}
 
 	private void ClearMissionProgress()
 	{
 		_missionSequence.Clear();
+		_registeredMissionIndexes.Clear();
 
 		CurrentMissionIndex = 0;
 		CompletedMissionCount = 0;
+
+		_isRegisteringMissionResult = false;
 	}
 }
