@@ -6,7 +6,8 @@
 radius = 40.0
 
 [node name="DestinationArea" type="Area2D" unique_id=1324254252]
-collision_layer = 2
+collision_layer = 0
+collision_mask = 2
 script = ExtResource("1_vubis")
 
 [node name="OuterCircle" type="Polygon2D" parent="." unique_id=912798373]

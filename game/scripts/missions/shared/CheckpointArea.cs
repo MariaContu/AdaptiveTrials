@@ -4,7 +4,8 @@ using Godot;
 namespace AdaptiveTrials.Game.Missions.Shared;
 
 /// <summary>
-/// Ponto intermediário obrigatório em missões de deslocamento.
+/// Ponto intermediário obrigatório em missões
+/// de deslocamento.
 /// </summary>
 public partial class CheckpointArea : Area2D
 {
@@ -12,10 +13,13 @@ public partial class CheckpointArea : Area2D
 	public delegate void CheckpointReachedEventHandler(
 		CheckpointArea checkpoint);
 
+	private const string PlayerDetectionAreaName =
+		"DetectionHitbox";
+
 	private Polygon2D _visual = null!;
 	private Line2D _outline = null!;
 	private Label _symbolLabel = null!;
-	
+
 	private int _checkpointIndex;
 
 	public bool WasReached { get; private set; }
@@ -23,17 +27,35 @@ public partial class CheckpointArea : Area2D
 	public override void _Ready()
 	{
 		_visual =
-			GetNode<Polygon2D>("Visual");
+			GetNode<Polygon2D>(
+				"Visual");
 
 		_outline =
-			GetNode<Line2D>("Outline");
+			GetNode<Line2D>(
+				"Outline");
 
 		_symbolLabel =
-			GetNode<Label>("SymbolLabel");
+			GetNode<Label>(
+				"SymbolLabel");
 
-		BodyEntered += OnBodyEntered;
+		AreaEntered += OnAreaEntered;
 
 		ApplyPendingStyle();
+	}
+
+	public void ConfigureIndex(
+		int index)
+	{
+		_checkpointIndex =
+			Mathf.Max(
+				1,
+				index);
+
+		if (!WasReached)
+		{
+			_symbolLabel.Text =
+				_checkpointIndex.ToString();
+		}
 	}
 
 	public void ResetCheckpoint()
@@ -44,14 +66,15 @@ public partial class CheckpointArea : Area2D
 		ApplyPendingStyle();
 	}
 
-	private void OnBodyEntered(Node2D body)
+	private void OnAreaEntered(
+		Area2D area)
 	{
 		if (WasReached)
 		{
 			return;
 		}
 
-		if (body is not PlayerController)
+		if (!IsPlayerDetectionArea(area))
 		{
 			return;
 		}
@@ -78,11 +101,12 @@ public partial class CheckpointArea : Area2D
 			_checkpointIndex > 0
 				? _checkpointIndex.ToString()
 				: "◆";
-				
+
 		_symbolLabel.Modulate =
 			new Color("#533c55");
 
-		Scale = Vector2.One;
+		Scale =
+			Vector2.One;
 	}
 
 	private void ApplyCompletedStyle()
@@ -93,24 +117,28 @@ public partial class CheckpointArea : Area2D
 		_outline.DefaultColor =
 			new Color("#4f8460");
 
-		_symbolLabel.Text = "✓";
+		_symbolLabel.Text =
+			"✓";
+
 		_symbolLabel.Modulate =
 			new Color("#275f38");
 
 		Scale =
-			new Vector2(1.1f, 1.1f);
+			new Vector2(
+				1.1f,
+				1.1f);
 	}
-	
-	public void ConfigureIndex(int index)
-	{
-		_checkpointIndex =
-			Mathf.Max(1, index);
 
-		if (!WasReached)
+	private static bool IsPlayerDetectionArea(
+		Area2D area)
+	{
+		if (area.Name !=
+			PlayerDetectionAreaName)
 		{
-			_symbolLabel.Text =
-				_checkpointIndex.ToString();
+			return false;
 		}
+
+		return area.GetParentOrNull<PlayerController>()
+			is not null;
 	}
-		
 }
