@@ -1,0 +1,360 @@
+[gd_scene format=3 uid="uid://bhi1f4g3sfubg"]
+
+[ext_resource type="Script" uid="uid://c31dac4smgtpl" path="res://scripts/session/SessionSummaryController.cs" id="1_45cnt"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_nx8pl"]
+bg_color = Color(0.84705883, 0.78431374, 0.8627451, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.6745098, 0.5686275, 0.69803923, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_45cnt"]
+bg_color = Color(0.93333334, 0.90588236, 0.9372549, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.72156864, 0.6313726, 0.7411765, 1)
+corner_radius_top_left = 22
+corner_radius_top_right = 22
+corner_radius_bottom_right = 22
+corner_radius_bottom_left = 22
+shadow_color = Color(0, 0, 0, 0.4)
+shadow_size = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0k7tg"]
+bg_color = Color(0.79607844, 0.73333335, 0.8117647, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_a7hsg"]
+bg_color = Color(0.8862745, 0.8392157, 0.8980392, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.7411765, 0.654902, 0.7607843, 1)
+corner_radius_top_left = 15
+corner_radius_top_right = 15
+corner_radius_bottom_right = 15
+corner_radius_bottom_left = 15
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_urxdj"]
+bg_color = Color(0.7176471, 0.5882353, 0.7490196, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.8352941, 0.74509805, 0.85490197, 1)
+corner_radius_top_left = 15
+corner_radius_top_right = 15
+corner_radius_bottom_right = 15
+corner_radius_bottom_left = 15
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_q8mm6"]
+bg_color = Color(0.5803922, 0.4509804, 0.6117647, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.77254903, 0.6509804, 0.8039216, 1)
+corner_radius_top_left = 15
+corner_radius_top_right = 15
+corner_radius_bottom_right = 15
+corner_radius_bottom_left = 15
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_317kg"]
+bg_color = Color(0.77254903, 0.6509804, 0.8039216, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.89411765, 0.8235294, 0.9098039, 1)
+corner_radius_top_left = 15
+corner_radius_top_right = 15
+corner_radius_bottom_right = 15
+corner_radius_bottom_left = 15
+
+[node name="SessionSummary" type="Control" unique_id=820344378]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Background" type="ColorRect" parent="." unique_id=224537298]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.12941177, 0.09411765, 0.14509805, 1)
+
+[node name="MainMargin" type="MarginContainer" parent="." unique_id=1551371598]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 56
+theme_override_constants/margin_top = 38
+theme_override_constants/margin_right = 56
+theme_override_constants/margin_bottom = 38
+
+[node name="MainContent" type="VBoxContainer" parent="MainMargin" unique_id=516962345]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="Header" type="HBoxContainer" parent="MainMargin/MainContent" unique_id=1279281984]
+custom_minimum_size = Vector2(0, 72)
+layout_mode = 2
+
+[node name="HeaderText" type="VBoxContainer" parent="MainMargin/MainContent/Header" unique_id=1604694154]
+layout_mode = 2
+theme_override_constants/separation = 3
+
+[node name="TitleLabel" type="Label" parent="MainMargin/MainContent/Header/HeaderText" unique_id=1489582668]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.94509804, 0.9098039, 0.9490196, 1)
+theme_override_font_sizes/font_size = 32
+text = "SESSION SUMMARY"
+
+[node name="SubtitleLabel" type="Label" parent="MainMargin/MainContent/Header/HeaderText" unique_id=1033911975]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7882353, 0.7294118, 0.8039216, 1)
+theme_override_font_sizes/font_size = 15
+text = "Review your performance across all completed missions."
+
+[node name="HeaderSpacer" type="Control" parent="MainMargin/MainContent/Header" unique_id=781864701]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="CompletedBadge" type="PanelContainer" parent="MainMargin/MainContent/Header" unique_id=1709765910]
+custom_minimum_size = Vector2(148, 42)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_nx8pl")
+
+[node name="CompletedBadgeLabel" type="Label" parent="MainMargin/MainContent/Header/CompletedBadge" unique_id=1673553293]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3137255, 0.23137255, 0.32941177, 1)
+theme_override_font_sizes/font_size = 13
+text = "6/6 COMPLETED"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="MainPanel" type="PanelContainer" parent="MainMargin/MainContent" unique_id=2098189996]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_45cnt")
+
+[node name="PanelMargin" type="MarginContainer" parent="MainMargin/MainContent/MainPanel" unique_id=1694700512]
+layout_mode = 2
+theme_override_constants/margin_left = 28
+theme_override_constants/margin_top = 26
+theme_override_constants/margin_right = 28
+theme_override_constants/margin_bottom = 26
+
+[node name="Columns" type="HBoxContainer" parent="MainMargin/MainContent/MainPanel/PanelMargin" unique_id=390854604]
+layout_mode = 2
+theme_override_constants/separation = 26
+
+[node name="MissionsColumn" type="VBoxContainer" parent="MainMargin/MainContent/MainPanel/PanelMargin/Columns" unique_id=568552843]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="MissionsTitleLabel" type="Label" parent="MainMargin/MainContent/MainPanel/PanelMargin/Columns/MissionsColumn" unique_id=1583109006]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.30588236, 0.22352941, 0.32156864, 1)
+theme_override_font_sizes/font_size = 20
+text = "COMPLETED MISSIONS"
+
+[node name="MissionsSubtitleLabel" type="Label" parent="MainMargin/MainContent/MainPanel/PanelMargin/Columns/MissionsColumn" unique_id=703670631]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5019608, 0.42352942, 0.5176471, 1)
+theme_override_font_sizes/font_size = 13
+text = "Individual results from this session."
+
+[node name="MissionsScroll" type="ScrollContainer" parent="MainMargin/MainContent/MainPanel/PanelMargin/Columns/MissionsColumn" unique_id=264434854]
+custom_minimum_size = Vector2(620, 390)
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="MissionList" type="VBoxContainer" parent="MainMargin/MainContent/MainPanel/PanelMargin/Columns/MissionsColumn/MissionsScroll" unique_id=1361749937]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 9
+
+[node name="ColumnSeparator" type="VSeparator" parent="MainMargin/MainContent/MainPanel/PanelMargin/Columns" unique_id=1707251613]
+custom_minimum_size = Vector2(2, 0)
+layout_mode = 2
+theme_override_constants/separation = 2
+theme_override_styles/separator = SubResource("StyleBoxFlat_0k7tg")
+
+[node name="StatisticsColumn" type="VBoxContainer" parent="MainMargin/MainContent/MainPanel/PanelMargin/Columns" unique_id=1980361118]
+custom_minimum_size = Vector2(290, 0)
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="StatisticsTitleLabel" type="Label" parent="MainMargin/MainContent/MainPanel/PanelMargin/Columns/StatisticsColumn" unique_id=1191132188]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.30588236, 0.22352941, 0.32156864, 1)
+theme_override_font_sizes/font_size = 20
+text = "SESSION STATISTICS
+"
+
+[node name="AverageTimeCard" type="PanelContainer" parent="MainMargin/MainContent/MainPanel/PanelMargin/Columns/StatisticsColumn" unique_id=295847931]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_a7hsg")
+
+[node name="CardMargin" type="MarginContainer" parent="MainMargin/MainContent/MainPanel/PanelMargin/Columns/StatisticsColumn/AverageTimeCard" unique_id=1986288367]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 13
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 13
+
+[node name="CardContent" type="VBoxContainer" parent="MainMargin/MainContent/MainPanel/PanelMargin/Columns/StatisticsColumn/AverageTimeCard/CardMargin" unique_id=1268670865]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="CardTitle" type="Label" parent="MainMargin/MainContent/MainPanel/PanelMargin/Columns/StatisticsColumn/AverageTimeCard/CardMargin/CardContent" unique_id=960147088]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5019608, 0.42352942, 0.5176471, 1)
+theme_override_font_sizes/font_size = 12
+text = "AVERAGE TIME"
+
+[node name="CardValue" type="Label" parent="MainMargin/MainContent/MainPanel/PanelMargin/Columns/StatisticsColumn/AverageTimeCard/CardMargin/CardContent" unique_id=1506798355]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3019608, 0.21960784, 0.31764707, 1)
+theme_override_font_sizes/font_size = 25
+text = "00:00"
+
+[node name="SuccessRateCard" type="PanelContainer" parent="MainMargin/MainContent/MainPanel/PanelMargin/Columns/StatisticsColumn" unique_id=1756836706]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_a7hsg")
+
+[node name="CardMargin" type="MarginContainer" parent="MainMargin/MainContent/MainPanel/PanelMargin/Columns/StatisticsColumn/SuccessRateCard" unique_id=298904800]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 13
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 13
+
+[node name="CardContent" type="VBoxContainer" parent="MainMargin/MainContent/MainPanel/PanelMargin/Columns/StatisticsColumn/SuccessRateCard/CardMargin" unique_id=724204008]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="CardTitle" type="Label" parent="MainMargin/MainContent/MainPanel/PanelMargin/Columns/StatisticsColumn/SuccessRateCard/CardMargin/CardContent" unique_id=235094457]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5019608, 0.42352942, 0.5176471, 1)
+theme_override_font_sizes/font_size = 12
+text = "SUCCESS RATE"
+
+[node name="CardValue" type="Label" parent="MainMargin/MainContent/MainPanel/PanelMargin/Columns/StatisticsColumn/SuccessRateCard/CardMargin/CardContent" unique_id=1413678718]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3019608, 0.21960784, 0.31764707, 1)
+theme_override_font_sizes/font_size = 25
+text = "0%"
+
+[node name="FailuresCard" type="PanelContainer" parent="MainMargin/MainContent/MainPanel/PanelMargin/Columns/StatisticsColumn" unique_id=588102581]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_a7hsg")
+
+[node name="CardMargin" type="MarginContainer" parent="MainMargin/MainContent/MainPanel/PanelMargin/Columns/StatisticsColumn/FailuresCard" unique_id=1261489171]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 13
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 13
+
+[node name="CardContent" type="VBoxContainer" parent="MainMargin/MainContent/MainPanel/PanelMargin/Columns/StatisticsColumn/FailuresCard/CardMargin" unique_id=1780916970]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="CardTitle" type="Label" parent="MainMargin/MainContent/MainPanel/PanelMargin/Columns/StatisticsColumn/FailuresCard/CardMargin/CardContent" unique_id=1924922442]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5019608, 0.42352942, 0.5176471, 1)
+theme_override_font_sizes/font_size = 12
+text = "TOTAL FAILURES"
+
+[node name="CardValue" type="Label" parent="MainMargin/MainContent/MainPanel/PanelMargin/Columns/StatisticsColumn/FailuresCard/CardMargin/CardContent" unique_id=1067434190]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3019608, 0.21960784, 0.31764707, 1)
+theme_override_font_sizes/font_size = 25
+text = "0"
+
+[node name="BestCategoryCard" type="PanelContainer" parent="MainMargin/MainContent/MainPanel/PanelMargin/Columns/StatisticsColumn" unique_id=2085676088]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_a7hsg")
+
+[node name="CardMargin" type="MarginContainer" parent="MainMargin/MainContent/MainPanel/PanelMargin/Columns/StatisticsColumn/BestCategoryCard" unique_id=1802431285]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 13
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 13
+
+[node name="CardContent" type="VBoxContainer" parent="MainMargin/MainContent/MainPanel/PanelMargin/Columns/StatisticsColumn/BestCategoryCard/CardMargin" unique_id=291895215]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="CardTitle" type="Label" parent="MainMargin/MainContent/MainPanel/PanelMargin/Columns/StatisticsColumn/BestCategoryCard/CardMargin/CardContent" unique_id=1609907257]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5019608, 0.42352942, 0.5176471, 1)
+theme_override_font_sizes/font_size = 12
+text = "BEST CATEGORY"
+
+[node name="CardValue" type="Label" parent="MainMargin/MainContent/MainPanel/PanelMargin/Columns/StatisticsColumn/BestCategoryCard/CardMargin/CardContent" unique_id=142175839]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3019608, 0.21960784, 0.31764707, 1)
+theme_override_font_sizes/font_size = 25
+text = "-"
+
+[node name="CardDetail" type="Label" parent="MainMargin/MainContent/MainPanel/PanelMargin/Columns/StatisticsColumn/BestCategoryCard/CardMargin/CardContent" unique_id=782420638]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5019608, 0.42352942, 0.5176471, 1)
+theme_override_font_sizes/font_size = 12
+text = "Performance data unavailable."
+autowrap_mode = 3
+
+[node name="Footer" type="HBoxContainer" parent="MainMargin/MainContent" unique_id=1887659960]
+custom_minimum_size = Vector2(0, 58)
+layout_mode = 2
+
+[node name="StatusLabel" type="Label" parent="MainMargin/MainContent/Footer" unique_id=1762324563]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.7882353, 0.7294118, 0.8039216, 1)
+theme_override_font_sizes/font_size = 13
+text = "Session successfully completed."
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="FooterSpacer" type="Control" parent="MainMargin/MainContent/Footer" unique_id=550925890]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ContinueButton" type="Button" parent="MainMargin/MainContent/Footer" unique_id=1323681755]
+custom_minimum_size = Vector2(190, 50)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.1764706, 0.12941177, 0.1882353, 1)
+theme_override_colors/font_pressed_color = Color(0.95686275, 0.92941177, 0.9607843, 1)
+theme_override_colors/font_hover_color = Color(0.1764706, 0.12941177, 0.1882353, 1)
+theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("StyleBoxFlat_urxdj")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_q8mm6")
+theme_override_styles/hover = SubResource("StyleBoxFlat_317kg")
+text = "CONTINUE"
+
+[node name="SessionSummaryController" type="Node" parent="." unique_id=245437621]
+script = ExtResource("1_45cnt")

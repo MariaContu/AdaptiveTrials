@@ -122,7 +122,9 @@ public partial class MissionTransitionController : Node
 			GetCategoryText(mission.Type);
 
 		_missionDifficulty.Text =
-			$"Difficulty: {mission.Difficulty}";
+			$"Difficulty: " +
+			GetDifficultyText(
+				mission.Difficulty);
 
 		_missionDescription.Text =
 			string.IsNullOrWhiteSpace(mission.Description)
@@ -140,6 +142,18 @@ public partial class MissionTransitionController : Node
 			$"Type={mission.Type}, " +
 			$"Template={mission.Template}, " +
 			$"Difficulty={mission.Difficulty}");
+	}
+
+	private static string GetDifficultyText(
+	int difficulty)
+	{
+		return difficulty switch
+		{
+			1 => "Easy",
+			2 => "Medium",
+			3 => "Hard",
+			_ => $"Level {difficulty}"
+		};
 	}
 
 	private void OnStartMissionPressed()

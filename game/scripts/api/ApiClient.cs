@@ -209,6 +209,24 @@ public Task<ApiResult<bool>> RegisterSessionEventAsync(
 		eventRequest);
 }
 
+/// <summary>
+/// Encerra uma sessão experimental ativa.
+/// </summary>
+public Task<ApiResult<bool>> EndSessionAsync(
+	int sessionId)
+{
+	if (sessionId <= 0)
+	{
+		return Task.FromResult(
+			ApiResult<bool>.Failure(
+				"O identificador da sessão é inválido."));
+	}
+
+	return SendWithoutResponseAsync(
+		HttpClient.Method.Post,
+		$"/api/sessions/{sessionId}/end");
+}
+
 	/// <summary>
 	/// Realiza uma chamada HTTP e converte a resposta para o tipo esperado.
 	/// </summary>

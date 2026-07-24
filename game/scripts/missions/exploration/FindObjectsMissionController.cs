@@ -327,7 +327,7 @@ public partial class FindObjectsMissionController : Node
 		PrintMissionResult();
 	}
 
-	private void OnContinueRequested()
+	private async void OnContinueRequested()
 	{
 		if (!_missionFinished ||
 			Result is null)
@@ -339,32 +339,22 @@ public partial class FindObjectsMissionController : Node
 		{
 			GD.PushError(
 				"O evento comportamental não foi " +
-				"registrado. Não é possível avançar.");
+					"registrado. Não é possível avançar.");
 
 			return;
 		}
 
-		if (_sessionManager.IsLastMission)
-		{
-			GD.Print(
-				"Última missão concluída. " +
-				"A sessão pode ser encerrada.");
+		bool continued =
+			await _sessionManager
+				.ContinueAfterCurrentMissionAsync(
+					GetTree());
 
-			return;
-		}
-
-		if (!_sessionManager.TryAdvanceToNextMission())
+		if (!continued)
 		{
 			GD.PushError(
-				"Não foi possível avançar para " +
-				"a próxima missão.");
-
-			return;
+				"Não foi possível continuar o fluxo " +
+					"da sessão.");
 		}
-
-		GD.Print(
-			"Evento registrado. Próxima missão: " +
-			$"{_sessionManager.CurrentMission?.Name}");
 	}
 
 	private void PrintMissionResult()

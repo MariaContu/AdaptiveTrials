@@ -19,9 +19,9 @@ namespace AdaptiveTrials.Game.Missions.Exploration;
 /// </summary>
 public partial class ReachDestinationMissionController : Node
 {
-	private const int DefaultEasyCheckpoints = 1;
-	private const int DefaultMediumCheckpoints = 2;
-	private const int DefaultHardCheckpoints = 3;
+	private const int DefaultEasyCheckpoints = 2;
+	private const int DefaultMediumCheckpoints = 3;
+	private const int DefaultHardCheckpoints = 5;
 
 	private const int DefaultEasyHazards = 2;
 	private const int DefaultMediumHazards = 4;
@@ -31,6 +31,7 @@ public partial class ReachDestinationMissionController : Node
 	private const int DefaultMediumMaxFailures = 3;
 	private const int DefaultHardMaxFailures = 2;
 
+	private const int MaximumCheckpoints = 10;
 	private const int MaximumHazards = 10;
 
 	private static readonly PackedScene DestinationScene =
@@ -55,6 +56,7 @@ public partial class ReachDestinationMissionController : Node
 
 	private Marker2D _playerSpawn = null!;
 	private Marker2D _destinationSpawn = null!;
+
 	private Node2D _checkpointSpawns = null!;
 	private Node2D _hazardSpawns = null!;
 	private Node2D _dynamicObjects = null!;
@@ -190,10 +192,8 @@ public partial class ReachDestinationMissionController : Node
 		_activeHazards.Clear();
 
 		_objectiveText =
-			_requiredCheckpoints > 0
-				? $"Reach {_requiredCheckpoints} checkpoints " +
-				  "and arrive at the destination."
-				: "Reach the destination.";
+			$"Reach {_requiredCheckpoints} checkpoints " +
+			"and arrive at the destination.";
 
 		_player.GlobalPosition =
 			_playerSpawn.GlobalPosition;
@@ -257,23 +257,39 @@ public partial class ReachDestinationMissionController : Node
 
 	private void SpawnCheckpoints()
 	{
-		List<Marker2D> spawnPoints =
+		List<Marker2D> allSpawnPoints =
 			_checkpointSpawns
 				.GetChildren()
 				.OfType<Marker2D>()
 				.ToList();
 
+		List<Marker2D> spawnPoints =
+			GetUniqueSpawnPoints(
+				allSpawnPoints);
+
+		GD.Print(
+			$"SpawnCheckpoints | " +
+			$"Difficulty={_mission.Difficulty} | " +
+			$"Required={_requiredCheckpoints} | " +
+			$"Markers={allSpawnPoints.Count} | " +
+			$"UniquePositions={spawnPoints.Count}");
+
 		if (spawnPoints.Count <
 			_requiredCheckpoints)
 		{
 			ShowInitializationError(
-				$"The map contains {spawnPoints.Count} " +
-				$"checkpoint points, but the mission requires " +
+				$"The map contains only " +
+				$"{spawnPoints.Count} unique checkpoint " +
+				$"positions, but the mission requires " +
 				$"{_requiredCheckpoints}.");
 
 			return;
 		}
 
+		/*
+		 * Checkpoints não são embaralhados porque sua ordem
+		 * no editor representa a rota planejada do mapa.
+		 */
 		for (int index = 0;
 			 index < _requiredCheckpoints;
 			 index++)
@@ -302,23 +318,39 @@ public partial class ReachDestinationMissionController : Node
 
 			_activeCheckpoints.Add(
 				checkpoint);
+
+			GD.Print(
+				$"{checkpoint.Name} criado em " +
+				$"{checkpoint.GlobalPosition}");
 		}
 	}
 
 	private void SpawnHazards()
 	{
-		List<Marker2D> spawnPoints =
+		List<Marker2D> allSpawnPoints =
 			_hazardSpawns
 				.GetChildren()
 				.OfType<Marker2D>()
 				.ToList();
 
+		List<Marker2D> spawnPoints =
+			GetUniqueSpawnPoints(
+				allSpawnPoints);
+
+		GD.Print(
+			$"SpawnHazards | " +
+			$"Difficulty={_mission.Difficulty} | " +
+			$"Required={_requiredHazards} | " +
+			$"Markers={allSpawnPoints.Count} | " +
+			$"UniquePositions={spawnPoints.Count}");
+
 		if (spawnPoints.Count <
 			_requiredHazards)
 		{
 			ShowInitializationError(
-				$"The map contains {spawnPoints.Count} " +
-				$"hazard points, but the mission requires " +
+				$"The map contains only " +
+				$"{spawnPoints.Count} unique hazard " +
+				$"positions, but the mission requires " +
 				$"{_requiredHazards}.");
 
 			return;
@@ -351,6 +383,10 @@ public partial class ReachDestinationMissionController : Node
 
 			_activeHazards.Add(
 				hazard);
+
+			GD.Print(
+				$"{hazard.Name} criado em " +
+				$"{hazard.GlobalPosition}");
 		}
 	}
 
@@ -618,7 +654,7 @@ public partial class ReachDestinationMissionController : Node
 		}
 	}
 
-	private void OnContinueRequested()
+	private async void OnContinueRequested()
 	{
 		if (!_missionFinished ||
 			Result is null)
@@ -635,27 +671,17 @@ public partial class ReachDestinationMissionController : Node
 			return;
 		}
 
-		if (_sessionManager.IsLastMission)
-		{
-			GD.Print(
-				"Última missão concluída. " +
-				"A sessão pode ser encerrada.");
+		bool continued =
+			await _sessionManager
+				.ContinueAfterCurrentMissionAsync(
+					GetTree());
 
-			return;
-		}
-
-		if (!_sessionManager.TryAdvanceToNextMission())
+		if (!continued)
 		{
 			GD.PushError(
-				"Não foi possível avançar para " +
-				"a próxima missão.");
-
-			return;
+				"Não foi possível continuar o fluxo " +
+				"da sessão.");
 		}
-
-		GD.Print(
-			"Evento registrado. Próxima missão: " +
-			$"{_sessionManager.CurrentMission?.Name}");
 	}
 
 	private void PrintMissionResult()
@@ -721,17 +747,16 @@ public partial class ReachDestinationMissionController : Node
 				JsonElement root =
 					document.RootElement;
 
-				_requiredCheckpoints =
+				int apiCheckpoints =
 					ReadPositiveInteger(
 						root,
 						"checkpoints",
 						_requiredCheckpoints);
 
-				_maxFailures =
-					ReadPositiveInteger(
-						root,
-						"maxFailures",
-						_maxFailures);
+				_requiredCheckpoints =
+					Mathf.Max(
+						_requiredCheckpoints,
+						apiCheckpoints);
 
 				int apiHazards =
 					ReadPositiveInteger(
@@ -743,6 +768,12 @@ public partial class ReachDestinationMissionController : Node
 					Mathf.Max(
 						_requiredHazards,
 						apiHazards);
+
+				_maxFailures =
+					ReadPositiveInteger(
+						root,
+						"maxFailures",
+						_maxFailures);
 			}
 			catch (JsonException exception)
 			{
@@ -751,6 +782,12 @@ public partial class ReachDestinationMissionController : Node
 					$"{exception.Message}");
 			}
 		}
+
+		_requiredCheckpoints =
+			Mathf.Clamp(
+				_requiredCheckpoints,
+				1,
+				MaximumCheckpoints);
 
 		_requiredHazards =
 			Mathf.Clamp(
@@ -806,6 +843,23 @@ public partial class ReachDestinationMissionController : Node
 		}
 
 		GD.PushError(message);
+	}
+
+	private static List<Marker2D> GetUniqueSpawnPoints(
+		IEnumerable<Marker2D> spawnPoints)
+	{
+		return spawnPoints
+			.GroupBy(
+				point =>
+					new Vector2I(
+						Mathf.RoundToInt(
+							point.GlobalPosition.X),
+						Mathf.RoundToInt(
+							point.GlobalPosition.Y)))
+			.Select(
+				group =>
+					group.First())
+			.ToList();
 	}
 
 	private static double CalculatePersistence(
