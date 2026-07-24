@@ -11,12 +11,25 @@ using Godot;
 namespace AdaptiveTrials.Game.Session;
 
 /// <summary>
-/// Mantém o estado da sessão durante a troca de cenas.
+/// Mantém o estado e controla a progressão
+/// da sessão experimental.
 /// </summary>
 public partial class SessionManager : Node
 {
+	public const string MissionTransitionScenePath =
+		"res://scenes/missions/MissionTransition.tscn";
+
+	public const string SessionSummaryScenePath =
+		"res://scenes/session/SessionSummary.tscn";
+
+	public const string QuestionnaireInfoScenePath =
+		"res://scenes/session/QuestionnaireInfo.tscn";
+
 	private readonly List<MissionDto> _missionSequence =
 		new();
+
+	private readonly List<CompletedMissionRecord>
+		_completedMissionRecords = new();
 
 	private readonly HashSet<int> _registeredMissionIndexes =
 		new();
@@ -24,6 +37,9 @@ public partial class SessionManager : Node
 	private ApiClient _apiClient = null!;
 
 	private bool _isRegisteringMissionResult;
+	private bool _isContinuingSession;
+	private bool _isEndingSession;
+	private bool _sessionEnded;
 
 	public int? SessionId { get; private set; }
 
@@ -33,7 +49,8 @@ public partial class SessionManager : Node
 
 	public int CurrentMissionIndex { get; private set; }
 
-	public int CompletedMissionCount { get; private set; }
+	public int CompletedMissionCount =>
+		_completedMissionRecords.Count;
 
 	public int TotalMissionCount =>
 		_missionSequence.Count;
@@ -41,17 +58,27 @@ public partial class SessionManager : Node
 	public IReadOnlyList<MissionDto> MissionSequence =>
 		_missionSequence;
 
+	public IReadOnlyList<CompletedMissionRecord>
+		CompletedMissionRecords =>
+			_completedMissionRecords;
+
 	public bool HasActiveSession =>
 		SessionId.HasValue &&
 		PlayerId.HasValue &&
-		Mode.HasValue;
+		Mode.HasValue &&
+		!_sessionEnded;
+
+	public bool HasSessionIdentifiers =>
+		SessionId.HasValue &&
+		PlayerId.HasValue;
 
 	public bool HasMissionSequence =>
 		_missionSequence.Count > 0;
 
 	public bool HasCurrentMission =>
 		CurrentMissionIndex >= 0 &&
-		CurrentMissionIndex < _missionSequence.Count;
+		CurrentMissionIndex <
+		_missionSequence.Count;
 
 	public bool IsLastMission =>
 		HasCurrentMission &&
@@ -60,6 +87,15 @@ public partial class SessionManager : Node
 
 	public bool IsRegisteringMissionResult =>
 		_isRegisteringMissionResult;
+
+	public bool IsContinuingSession =>
+		_isContinuingSession;
+
+	public bool IsEndingSession =>
+		_isEndingSession;
+
+	public bool SessionEnded =>
+		_sessionEnded;
 
 	public MissionDto? CurrentMission =>
 		HasCurrentMission
@@ -84,6 +120,10 @@ public partial class SessionManager : Node
 		PlayerId = playerId;
 		Mode = mode;
 
+		_sessionEnded = false;
+		_isEndingSession = false;
+		_isContinuingSession = false;
+
 		GD.Print(
 			$"SessionManager inicializado: " +
 			$"SessionId={SessionId}, " +
@@ -107,10 +147,10 @@ public partial class SessionManager : Node
 		_missionSequence.Clear();
 		_missionSequence.AddRange(missions);
 
+		_completedMissionRecords.Clear();
 		_registeredMissionIndexes.Clear();
 
 		CurrentMissionIndex = 0;
-		CompletedMissionCount = 0;
 
 		GD.Print(
 			$"Sequência armazenada no SessionManager: " +
@@ -118,7 +158,8 @@ public partial class SessionManager : Node
 	}
 
 	/// <summary>
-	/// Envia o resultado da missão atual para a API.
+	/// Envia o resultado da missão atual para a API
+	/// e o armazena localmente.
 	/// </summary>
 	public async Task<bool> RegisterCurrentMissionResultAsync(
 		MissionResult missionResult)
@@ -163,8 +204,11 @@ public partial class SessionManager : Node
 			return false;
 		}
 
+		MissionDto mission =
+			CurrentMission!;
+
 		if (missionResult.MissionId !=
-			CurrentMission!.Id)
+			mission.Id)
 		{
 			GD.PushError(
 				"O resultado recebido não pertence à " +
@@ -222,7 +266,12 @@ public partial class SessionManager : Node
 			_registeredMissionIndexes.Add(
 				CurrentMissionIndex);
 
-			MarkCurrentMissionCompleted();
+			_completedMissionRecords.Add(
+				new CompletedMissionRecord
+				{
+					Mission = mission,
+					Result = missionResult
+				});
 
 			GD.Print(
 				$"Evento comportamental registrado: " +
@@ -232,6 +281,11 @@ public partial class SessionManager : Node
 				$"Failures={missionResult.Failures}, " +
 				$"Persistence=" +
 				$"{missionResult.Persistence:F2}");
+
+			GD.Print(
+				$"Progresso da sessão: " +
+				$"{CompletedMissionCount}/" +
+				$"{TotalMissionCount}");
 
 			return true;
 		}
@@ -249,47 +303,165 @@ public partial class SessionManager : Node
 		}
 	}
 
-	public bool TryAdvanceToNextMission()
+	/// <summary>
+	/// Avança para a próxima missão ou encerra a sessão
+	/// depois da última atividade.
+	/// </summary>
+	public async Task<bool> ContinueAfterCurrentMissionAsync(
+		SceneTree sceneTree)
 	{
+		ArgumentNullException.ThrowIfNull(
+			sceneTree);
+
+		if (_isContinuingSession)
+		{
+			GD.PushWarning(
+				"A continuação da sessão já está em andamento.");
+
+			return false;
+		}
+
+		if (!HasActiveSession)
+		{
+			GD.PushError(
+				"Não existe uma sessão ativa.");
+
+			return false;
+		}
+
 		if (!HasCurrentMission)
 		{
+			GD.PushError(
+				"Não existe uma missão atual.");
+
 			return false;
 		}
 
 		if (!_registeredMissionIndexes.Contains(
 				CurrentMissionIndex))
 		{
-			GD.PushWarning(
+			GD.PushError(
 				"A missão atual ainda não possui um " +
 				"evento comportamental registrado.");
 
 			return false;
 		}
 
-		if (IsLastMission)
+		_isContinuingSession = true;
+
+		try
 		{
+			if (IsLastMission)
+			{
+				bool sessionEnded =
+					await EndCurrentSessionAsync();
+
+				if (!sessionEnded)
+				{
+					return false;
+				}
+
+				return ChangeScene(
+					sceneTree,
+					SessionSummaryScenePath);
+			}
+
+			CurrentMissionIndex++;
+
+			GD.Print(
+				$"Avançando para a missão " +
+				$"{CurrentMissionIndex + 1}/" +
+				$"{TotalMissionCount}: " +
+				$"{CurrentMission?.Name}");
+
+			return ChangeScene(
+				sceneTree,
+				MissionTransitionScenePath);
+		}
+		finally
+		{
+			_isContinuingSession = false;
+		}
+	}
+
+	/// <summary>
+	/// Encerra a sessão atual no backend.
+	/// </summary>
+	public async Task<bool> EndCurrentSessionAsync()
+	{
+		if (!SessionId.HasValue)
+		{
+			GD.PushError(
+				"Não existe identificador de sessão.");
+
 			return false;
 		}
 
-		CurrentMissionIndex++;
-
-		return true;
-	}
-
-	public void MarkCurrentMissionCompleted()
-	{
-		if (!HasCurrentMission)
+		if (_sessionEnded)
 		{
-			throw new InvalidOperationException(
-				"Não existe uma missão atual.");
+			return true;
 		}
 
-		CompletedMissionCount++;
+		if (_isEndingSession)
+		{
+			GD.PushWarning(
+				"O encerramento da sessão já está " +
+				"em andamento.");
 
-		GD.Print(
-			$"Missão concluída. Total: " +
-			$"{CompletedMissionCount}/" +
-			$"{TotalMissionCount}");
+			return false;
+		}
+
+		if (CompletedMissionCount <
+			TotalMissionCount)
+		{
+			GD.PushError(
+				"A sessão não pode ser encerrada antes " +
+				"do registro de todas as missões.");
+
+			return false;
+		}
+
+		_isEndingSession = true;
+
+		try
+		{
+			ApiResult<bool> apiResult =
+				await _apiClient.EndSessionAsync(
+					SessionId.Value);
+
+			if (!apiResult.IsSuccess)
+			{
+				GD.PushError(
+					$"Não foi possível encerrar a sessão. " +
+					$"{apiResult.ErrorMessage}");
+
+				return false;
+			}
+
+			_sessionEnded = true;
+
+			GD.Print(
+				$"Sessão encerrada com sucesso: " +
+				$"SessionId={SessionId.Value}, " +
+				$"PlayerId={PlayerId}, " +
+				$"CompletedMissions=" +
+				$"{CompletedMissionCount}/" +
+				$"{TotalMissionCount}");
+
+			return true;
+		}
+		catch (Exception exception)
+		{
+			GD.PushError(
+				"Erro inesperado ao encerrar a sessão: " +
+				exception);
+
+			return false;
+		}
+		finally
+		{
+			_isEndingSession = false;
+		}
 	}
 
 	public void ClearSession()
@@ -298,19 +470,54 @@ public partial class SessionManager : Node
 		PlayerId = null;
 		Mode = null;
 
+		_sessionEnded = false;
+		_isEndingSession = false;
+		_isContinuingSession = false;
+
 		ClearMissionProgress();
 
 		GD.Print(
 			"Estado da sessão removido.");
 	}
 
+	private static bool ChangeScene(
+		SceneTree sceneTree,
+		string scenePath)
+	{
+		if (!ResourceLoader.Exists(
+				scenePath))
+		{
+			GD.PushError(
+				$"A cena não foi encontrada: " +
+				$"{scenePath}");
+
+			return false;
+		}
+
+		Error navigationError =
+			sceneTree.ChangeSceneToFile(
+				scenePath);
+
+		if (navigationError != Error.Ok)
+		{
+			GD.PushError(
+				$"Não foi possível abrir a cena " +
+				$"{scenePath}. Erro: " +
+				$"{navigationError}");
+
+			return false;
+		}
+
+		return true;
+	}
+
 	private void ClearMissionProgress()
 	{
 		_missionSequence.Clear();
+		_completedMissionRecords.Clear();
 		_registeredMissionIndexes.Clear();
 
 		CurrentMissionIndex = 0;
-		CompletedMissionCount = 0;
 
 		_isRegisteringMissionResult = false;
 	}

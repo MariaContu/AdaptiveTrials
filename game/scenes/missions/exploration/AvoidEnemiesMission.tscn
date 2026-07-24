@@ -82,18 +82,18 @@ position = Vector2(650, 180)
 [node name="Patrol03" type="Node2D" parent="SpawnPoints/EnemyPatrols" unique_id=1376583002]
 
 [node name="Start" type="Marker2D" parent="SpawnPoints/EnemyPatrols/Patrol03" unique_id=717739063]
-position = Vector2(500, 470)
+position = Vector2(579, 470)
 
 [node name="End" type="Marker2D" parent="SpawnPoints/EnemyPatrols/Patrol03" unique_id=1155307975]
-position = Vector2(760, 470)
+position = Vector2(844, 470)
 
 [node name="Patrol04" type="Node2D" parent="SpawnPoints/EnemyPatrols" unique_id=798215026]
 
 [node name="Start" type="Marker2D" parent="SpawnPoints/EnemyPatrols/Patrol04" unique_id=30150506]
-position = Vector2(700, 350)
+position = Vector2(700, 300)
 
 [node name="End" type="Marker2D" parent="SpawnPoints/EnemyPatrols/Patrol04" unique_id=1874863579]
-position = Vector2(920, 350)
+position = Vector2(920, 300)
 
 [node name="Patrol05" type="Node2D" parent="SpawnPoints/EnemyPatrols" unique_id=1866628476]
 
@@ -106,10 +106,10 @@ position = Vector2(820, 180)
 [node name="Patrol06" type="Node2D" parent="SpawnPoints/EnemyPatrols" unique_id=1882112056]
 
 [node name="Start" type="Marker2D" parent="SpawnPoints/EnemyPatrols/Patrol06" unique_id=641130429]
-position = Vector2(930, 250)
+position = Vector2(165, 98)
 
 [node name="End" type="Marker2D" parent="SpawnPoints/EnemyPatrols/Patrol06" unique_id=2077383463]
-position = Vector2(1050, 250)
+position = Vector2(334, 98)
 
 [node name="DynamicObjects" type="Node2D" parent="." unique_id=837117680]
 
