@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using AdaptiveTrials.Game.Missions.Combat.Shared;
 using AdaptiveTrials.Game.Interactions;
 using Godot;
 
@@ -9,12 +10,33 @@ namespace AdaptiveTrials.Game.Player;
 /// </summary>
 public partial class PlayerController : CharacterBody2D
 {
+	[Signal]
+	public delegate void MagicOrbCastEventHandler(MagicOrb orb);
 	[Export]
 	public float MovementSpeed { get; set; } = 220.0f;
 
 	[Export]
 	public PlayerVisualMode InitialVisualMode { get; set; } =
 		PlayerVisualMode.Normal;
+
+	[ExportGroup("Magic Attack")]
+	[Export]
+	public PackedScene? MagicOrbScene { get; set; }
+
+	[Export]
+	public int MagicOrbDamage { get; set; } = 1;
+
+	[Export]
+	public float MagicOrbSpeed { get; set; } = 520.0f;
+
+	[Export]
+	public float MagicOrbLifetimeSeconds { get; set; } = 1.4f;
+
+	[Export]
+	public float MagicOrbSpawnDistance { get; set; } = 48.0f;
+
+	[Export]
+	public float MagicOrbCooldownSeconds { get; set; } = 0.45f;
 
 	private AnimatedSprite2D _animatedSprite = null!;
 	private Area2D _interactionArea = null!;
@@ -25,6 +47,7 @@ public partial class PlayerController : CharacterBody2D
 	private PlayerDirection _direction = PlayerDirection.Down;
 
 	private bool _movementEnabled = true;
+	private float _magicOrbCooldownRemaining;
 
 	public override void _Ready()
 	{
@@ -45,6 +68,10 @@ public partial class PlayerController : CharacterBody2D
 
 	public override void _PhysicsProcess(double delta)
 	{
+		_magicOrbCooldownRemaining = Mathf.Max(
+			0.0f,
+			_magicOrbCooldownRemaining - (float)delta);
+
 		if (!_movementEnabled)
 		{
 			Velocity = Vector2.Zero;
@@ -83,6 +110,13 @@ public partial class PlayerController : CharacterBody2D
 		if (inputEvent.IsActionPressed("debug_combat_mode"))
 		{
 			SetVisualMode(PlayerVisualMode.Combat);
+			GetViewport().SetInputAsHandled();
+			return;
+		}
+
+		if (inputEvent.IsActionPressed("attack"))
+		{
+			TryCastMagicOrb();
 			GetViewport().SetInputAsHandled();
 			return;
 		}
@@ -210,6 +244,75 @@ public partial class PlayerController : CharacterBody2D
 
 		_animatedSprite.Stop();
 		_animatedSprite.Frame = 0;
+	}
+
+	private void TryCastMagicOrb()
+	{
+		if (_visualMode != PlayerVisualMode.Combat)
+		{
+			GD.Print("O ataque mágico está disponível apenas no modo de combate.");
+			return;
+		}
+
+		if (_magicOrbCooldownRemaining > 0.0f)
+		{
+			return;
+		}
+
+		if (MagicOrbScene is null)
+		{
+			GD.PushError("A cena da orbe mágica não foi configurada no Player.");
+			return;
+		}
+
+		Node? currentScene = GetTree().CurrentScene;
+
+		if (currentScene is null)
+		{
+			GD.PushError("Não foi possível localizar a cena atual para criar a orbe.");
+			return;
+		}
+
+		MagicOrb? orb = MagicOrbScene.Instantiate<MagicOrb>();
+
+		if (orb is null)
+		{
+			GD.PushError("A cena configurada não possui MagicOrb no nó raiz.");
+			return;
+		}
+
+		Vector2 attackDirection = GetDirectionVector();
+
+		orb.Initialize(
+			attackDirection,
+			MagicOrbDamage,
+			this,
+			MagicOrbSpeed,
+			MagicOrbLifetimeSeconds);
+
+		currentScene.AddChild(orb);
+		orb.GlobalPosition =
+			GlobalPosition +
+			attackDirection * MagicOrbSpawnDistance;
+
+		_magicOrbCooldownRemaining =
+			Mathf.Max(0.05f, MagicOrbCooldownSeconds);
+
+		EmitSignal(SignalName.MagicOrbCast, orb);
+
+		GD.Print($"Orbe mágica lançada para {_direction}.");
+	}
+
+	private Vector2 GetDirectionVector()
+	{
+		return _direction switch
+		{
+			PlayerDirection.Down => Vector2.Down,
+			PlayerDirection.Up => Vector2.Up,
+			PlayerDirection.Right => Vector2.Right,
+			PlayerDirection.Left => Vector2.Left,
+			_ => Vector2.Down
+		};
 	}
 
 	private void TryInteract()

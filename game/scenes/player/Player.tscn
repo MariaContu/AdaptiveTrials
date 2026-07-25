@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://c5kukwwkd6xl5" path="res://scripts/player/PlayerController.cs" id="1_4kuee"]
 [ext_resource type="Texture2D" uid="uid://ce8jvv1xsemll" path="res://assets/player/player_combat.png" id="1_gfjak"]
 [ext_resource type="Texture2D" uid="uid://ccoklmyt8ot0h" path="res://assets/player/player_normal.png" id="2_4kuee"]
+[ext_resource type="PackedScene" path="res://scenes/missions/combat/shared/MagicOrb.tscn" id="3_magic_orb"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_524rm"]
 atlas = ExtResource("1_gfjak")
@@ -381,6 +382,7 @@ height = 120.0
 [node name="Player" type="CharacterBody2D" unique_id=632016709]
 scale = Vector2(0.8, 0.8)
 script = ExtResource("1_4kuee")
+MagicOrbScene = ExtResource("3_magic_orb")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1190335669]
 texture_filter = 2
