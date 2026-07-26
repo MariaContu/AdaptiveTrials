@@ -241,6 +241,14 @@ private static string? ResolveMissionScene(
 			"res://scenes/missions/exploration/" +
 			"AvoidEnemiesMission.tscn",
 
+		"eliminar alvo" =>
+			"res://scenes/missions/combat/" +
+			"EliminateTargetMission.tscn",
+
+		"eliminate target" =>
+			"res://scenes/missions/combat/" +
+			"EliminateTargetMission.tscn",
+
 		_ => null
 	};
 }

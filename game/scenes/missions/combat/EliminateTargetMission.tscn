@@ -1,0 +1,98 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="1_player"]
+[ext_resource type="PackedScene" path="res://scenes/components/MissionHud.tscn" id="2_hud"]
+[ext_resource type="PackedScene" path="res://scenes/components/MissionResultPopup.tscn" id="3_popup"]
+[ext_resource type="Script" path="res://scripts/missions/combat/EliminateTargetMissionController.cs" id="4_controller"]
+
+[sub_resource type="RectangleShape2D" id="top_shape"]
+size = Vector2(1152, 40)
+
+[sub_resource type="RectangleShape2D" id="side_shape"]
+size = Vector2(40, 648)
+
+[sub_resource type="StyleBoxFlat" id="arena_panel"]
+bg_color = Color(0.19, 0.12, 0.24, 1)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.47, 0.31, 0.56, 1)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
+
+[node name="EliminateTargetMission" type="Node2D"]
+
+[node name="Environment" type="Node2D" parent="."]
+
+[node name="Background" type="Polygon2D" parent="Environment"]
+color = Color(0.12, 0.07, 0.16, 1)
+polygon = PackedVector2Array(0, 0, 1152, 0, 1152, 648, 0, 648)
+
+[node name="ArenaPanel" type="Panel" parent="Environment"]
+offset_left = 54.0
+offset_top = 86.0
+offset_right = 1098.0
+offset_bottom = 602.0
+theme_override_styles/panel = SubResource("arena_panel")
+mouse_filter = 2
+
+[node name="CenterMark" type="Polygon2D" parent="Environment"]
+position = Vector2(576, 344)
+color = Color(0.43, 0.23, 0.53, 0.34)
+polygon = PackedVector2Array(-70, 0, 0, -70, 70, 0, 0, 70)
+
+[node name="Walls" type="Node2D" parent="Environment"]
+
+[node name="WallTop" type="StaticBody2D" parent="Environment/Walls"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Walls/WallTop"]
+position = Vector2(576, 20)
+shape = SubResource("top_shape")
+
+[node name="WallBottom" type="StaticBody2D" parent="Environment/Walls"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Walls/WallBottom"]
+position = Vector2(576, 628)
+shape = SubResource("top_shape")
+
+[node name="WallLeft" type="StaticBody2D" parent="Environment/Walls"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Walls/WallLeft"]
+position = Vector2(20, 324)
+shape = SubResource("side_shape")
+
+[node name="WallRight" type="StaticBody2D" parent="Environment/Walls"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Walls/WallRight"]
+position = Vector2(1132, 324)
+shape = SubResource("side_shape")
+
+[node name="SpawnPoints" type="Node2D" parent="."]
+
+[node name="PlayerSpawn" type="Marker2D" parent="SpawnPoints"]
+position = Vector2(190, 350)
+
+[node name="TargetSpawn" type="Marker2D" parent="SpawnPoints"]
+position = Vector2(920, 345)
+
+[node name="GuardSpawns" type="Node2D" parent="SpawnPoints"]
+
+[node name="Guard01" type="Marker2D" parent="SpawnPoints/GuardSpawns"]
+position = Vector2(730, 190)
+
+[node name="Guard02" type="Marker2D" parent="SpawnPoints/GuardSpawns"]
+position = Vector2(730, 500)
+
+[node name="Guard03" type="Marker2D" parent="SpawnPoints/GuardSpawns"]
+position = Vector2(570, 345)
+
+[node name="DynamicEnemies" type="Node2D" parent="."]
+
+[node name="Player" parent="." instance=ExtResource("1_player")]
+initial_visual_mode = 2
+
+[node name="MissionHud" parent="." instance=ExtResource("2_hud")]
+
+[node name="MissionResultPopup" parent="." instance=ExtResource("3_popup")]
+
+[node name="EliminateTargetMissionController" type="Node" parent="."]
+script = ExtResource("4_controller")
