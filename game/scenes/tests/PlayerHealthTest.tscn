@@ -1,0 +1,61 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/tests/PlayerHealthTestController.cs" id="1_test"]
+[ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="2_player"]
+[ext_resource type="PackedScene" path="res://scenes/missions/combat/shared/DamageArea.tscn" id="3_damage"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_panel"]
+bg_color = Color(0.1, 0.06, 0.2, 0.92)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.55, 0.35, 0.85, 1)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[node name="PlayerHealthTest" type="Node2D"]
+script = ExtResource("1_test")
+
+[node name="Background" type="ColorRect" parent="."]
+offset_right = 1280.0
+offset_bottom = 720.0
+mouse_filter = 2
+color = Color(0.055, 0.04, 0.1, 1)
+
+[node name="Player" parent="." instance=ExtResource("2_player")]
+position = Vector2(300, 360)
+InitialVisualMode = 1
+
+[node name="DamageArea" parent="." instance=ExtResource("3_damage")]
+position = Vector2(670, 360)
+Damage = 1
+RepeatDelaySeconds = 0.8
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="Panel" type="PanelContainer" parent="CanvasLayer"]
+offset_left = 32.0
+offset_top = 28.0
+offset_right = 570.0
+offset_bottom = 178.0
+theme_override_styles/panel = SubResource("StyleBox_panel")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Panel"]
+theme_override_constants/separation = 8
+
+[node name="Title" type="Label" parent="CanvasLayer/Panel/VBoxContainer"]
+text = "TESTE — VIDA E INVULNERABILIDADE"
+theme_override_font_sizes/font_size = 22
+
+[node name="HealthLabel" type="Label" parent="CanvasLayer/Panel/VBoxContainer"]
+text = "VIDA: 5/5"
+theme_override_font_sizes/font_size = 20
+
+[node name="StatusLabel" type="Label" parent="CanvasLayer/Panel/VBoxContainer"]
+text = "Atravesse a área rosa para receber dano."
+
+[node name="Instructions" type="Label" parent="CanvasLayer/Panel/VBoxContainer"]
+text = "WASD/setas: mover | F: lançar orbe | R: reiniciar após a morte"

@@ -4,6 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://ce8jvv1xsemll" path="res://assets/player/player_combat.png" id="1_gfjak"]
 [ext_resource type="Texture2D" uid="uid://ccoklmyt8ot0h" path="res://assets/player/player_normal.png" id="2_4kuee"]
 [ext_resource type="PackedScene" path="res://scenes/missions/combat/shared/MagicOrb.tscn" id="3_magic_orb"]
+[ext_resource type="Script" path="res://scripts/missions/combat/shared/HealthComponent.cs" id="4_health"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_524rm"]
 atlas = ExtResource("1_gfjak")
@@ -379,6 +380,10 @@ radius = 55.0
 radius = 20.0
 height = 120.0
 
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_hurtbox"]
+radius = 24.0
+height = 88.0
+
 [node name="Player" type="CharacterBody2D" unique_id=632016709]
 scale = Vector2(0.8, 0.8)
 script = ExtResource("1_4kuee")
@@ -412,6 +417,21 @@ monitoring = false
 [node name="CollisionShape2D" type="CollisionShape2D" parent="DetectionHitbox" unique_id=1380997479]
 position = Vector2(-1.25, -46.25)
 shape = SubResource("CapsuleShape2D_4kuee")
+
+[node name="Hurtbox" type="Area2D" parent="."]
+collision_layer = 32
+collision_mask = 0
+monitoring = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox"]
+position = Vector2(0, -25)
+shape = SubResource("CapsuleShape2D_hurtbox")
+
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("4_health")
+MaximumHealth = 5
+InvulnerabilitySeconds = 0.7
+VisualTargetPath = NodePath("../AnimatedSprite2D")
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=895592923]
 position_smoothing_enabled = true
