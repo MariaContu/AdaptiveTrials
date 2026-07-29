@@ -44,11 +44,25 @@ public partial class CombatWaveManager : Node
     [Export]
     public float WaveStartDelaySeconds { get; set; } = 2.0f;
 
+    [ExportGroup("Progression")]
+    [Export]
+    public bool AdvanceWhenEnemiesDefeated { get; set; } = true;
+
+    [ExportGroup("Targeting")]
+    [Export]
+    public bool LockEnemiesToConfiguredTarget { get; set; }
+
+    [Export]
+    public float TimedWaveDurationSeconds { get; set; } = 8.0f;
+
+    [Export]
+    public bool ClearEnemiesOnTimedAdvance { get; set; } = true;
+
     private readonly List<CombatWaveDefinition> _waves = new();
     private readonly List<Marker2D> _spawnPoints = new();
     private readonly HashSet<CombatEnemyController> _activeEnemies = new();
 
-    private PlayerController? _target;
+    private Node2D? _target;
     private Node2D? _enemyContainer;
     private RandomNumberGenerator _random = new();
     private bool _isRunning;
@@ -71,7 +85,7 @@ public partial class CombatWaveManager : Node
     }
 
     public void Configure(
-        PlayerController target,
+        Node2D target,
         Node2D enemyContainer,
         IEnumerable<Marker2D> spawnPoints,
         IEnumerable<CombatWaveDefinition> waves)
@@ -168,7 +182,21 @@ public partial class CombatWaveManager : Node
                 return;
             }
 
-            await WaitForWaveCompletionAsync(runVersion);
+            if (AdvanceWhenEnemiesDefeated)
+            {
+                await WaitForWaveCompletionAsync(runVersion);
+            }
+            else
+            {
+                await WaitSecondsAsync(
+                    Mathf.Max(0.1f, TimedWaveDurationSeconds),
+                    runVersion);
+
+                if (CanContinue(runVersion) && ClearEnemiesOnTimedAdvance)
+                {
+                    ClearActiveEnemies();
+                }
+            }
 
             if (!CanContinue(runVersion))
             {
@@ -263,6 +291,8 @@ public partial class CombatWaveManager : Node
                 : Mathf.Max(0.1f, wave.MeleeCooldownSeconds));
 
         enemy.ChaseOnlyAfterDetection = false;
+        enemy.DetectionCanOverrideTarget =
+            !LockEnemiesToConfiguredTarget;
         enemy.RangedMovementEnabled =
             ranged && wave.RangedMovementEnabled;
         enemy.MaximumRangedDistance = 1200.0f;
@@ -293,6 +323,24 @@ public partial class CombatWaveManager : Node
 
         SceneTreeTimer timer = GetTree().CreateTimer(seconds);
         await ToSignal(timer, SceneTreeTimer.SignalName.Timeout);
+    }
+
+    private void ClearActiveEnemies()
+    {
+        foreach (CombatEnemyController enemy in _activeEnemies.ToArray())
+        {
+            if (!IsInstanceValid(enemy))
+            {
+                continue;
+            }
+
+            enemy.EnemyDefeated -= OnEnemyDefeated;
+            enemy.SetCombatEnabled(false);
+            enemy.QueueFree();
+        }
+
+        _activeEnemies.Clear();
+        EmitSignal(SignalName.ActiveEnemyCountChanged, 0);
     }
 
     private void OnEnemyDefeated(CombatEnemyController enemy)

@@ -1,0 +1,61 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/missions/combat/shared/DefensibleObject.cs" id="1_object"]
+[ext_resource type="Script" path="res://scripts/missions/combat/shared/HealthComponent.cs" id="2_health"]
+
+[sub_resource type="RectangleShape2D" id="RectangleHurtbox"]
+size = Vector2(72, 88)
+
+[sub_resource type="StyleBoxFlat" id="BaseStyle"]
+bg_color = Color(0.16, 0.08, 0.28, 1)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.72, 0.48, 0.95, 1)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+shadow_color = Color(0.05, 0.02, 0.1, 0.55)
+shadow_size = 8
+
+[node name="DefensibleObject" type="Area2D"]
+collision_layer = 32
+collision_mask = 0
+monitoring = false
+monitorable = true
+script = ExtResource("1_object")
+maximum_health = 10
+
+[node name="VisualRoot" type="Node2D" parent="."]
+
+[node name="OuterGlow" type="Polygon2D" parent="VisualRoot"]
+polygon = PackedVector2Array(-48, -56, 48, -56, 56, -45, 56, 45, 48, 56, -48, 56, -56, 45, -56, -45)
+color = Color(0.55, 0.28, 0.88, 0.22)
+
+[node name="Base" type="Panel" parent="VisualRoot"]
+offset_left = -42.0
+offset_top = -50.0
+offset_right = 42.0
+offset_bottom = 50.0
+theme_override_styles/panel = SubResource("BaseStyle")
+mouse_filter = 2
+
+[node name="Crystal" type="Polygon2D" parent="VisualRoot"]
+polygon = PackedVector2Array(0, -35, 25, -8, 15, 31, 0, 42, -15, 31, -25, -8)
+color = Color(0.69, 0.42, 0.96, 1)
+
+[node name="CrystalCore" type="Polygon2D" parent="VisualRoot"]
+polygon = PackedVector2Array(0, -24, 13, -5, 8, 20, 0, 28, -8, 20, -13, -5)
+color = Color(0.92, 0.82, 1, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleHurtbox")
+
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("2_health")
+maximum_health = 10
+invulnerability_seconds = 0.2
+visual_target_path = NodePath("")
+flash_interval_seconds = 0.06

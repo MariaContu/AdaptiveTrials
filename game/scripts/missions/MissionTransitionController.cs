@@ -249,6 +249,22 @@ private static string? ResolveMissionScene(
 			"res://scenes/missions/combat/" +
 			"EliminateTargetMission.tscn",
 
+		"sobreviver" =>
+			"res://scenes/missions/combat/" +
+			"SurviveMission.tscn",
+
+		"survive" =>
+			"res://scenes/missions/combat/" +
+			"SurviveMission.tscn",
+
+		"defender objeto" =>
+			"res://scenes/missions/combat/" +
+			"DefendObjectMission.tscn",
+
+		"defend object" =>
+			"res://scenes/missions/combat/" +
+			"DefendObjectMission.tscn",
+
 		_ => null
 	};
 }

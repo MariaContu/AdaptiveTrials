@@ -138,26 +138,26 @@ public class AppDbContext : DbContext
             new Mission
             {
                 Id = 4,
-                Name = "Sobrevivência Curta",
+                Name = "Sobrevivência Inicial",
                 Type = MissionType.Combat,
                 Template = "Sobreviver",
                 Difficulty = 1,
                 ParametersJson =
-                    "{\"timeSeconds\":30}",
+                    "{\"waves\":3}",
                 Description =
-                    "Resistir por um curto período de tempo."
+                    "Sobreviver e eliminar três ondas de inimigos."
             },
             new Mission
             {
                 Id = 5,
-                Name = "Sobrevivência Média",
+                Name = "Sobrevivência Intermediária",
                 Type = MissionType.Combat,
                 Template = "Sobreviver",
                 Difficulty = 2,
                 ParametersJson =
-                    "{\"timeSeconds\":60}",
+                    "{\"waves\":5}",
                 Description =
-                    "Resistir por um período intermediário."
+                    "Sobreviver e eliminar cinco ondas de dificuldade progressiva."
             },
             new Mission
             {
@@ -167,9 +167,9 @@ public class AppDbContext : DbContext
                 Template = "Sobreviver",
                 Difficulty = 3,
                 ParametersJson =
-                    "{\"timeSeconds\":120}",
+                    "{\"waves\":7}",
                 Description =
-                    "Resistir por um período prolongado sob alta pressão."
+                    "Sobreviver e eliminar sete ondas de inimigos sob alta pressão."
             },
 
             /*

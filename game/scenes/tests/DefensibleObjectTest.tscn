@@ -1,0 +1,137 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/tests/DefensibleObjectTestController.cs" id="1_controller"]
+[ext_resource type="PackedScene" path="res://scenes/missions/combat/shared/DefensibleObject.tscn" id="2_object"]
+[ext_resource type="PackedScene" path="res://scenes/missions/combat/shared/EnemyMagicOrb.tscn" id="3_orb"]
+
+[sub_resource type="StyleBoxFlat" id="ArenaStyle"]
+bg_color = Color(0.075, 0.035, 0.13, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.35, 0.18, 0.52, 1)
+corner_radius_top_left = 24
+corner_radius_top_right = 24
+corner_radius_bottom_right = 24
+corner_radius_bottom_left = 24
+
+[sub_resource type="StyleBoxFlat" id="PanelStyle"]
+bg_color = Color(0.12, 0.06, 0.2, 0.94)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.62, 0.4, 0.86, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+shadow_color = Color(0, 0, 0, 0.45)
+shadow_size = 8
+
+[sub_resource type="RectangleShape2D" id="WallHorizontal"]
+size = Vector2(1120, 24)
+
+[sub_resource type="RectangleShape2D" id="WallVertical"]
+size = Vector2(24, 560)
+
+[node name="DefensibleObjectTest" type="Node2D"]
+script = ExtResource("1_controller")
+enemy_orb_scene = ExtResource("3_orb")
+
+[node name="Background" type="ColorRect" parent="."]
+offset_right = 1280.0
+offset_bottom = 720.0
+color = Color(0.035, 0.015, 0.07, 1)
+mouse_filter = 2
+
+[node name="Arena" type="Panel" parent="."]
+offset_left = 80.0
+offset_top = 90.0
+offset_right = 1200.0
+offset_bottom = 650.0
+theme_override_styles/panel = SubResource("ArenaStyle")
+mouse_filter = 2
+
+[node name="WallTop" type="StaticBody2D" parent="."]
+position = Vector2(640, 102)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WallTop"]
+shape = SubResource("WallHorizontal")
+
+[node name="WallBottom" type="StaticBody2D" parent="."]
+position = Vector2(640, 638)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WallBottom"]
+shape = SubResource("WallHorizontal")
+
+[node name="WallLeft" type="StaticBody2D" parent="."]
+position = Vector2(92, 370)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WallLeft"]
+shape = SubResource("WallVertical")
+
+[node name="WallRight" type="StaticBody2D" parent="."]
+position = Vector2(1188, 370)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WallRight"]
+shape = SubResource("WallVertical")
+
+[node name="DefensibleObject" parent="." instance=ExtResource("2_object")]
+position = Vector2(450, 400)
+
+[node name="EnemyOrbEmitter" type="Marker2D" parent="."]
+position = Vector2(1020, 400)
+
+[node name="EmitterVisual" type="Polygon2D" parent="EnemyOrbEmitter"]
+polygon = PackedVector2Array(-24, -24, 24, -24, 32, 0, 24, 24, -24, 24, -32, 0)
+color = Color(0.78, 0.18, 0.42, 1)
+
+[node name="Projectiles" type="Node2D" parent="."]
+
+[node name="Interface" type="CanvasLayer" parent="."]
+layer = 20
+
+[node name="Panel" type="PanelContainer" parent="Interface"]
+offset_left = 344.0
+offset_top = 20.0
+offset_right = 936.0
+offset_bottom = 112.0
+theme_override_styles/panel = SubResource("PanelStyle")
+
+[node name="Margin" type="MarginContainer" parent="Interface/Panel"]
+theme_override_constants/margin_left = 22
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 22
+theme_override_constants/margin_bottom = 12
+
+[node name="Content" type="VBoxContainer" parent="Interface/Panel/Margin"]
+theme_override_constants/separation = 5
+
+[node name="Title" type="Label" parent="Interface/Panel/Margin/Content"]
+theme_override_colors/font_color = Color(0.92, 0.82, 1, 1)
+theme_override_font_sizes/font_size = 22
+text = "TESTE — OBJETO DEFENSÁVEL"
+horizontal_alignment = 1
+
+[node name="HealthLabel" type="Label" parent="Interface/Panel/Margin/Content"]
+theme_override_colors/font_color = Color(0.63, 0.92, 0.72, 1)
+theme_override_font_sizes/font_size = 18
+text = "VIDA DO OBJETO: 10/10"
+horizontal_alignment = 1
+
+[node name="StatusLabel" type="Label" parent="Interface/Panel/Margin/Content"]
+theme_override_colors/font_color = Color(1, 0.76, 0.82, 1)
+text = "ORBE INIMIGA SERÁ LANÇADA AUTOMATICAMENTE"
+horizontal_alignment = 1
+
+[node name="Instructions" type="Label" parent="Interface"]
+offset_left = 330.0
+offset_top = 670.0
+offset_right = 950.0
+offset_bottom = 704.0
+theme_override_colors/font_color = Color(0.82, 0.74, 0.92, 1)
+theme_override_font_sizes/font_size = 16
+text = "R: reiniciar | Esc: sair do teste"
+horizontal_alignment = 1

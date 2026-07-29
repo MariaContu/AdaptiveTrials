@@ -76,12 +76,15 @@ public partial class CombatEnemyController : CharacterBody2D, IDamageable
     [Export]
     public bool ChaseOnlyAfterDetection { get; set; } = true;
 
+    [Export]
+    public bool DetectionCanOverrideTarget { get; set; } = true;
+
     private Polygon2D _visual = null!;
     private Area2D _detectionArea = null!;
     private DamageArea _attackArea = null!;
     private HealthComponent _healthComponent = null!;
 
-    private PlayerController? _target;
+    private Node2D? _target;
     private float _attackCooldownRemaining;
     private float _attackActiveRemaining;
     private bool _isDead;
@@ -196,7 +199,7 @@ public partial class CombatEnemyController : CharacterBody2D, IDamageable
         }
     }
 
-    public void SetTarget(PlayerController? target)
+    public void SetTarget(Node2D? target)
     {
         if (_isDead)
         {
@@ -386,6 +389,11 @@ public partial class CombatEnemyController : CharacterBody2D, IDamageable
 
     private void OnDetectionAreaEntered(Area2D area)
     {
+        if (!DetectionCanOverrideTarget)
+        {
+            return;
+        }
+
         PlayerController? player = FindPlayer(area);
 
         if (player is null)
@@ -399,7 +407,7 @@ public partial class CombatEnemyController : CharacterBody2D, IDamageable
 
     private void OnDetectionAreaExited(Area2D area)
     {
-        if (!ChaseOnlyAfterDetection)
+        if (!DetectionCanOverrideTarget || !ChaseOnlyAfterDetection)
         {
             return;
         }
