@@ -1,0 +1,96 @@
+{
+    "version": "1.0",
+    "stage": "06_final_dataset_collection",
+    "valid_profile_target": 1000,
+    "sampling": {
+        "general": {
+            "valid_profile_target": 700,
+            "candidate_target": 1850,
+            "share_of_valid_profiles": 0.7,
+            "method": "diversified_entry_games"
+        },
+        "strategic_reasoning": {
+            "valid_profile_target": 300,
+            "candidate_target": 740,
+            "share_of_valid_profiles": 0.3,
+            "method": "directed_entry_games",
+            "subgroup_targets": {
+                "logic_puzzle": {
+                    "share": 0.35,
+                    "candidate_target": 259
+                },
+                "planning_management": {
+                    "share": 0.3,
+                    "candidate_target": 222
+                },
+                "strategy_decision": {
+                    "share": 0.2,
+                    "candidate_target": 148
+                },
+                "observation_deduction": {
+                    "share": 0.15,
+                    "candidate_target": 111
+                }
+            }
+        }
+    },
+    "deduplication": {
+        "exclude_original_pilot_steamids": true,
+        "exclude_puzzle_pilot_steamids": true,
+        "exclude_strategic_pilot_steamids": true,
+        "exclude_overlap_between_final_sources": true,
+        "preferred_source_on_overlap": "strategic_reasoning"
+    },
+    "source_balance": {
+        "maximum_share_per_entry_game_within_source": 0.15,
+        "minimum_distinct_entry_games_per_subgroup": 3,
+        "fail_when_subgroup_target_not_reached": true
+    },
+    "valid_profile_rules": {
+        "accessible_library": true,
+        "minimum_games": 1,
+        "minimum_played_games": 1
+    },
+    "target_rules": {
+        "minimum_playtime_coverage": 0.5,
+        "minimum_target_dominance": 0.4,
+        "minimum_target_gap": 0.1,
+        "unresolved_profiles_are_not_forced": true
+    },
+    "granularity_analysis": {
+        "preserve_macro_scores": [
+            "combat",
+            "exploration",
+            "strategic_reasoning"
+        ],
+        "preserve_subgroups": {
+            "combat": ["shooting", "melee_combat", "other_action"],
+            "exploration": [
+                "open_world",
+                "narrative_exploration",
+                "investigation"
+            ],
+            "strategic_reasoning": [
+                "logic_puzzle",
+                "planning_management",
+                "strategy_decision",
+                "observation_deduction"
+            ]
+        },
+        "required_comparisons": [
+            "macro_three_class_classification",
+            "combat_subgroup_classification",
+            "exploration_subgroup_classification",
+            "strategic_reasoning_subgroup_classification"
+        ],
+        "retain_continuous_scores": true,
+        "retain_macro_and_subgroup_targets_separately": true
+    },
+    "methodological_notes": [
+        "Entry games are sampling points and never define a player's target.",
+        "The final target is derived from the complete accessible library and categorized playtime.",
+        "Mapping weights must not be changed only to obtain balanced classes.",
+        "Granular subgroup fields must be retained even when the first model uses macro categories.",
+        "Train/test splitting must occur before any resampling technique."
+    ]
+}

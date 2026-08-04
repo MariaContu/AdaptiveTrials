@@ -1,6 +1,6 @@
 {
-    "version": "1.2",
-    "description": "Regras versionadas para mapear jogos Steam às categorias macro e subgrupos do Adaptive Trials.",
+    "version": "2.0",
+    "description": "Mapeamento revisado para combate, exploração e raciocínio estratégico.",
     "methodology": {
         "primary_source": "steamspy_tags",
         "fallback_sources": ["steam_store_genres"],
@@ -8,7 +8,6 @@
         "minimum_dominance_ratio": 1.15,
         "minimum_score_gap": 0.5,
         "top_tags_limit": 20,
-        "multi_category_policy": "preserve_scores_and_assign_dominant_when_confident",
         "ambiguous_label": "ambiguous",
         "uncategorized_label": "uncategorized"
     },
@@ -30,14 +29,13 @@
             "Animation & Modeling",
             "Audio Production",
             "Video Production"
-        ],
-        "reason": "Ferramentas e softwares não representam preferências por tipos de missão."
+        ]
     },
     "categories": {
         "combat": {
-            "description": "Jogos cuja atividade principal envolve confronto, ação ofensiva ou defesa contra oponentes.",
             "tags": {
                 "Action": 1.0,
+                "Combat": 3.0,
                 "Shooter": 2.0,
                 "FPS": 2.5,
                 "Third-Person Shooter": 2.5,
@@ -51,15 +49,11 @@
                 "Bullet Hell": 2.0,
                 "Shoot 'Em Up": 2.5,
                 "Action RPG": 1.5,
-                "Tactical": 1.0,
-                "Military": 1.0,
-                "War": 1.0,
                 "PvP": 1.5,
-                "Combat": 3.0
+                "Military": 0.75,
+                "War": 0.75
             },
-            "genres": {
-                "Action": 1.0
-            },
+            "genres": { "Action": 1.0 },
             "subgroups": {
                 "shooter": [
                     "Shooter",
@@ -77,15 +71,14 @@
                 ],
                 "action_other": [
                     "Action",
+                    "Combat",
                     "Bullet Hell",
                     "Shoot 'Em Up",
-                    "Action RPG",
-                    "Combat"
+                    "Action RPG"
                 ]
             }
         },
         "exploration": {
-            "description": "Jogos centrados em descoberta de ambientes, navegação, progressão espacial ou investigação.",
             "tags": {
                 "Adventure": 1.0,
                 "Exploration": 3.0,
@@ -99,15 +92,12 @@
                 "Metroidvania": 1.5,
                 "Survival": 1.0,
                 "Mystery": 1.0,
-                "Investigation": 2.5,
+                "Investigation": 2.0,
                 "Nature": 1.0,
                 "Underwater": 1.5,
                 "Space": 1.0
             },
-            "genres": {
-                "Adventure": 1.0,
-                "RPG": 0.75
-            },
+            "genres": { "Adventure": 1.0, "RPG": 0.75 },
             "subgroups": {
                 "open_world": [
                     "Open World",
@@ -128,64 +118,78 @@
                 ]
             }
         },
-        "puzzle": {
-            "description": "Jogos cuja atividade central envolve raciocínio, lógica, manipulação de regras ou resolução de problemas.",
-            "requires_core_tag": true,
-            "core_tags": {
+        "strategic_reasoning": {
+            "tags": {
                 "Puzzle": 3.0,
                 "Logic": 3.0,
                 "Sokoban": 3.0,
                 "Escape Room": 3.0,
                 "Puzzle Platformer": 2.5,
                 "Hidden Object": 2.0,
-                "Word Game": 2.5,
-                "Trivia": 2.0,
-                "Match 3": 2.0
+                "Word Game": 2.0,
+                "Trivia": 1.5,
+                "Match 3": 1.5,
+                "Strategy": 1.25,
+                "Turn-Based Strategy": 2.0,
+                "Grand Strategy": 2.0,
+                "Real-Time Strategy": 1.5,
+                "Tactical": 1.25,
+                "Turn-Based Tactics": 2.0,
+                "Management": 1.75,
+                "Resource Management": 2.0,
+                "City Builder": 1.75,
+                "Colony Sim": 1.75,
+                "Automation": 1.75,
+                "Programming": 1.75,
+                "Deckbuilding": 2.0,
+                "Card Battler": 1.75,
+                "Board Game": 1.5,
+                "Chess": 2.5,
+                "Point & Click": 1.0,
+                "Investigation": 0.75,
+                "Mystery": 0.5,
+                "Simulation": 0.5,
+                "Casual": 0.25
             },
-            "supporting_tags": {
-                "Programming": 2.0,
-                "Automation": 1.5,
-                "Point & Click": 1.5,
-                "Investigation": 1.0,
-                "Mystery": 0.75,
-                "Strategy": 0.5,
-                "Turn-Based Strategy": 0.5
-            },
-            "genres": {
-                "Casual": 0.25,
-                "Strategy": 0.25
-            },
+            "genres": { "Strategy": 1.0, "Simulation": 0.5, "Casual": 0.25 },
             "subgroups": {
-                "logic": [
+                "logic_puzzle": [
                     "Puzzle",
                     "Logic",
                     "Sokoban",
-                    "Programming",
-                    "Automation"
-                ],
-                "environmental": [
-                    "Puzzle Platformer",
                     "Escape Room",
-                    "Point & Click"
-                ],
-                "observation": [
+                    "Puzzle Platformer",
                     "Hidden Object",
                     "Word Game",
-                    "Trivia",
                     "Match 3"
+                ],
+                "planning_management": [
+                    "Management",
+                    "Resource Management",
+                    "City Builder",
+                    "Colony Sim",
+                    "Automation",
+                    "Programming"
+                ],
+                "strategy_decision": [
+                    "Strategy",
+                    "Turn-Based Strategy",
+                    "Grand Strategy",
+                    "Real-Time Strategy",
+                    "Tactical",
+                    "Turn-Based Tactics",
+                    "Deckbuilding",
+                    "Card Battler",
+                    "Board Game",
+                    "Chess"
+                ],
+                "observation_deduction": [
+                    "Point & Click",
+                    "Investigation",
+                    "Mystery",
+                    "Trivia"
                 ]
             }
         }
-    },
-    "excluded_tags": {
-        "Multiplayer": "Modo de jogo, não representa diretamente uma preferência de conteúdo.",
-        "Singleplayer": "Modo de jogo, não representa diretamente uma preferência de conteúdo.",
-        "Co-op": "Modo social e não categoria de missão.",
-        "Indie": "Característica de produção, não mecânica.",
-        "Difficult": "Indica dificuldade, não tipo de atividade.",
-        "Funny": "Tom temático, não mecânica.",
-        "Retro": "Estilo ou período, não atividade principal.",
-        "Early Access": "Estado de publicação, não conteúdo.",
-        "Free to Play": "Modelo de monetização, não conteúdo."
     }
 }

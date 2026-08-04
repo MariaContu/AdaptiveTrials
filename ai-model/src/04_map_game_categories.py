@@ -1,7 +1,10 @@
 """Map Steam games to Adaptive Trials categories.
 
-Version 1.1 applies the configured top-tag limit, preserves category scores and
-counts subgroups only inside the game's assigned macro category.
+Version 1.2:
+- applies top-tag limiting;
+- counts subgroups only inside the assigned macro category;
+- requires at least one core puzzle tag before puzzle-supporting evidence counts;
+- excludes development tools and software-like applications by genre/tag.
 """
 
 from __future__ import annotations
@@ -69,6 +72,13 @@ def safe_float(value: Any) -> float:
         return 0.0
 
 
+def safe_int(value: Any) -> int:
+    try:
+        return int(float(value))
+    except (TypeError, ValueError):
+        return 0
+
+
 def load_json(path: Path) -> dict[str, Any]:
     if not path.exists():
         raise FileNotFoundError(path)
@@ -110,7 +120,15 @@ def select_top_tags(tags: dict[str, Any], limit: int) -> dict[str, float]:
     return dict(normalized)
 
 
-def score_category(
+def contains_any(values: list[str] | dict[str, Any], excluded: list[str]) -> bool:
+    lookup = {
+        normalize(value).casefold()
+        for value in (values.keys() if isinstance(values, dict) else values)
+    }
+    return any(normalize(item).casefold() in lookup for item in excluded)
+
+
+def score_standard_category(
     tags: dict[str, float],
     genres: list[Any],
     category_config: dict[str, Any],
@@ -121,7 +139,7 @@ def score_category(
     total = 0.0
     matched_tags: list[str] = []
     matched_genres: list[str] = []
-    tag_contributions: dict[str, float] = {}
+    contributions: dict[str, float] = {}
 
     for tag, popularity in tags.items():
         weight = tag_weights.get(tag.casefold())
@@ -130,7 +148,7 @@ def score_category(
         contribution = weight * math.log1p(popularity)
         total += contribution
         matched_tags.append(tag)
-        tag_contributions[tag] = contribution
+        contributions[tag] = contribution
 
     for raw_genre in genres:
         genre = normalize(raw_genre)
@@ -140,12 +158,59 @@ def score_category(
         total += weight
         matched_genres.append(genre)
 
-    return (
-        total,
-        sorted(set(matched_tags)),
-        sorted(set(matched_genres)),
-        tag_contributions,
+    return total, sorted(set(matched_tags)), sorted(set(matched_genres)), contributions
+
+
+def score_puzzle_category(
+    tags: dict[str, float],
+    genres: list[Any],
+    category_config: dict[str, Any],
+) -> tuple[float, list[str], list[str], dict[str, float]]:
+    core_weights = normalize_lookup(category_config.get("core_tags", {}))
+    supporting_weights = normalize_lookup(
+        category_config.get("supporting_tags", {})
     )
+    genre_weights = normalize_lookup(category_config.get("genres", {}))
+
+    core_matches: list[tuple[str, float, float]] = []
+    for tag, popularity in tags.items():
+        weight = core_weights.get(tag.casefold())
+        if weight is not None:
+            core_matches.append((tag, popularity, weight))
+
+    requires_core = bool(category_config.get("requires_core_tag", False))
+    if requires_core and not core_matches:
+        return 0.0, [], [], {}
+
+    total = 0.0
+    matched_tags: list[str] = []
+    matched_genres: list[str] = []
+    contributions: dict[str, float] = {}
+
+    for tag, popularity, weight in core_matches:
+        contribution = weight * math.log1p(popularity)
+        total += contribution
+        matched_tags.append(tag)
+        contributions[tag] = contribution
+
+    for tag, popularity in tags.items():
+        weight = supporting_weights.get(tag.casefold())
+        if weight is None:
+            continue
+        contribution = weight * math.log1p(popularity)
+        total += contribution
+        matched_tags.append(tag)
+        contributions[tag] = contribution
+
+    for raw_genre in genres:
+        genre = normalize(raw_genre)
+        weight = genre_weights.get(genre.casefold())
+        if weight is None:
+            continue
+        total += weight
+        matched_genres.append(genre)
+
+    return total, sorted(set(matched_tags)), sorted(set(matched_genres)), contributions
 
 
 def determine_subgroup(
@@ -155,36 +220,28 @@ def determine_subgroup(
     contribution_lookup = {
         tag.casefold(): value for tag, value in tag_contributions.items()
     }
-    subgroup_scores: dict[str, float] = {}
-
-    for subgroup, subgroup_tags in subgroup_config.items():
-        subgroup_scores[subgroup] = sum(
+    subgroup_scores = {
+        subgroup: sum(
             contribution_lookup.get(normalize(tag).casefold(), 0.0)
             for tag in subgroup_tags
         )
+        for subgroup, subgroup_tags in subgroup_config.items()
+    }
 
     if not subgroup_scores:
         return ""
 
-    ordered = sorted(
-        subgroup_scores.items(),
-        key=lambda item: (-item[1], item[0]),
-    )
+    ordered = sorted(subgroup_scores.items(), key=lambda item: (-item[1], item[0]))
     if ordered[0][1] <= 0:
         return ""
-
     if len(ordered) > 1 and math.isclose(
         ordered[0][1], ordered[1][1], rel_tol=1e-9, abs_tol=1e-9
     ):
         return "ambiguous"
-
     return ordered[0][0]
 
 
-def classify(
-    scores: dict[str, float],
-    methodology: dict[str, Any],
-) -> tuple[str, str, str, str, float, float, float, float]:
+def classify(scores: dict[str, float], methodology: dict[str, Any]):
     ordered = sorted(scores.items(), key=lambda item: (-item[1], item[0]))
     top_category, top_score = ordered[0]
     second_category, second_score = ordered[1]
@@ -203,25 +260,21 @@ def classify(
     if top_score < minimum_score:
         return (
             normalize(methodology.get("uncategorized_label")) or "uncategorized",
-            "insufficient_score",
-            top_category, second_category,
+            "insufficient_score", top_category, second_category,
             top_score, second_score, gap, dominance,
         )
     if gap < minimum_gap:
         return (
             normalize(methodology.get("ambiguous_label")) or "ambiguous",
-            "insufficient_gap",
-            top_category, second_category,
+            "insufficient_gap", top_category, second_category,
             top_score, second_score, gap, dominance,
         )
     if dominance < minimum_ratio:
         return (
             normalize(methodology.get("ambiguous_label")) or "ambiguous",
-            "insufficient_dominance",
-            top_category, second_category,
+            "insufficient_dominance", top_category, second_category,
             top_score, second_score, gap, dominance,
         )
-
     return (
         top_category, "dominant_category", top_category, second_category,
         top_score, second_score, gap, dominance,
@@ -254,6 +307,7 @@ def main() -> int:
         config = load_json(args.config)
         categories = config.get("categories")
         methodology = config.get("methodology")
+        exclusions = config.get("global_exclusions", {})
 
         if not isinstance(categories, dict) or set(categories) != {
             "combat", "exploration", "puzzle"
@@ -265,12 +319,14 @@ def main() -> int:
             raise ValueError("Config must contain methodology.")
 
         top_tags_limit = int(methodology.get("top_tags_limit", 20))
+        excluded_genres = exclusions.get("genres", [])
+        excluded_tags = exclusions.get("tags", [])
 
-        rows: list[dict[str, Any]] = []
-        status_counts: Counter[str] = Counter()
-        assignment_counts: Counter[str] = Counter()
-        reason_counts: Counter[str] = Counter()
-        assigned_subgroup_counts: dict[str, Counter[str]] = defaultdict(Counter)
+        rows = []
+        status_counts = Counter()
+        assignment_counts = Counter()
+        reason_counts = Counter()
+        assigned_subgroup_counts = defaultdict(Counter)
         eligible_count = 0
 
         with args.input.open("r", encoding="utf-8", newline="") as file:
@@ -288,65 +344,65 @@ def main() -> int:
                 store_status = normalize(row.get("store_status"))
                 status_counts[store_status] += 1
 
-                eligible = store_status == "success" or (
+                raw_tags = parse_json_cell(row.get("steamspy_tags_json"), dict)
+                considered_tags = select_top_tags(raw_tags, top_tags_limit)
+                genres = parse_json_cell(row.get("genres_json"), list)
+
+                source_eligible = store_status == "success" or (
                     args.include_not_found and store_status == "not_found"
                 )
+                globally_excluded = (
+                    contains_any(genres, excluded_genres)
+                    or contains_any(considered_tags, excluded_tags)
+                )
+                eligible = source_eligible and not globally_excluded
 
                 scores = {"combat": 0.0, "exploration": 0.0, "puzzle": 0.0}
-                matched_tags_by_category: dict[str, list[str]] = {}
-                matched_genres_by_category: dict[str, list[str]] = {}
+                matched_tags_by_category = {}
+                matched_genres_by_category = {}
                 subgroups = {"combat": "", "exploration": "", "puzzle": ""}
-                considered_tags: dict[str, float] = {}
 
                 assigned = "excluded"
-                reason = f"store_status_{store_status or 'missing'}"
-                top_category = ""
-                second_category = ""
+                if globally_excluded and source_eligible:
+                    reason = "global_content_exclusion"
+                else:
+                    reason = f"store_status_{store_status or 'missing'}"
+
+                top_category = second_category = ""
                 top_score = second_score = gap = dominance = 0.0
                 assigned_subgroup = ""
 
                 if eligible:
                     eligible_count += 1
-                    raw_tags = parse_json_cell(
-                        row.get("steamspy_tags_json"), dict
-                    )
-                    considered_tags = select_top_tags(raw_tags, top_tags_limit)
-                    genres = parse_json_cell(row.get("genres_json"), list)
 
                     for category, category_config in categories.items():
-                        (
-                            score,
-                            matched_tags,
-                            matched_genres,
-                            tag_contributions,
-                        ) = score_category(
-                            considered_tags, genres, category_config
-                        )
+                        if category == "puzzle":
+                            result = score_puzzle_category(
+                                considered_tags, genres, category_config
+                            )
+                        else:
+                            result = score_standard_category(
+                                considered_tags, genres, category_config
+                            )
+
+                        score, matched_tags, matched_genres, contributions = result
                         scores[category] = score
                         matched_tags_by_category[category] = matched_tags
                         matched_genres_by_category[category] = matched_genres
                         subgroups[category] = determine_subgroup(
-                            tag_contributions,
+                            contributions,
                             category_config.get("subgroups", {}),
                         )
 
                     (
-                        assigned,
-                        reason,
-                        top_category,
-                        second_category,
-                        top_score,
-                        second_score,
-                        gap,
-                        dominance,
+                        assigned, reason, top_category, second_category,
+                        top_score, second_score, gap, dominance,
                     ) = classify(scores, methodology)
 
                     if assigned in categories:
                         assigned_subgroup = subgroups[assigned]
                         if assigned_subgroup:
-                            assigned_subgroup_counts[assigned][
-                                assigned_subgroup
-                            ] += 1
+                            assigned_subgroup_counts[assigned][assigned_subgroup] += 1
 
                 assignment_counts[assigned] += 1
                 reason_counts[reason] += 1
@@ -375,9 +431,7 @@ def main() -> int:
                     "exploration_subgroup": subgroups["exploration"],
                     "puzzle_subgroup": subgroups["puzzle"],
                     "considered_tags_json": json.dumps(
-                        considered_tags,
-                        ensure_ascii=False,
-                        sort_keys=True,
+                        considered_tags, ensure_ascii=False, sort_keys=True
                     ),
                     "matched_tags_json": json.dumps(
                         matched_tags_by_category,
@@ -397,16 +451,6 @@ def main() -> int:
             assignment_counts.get(category, 0)
             for category in categories
         )
-        assignment_percentages = {
-            label: round(count / len(rows), 6) if rows else 0.0
-            for label, count in sorted(assignment_counts.items())
-        }
-        assigned_category_percentages = {
-            category: round(
-                assignment_counts.get(category, 0) / assigned_total, 6
-            ) if assigned_total else 0.0
-            for category in sorted(categories)
-        }
 
         summary = {
             "pipeline_stage": "04_map_game_categories",
@@ -415,20 +459,23 @@ def main() -> int:
             "eligible_rows": eligible_count,
             "store_status_counts": dict(sorted(status_counts.items())),
             "assignment_counts": dict(sorted(assignment_counts.items())),
-            "assignment_percentages_total": assignment_percentages,
-            "assigned_category_percentages": assigned_category_percentages,
+            "assigned_category_percentages": {
+                category: round(
+                    assignment_counts.get(category, 0) / assigned_total, 6
+                ) if assigned_total else 0.0
+                for category in sorted(categories)
+            },
             "assignment_reason_counts": dict(sorted(reason_counts.items())),
             "assigned_subgroup_counts": {
                 category: dict(sorted(counter.items()))
-                for category, counter in sorted(
-                    assigned_subgroup_counts.items()
-                )
+                for category, counter in sorted(assigned_subgroup_counts.items())
             },
             "methodology": methodology,
+            "global_exclusions": exclusions,
             "important_note": (
-                "The mapping is rule-based and versioned. Only the configured "
-                "top SteamSpy tags are scored, and subgroup totals refer only "
-                "to games assigned to the corresponding macro category."
+                "Puzzle supporting tags only contribute when at least one core "
+                "puzzle tag is present. Development tools and software-like "
+                "applications are excluded before category scoring."
             ),
         }
         write_json_atomic(args.summary_output, summary)
