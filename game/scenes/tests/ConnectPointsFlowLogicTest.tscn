@@ -1,0 +1,80 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/tests/ConnectPointsFlowLogicTestController.cs" id="1_controller"]
+[ext_resource type="PackedScene" path="res://scenes/missions/puzzle/shared/FlowConnectBoard.tscn" id="2_board"]
+
+[sub_resource type="Gradient" id="Gradient_bg"]
+colors = PackedColorArray(0.137255, 0.0901961, 0.172549, 1, 0.270588, 0.176471, 0.337255, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture_bg"]
+gradient = SubResource("Gradient_bg")
+width = 1280
+height = 720
+fill_from = Vector2(0.1, 0)
+fill_to = Vector2(0.9, 1)
+
+[node name="ConnectPointsFlowLogicTest" type="Node2D"]
+
+[node name="Background" type="Sprite2D" parent="."]
+position = Vector2(640, 360)
+texture = SubResource("GradientTexture_bg")
+
+[node name="TitleLabel" type="Label" parent="."]
+offset_left = 270.0
+offset_top = 28.0
+offset_right = 1010.0
+offset_bottom = 72.0
+theme_override_colors/font_color = Color(0.92549, 0.878431, 0.960784, 1)
+theme_override_font_sizes/font_size = 28
+text = "CONNECT PATHS — MEDIUM"
+horizontal_alignment = 1
+
+[node name="InstructionLabel" type="Label" parent="."]
+offset_left = 180.0
+offset_top = 76.0
+offset_right = 1100.0
+offset_bottom = 104.0
+theme_override_colors/font_color = Color(0.796078, 0.741176, 0.831373, 1)
+theme_override_font_sizes/font_size = 15
+text = "Drag through adjacent cells. Paths cannot cross. Right-click cancels. R restarts."
+horizontal_alignment = 1
+
+[node name="FlowConnectBoard" parent="." instance=ExtResource("2_board")]
+layout_mode = 0
+offset_left = 365.0
+offset_top = 112.0
+offset_right = 915.0
+offset_bottom = 662.0
+
+[node name="AttemptsLabel" type="Label" parent="."]
+offset_left = 180.0
+offset_top = 610.0
+offset_right = 350.0
+offset_bottom = 642.0
+theme_override_colors/font_color = Color(0.72549, 0.662745, 0.772549, 1)
+theme_override_font_sizes/font_size = 16
+text = "Attempts: 4/4"
+
+[node name="CoverageLabel" type="Label" parent="."]
+offset_left = 930.0
+offset_top = 610.0
+offset_right = 1120.0
+offset_bottom = 642.0
+theme_override_colors/font_color = Color(0.941176, 0.776471, 0.454902, 1)
+theme_override_font_sizes/font_size = 16
+text = "Coverage: 0% / 75%"
+horizontal_alignment = 2
+
+[node name="StatusLabel" type="Label" parent="."]
+offset_left = 230.0
+offset_top = 672.0
+offset_right = 1050.0
+offset_bottom = 708.0
+theme_override_colors/font_color = Color(0.760784, 0.705882, 0.807843, 1)
+theme_override_font_sizes/font_size = 16
+text = "Drag from a colored endpoint to the matching endpoint."
+horizontal_alignment = 1
+
+[node name="ConnectPointsFlowLogicTestController" type="Node" parent="."]
+script = ExtResource("1_controller")
+difficulty = 2

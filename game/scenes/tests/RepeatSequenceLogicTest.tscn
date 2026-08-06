@@ -1,0 +1,130 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/tests/RepeatSequenceLogicTestController.cs" id="1_controller"]
+[ext_resource type="PackedScene" path="res://scenes/missions/puzzle/shared/PuzzleRuneButton.tscn" id="2_rune"]
+
+[sub_resource type="Gradient" id="Gradient_bg"]
+colors = PackedColorArray(0.137255, 0.0901961, 0.172549, 1, 0.270588, 0.176471, 0.337255, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture_bg"]
+gradient = SubResource("Gradient_bg")
+width = 1280
+height = 720
+fill_from = Vector2(0.1, 0)
+fill_to = Vector2(0.9, 1)
+
+[node name="RepeatSequenceLogicTest" type="Node2D"]
+
+[node name="Background" type="Sprite2D" parent="."]
+position = Vector2(640, 360)
+texture = SubResource("GradientTexture_bg")
+
+[node name="Interface" type="CanvasLayer" parent="."]
+
+[node name="PuzzleArea" type="Control" parent="Interface"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Title" type="Label" parent="Interface/PuzzleArea"]
+offset_left = 340.0
+offset_top = 52.0
+offset_right = 940.0
+offset_bottom = 92.0
+theme_override_colors/font_color = Color(0.92549, 0.878431, 0.960784, 1)
+theme_override_font_sizes/font_size = 28
+text = "TESTE — REPETIR SEQUÊNCIA"
+horizontal_alignment = 1
+
+[node name="PhaseLabel" type="Label" parent="Interface/PuzzleArea"]
+offset_left = 390.0
+offset_top = 120.0
+offset_right = 890.0
+offset_bottom = 162.0
+theme_override_colors/font_color = Color(0.92549, 0.878431, 0.960784, 1)
+theme_override_font_sizes/font_size = 32
+text = "MEMORIZE"
+horizontal_alignment = 1
+
+[node name="StatusLabel" type="Label" parent="Interface/PuzzleArea"]
+offset_left = 330.0
+offset_top = 168.0
+offset_right = 950.0
+offset_bottom = 204.0
+theme_override_colors/font_color = Color(0.796078, 0.741176, 0.831373, 1)
+theme_override_font_sizes/font_size = 17
+text = "Observe os quadrados destacados."
+horizontal_alignment = 1
+
+[node name="ProgressLabel" type="Label" parent="Interface/PuzzleArea"]
+offset_left = 390.0
+offset_top = 208.0
+offset_right = 890.0
+offset_bottom = 236.0
+theme_override_colors/font_color = Color(0.686275, 0.603922, 0.74902, 1)
+theme_override_font_sizes/font_size = 15
+text = "Sequência: 5 runas"
+horizontal_alignment = 1
+
+[node name="AttemptsLabel" type="Label" parent="Interface/PuzzleArea"]
+offset_left = 390.0
+offset_top = 238.0
+offset_right = 890.0
+offset_bottom = 266.0
+theme_override_colors/font_color = Color(0.686275, 0.603922, 0.74902, 1)
+theme_override_font_sizes/font_size = 15
+text = "Tentativas: 3/3"
+horizontal_alignment = 1
+
+[node name="RuneGrid" type="GridContainer" parent="Interface/PuzzleArea"]
+offset_left = 481.0
+offset_top = 286.0
+offset_right = 799.0
+offset_bottom = 604.0
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 12
+columns = 3
+
+[node name="Rune01" parent="Interface/PuzzleArea/RuneGrid" instance=ExtResource("2_rune")]
+layout_mode = 2
+rune_index = 0
+[node name="Rune02" parent="Interface/PuzzleArea/RuneGrid" instance=ExtResource("2_rune")]
+layout_mode = 2
+rune_index = 1
+[node name="Rune03" parent="Interface/PuzzleArea/RuneGrid" instance=ExtResource("2_rune")]
+layout_mode = 2
+rune_index = 2
+[node name="Rune04" parent="Interface/PuzzleArea/RuneGrid" instance=ExtResource("2_rune")]
+layout_mode = 2
+rune_index = 3
+[node name="Rune05" parent="Interface/PuzzleArea/RuneGrid" instance=ExtResource("2_rune")]
+layout_mode = 2
+rune_index = 4
+[node name="Rune06" parent="Interface/PuzzleArea/RuneGrid" instance=ExtResource("2_rune")]
+layout_mode = 2
+rune_index = 5
+[node name="Rune07" parent="Interface/PuzzleArea/RuneGrid" instance=ExtResource("2_rune")]
+layout_mode = 2
+rune_index = 6
+[node name="Rune08" parent="Interface/PuzzleArea/RuneGrid" instance=ExtResource("2_rune")]
+layout_mode = 2
+rune_index = 7
+[node name="Rune09" parent="Interface/PuzzleArea/RuneGrid" instance=ExtResource("2_rune")]
+layout_mode = 2
+rune_index = 8
+
+[node name="Controls" type="Label" parent="Interface/PuzzleArea"]
+offset_left = 330.0
+offset_top = 630.0
+offset_right = 950.0
+offset_bottom = 658.0
+theme_override_colors/font_color = Color(0.568627, 0.509804, 0.607843, 1)
+theme_override_font_sizes/font_size = 13
+text = "Clique ou use 1–9 • R reinicia • dificuldade no Inspector"
+horizontal_alignment = 1
+
+[node name="RepeatSequenceLogicTestController" type="Node" parent="."]
+script = ExtResource("1_controller")
+difficulty = 2

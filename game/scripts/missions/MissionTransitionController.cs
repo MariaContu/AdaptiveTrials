@@ -265,6 +265,34 @@ private static string? ResolveMissionScene(
 			"res://scenes/missions/combat/" +
 			"DefendObjectMission.tscn",
 
+		"repetir sequência" =>
+			"res://scenes/missions/puzzle/" +
+			"RepeatSequenceMission.tscn",
+
+		"repeat sequence" =>
+			"res://scenes/missions/puzzle/" +
+			"RepeatSequenceMission.tscn",
+
+		"conectar pontos" =>
+			"res://scenes/missions/puzzle/" +
+			"ConnectPointsMission.tscn",
+
+		"connect points" =>
+			"res://scenes/missions/puzzle/" +
+			"ConnectPointsMission.tscn",
+
+		"decifrar código" =>
+			"res://scenes/missions/puzzle/" +
+			"DecipherCodeMission.tscn",
+
+		"decifrar codigo" =>
+			"res://scenes/missions/puzzle/" +
+			"DecipherCodeMission.tscn",
+
+		"decipher code" =>
+			"res://scenes/missions/puzzle/" +
+			"DecipherCodeMission.tscn",
+
 		_ => null
 	};
 }
