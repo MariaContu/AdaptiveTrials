@@ -265,6 +265,14 @@ private static string? ResolveMissionScene(
 			"res://scenes/missions/combat/" +
 			"DefendObjectMission.tscn",
 
+		"repetir sequência" =>
+			"res://scenes/missions/puzzle/" +
+			"RepeatSequenceMission.tscn",
+
+		"repeat sequence" =>
+			"res://scenes/missions/puzzle/" +
+			"RepeatSequenceMission.tscn",
+
 		_ => null
 	};
 }

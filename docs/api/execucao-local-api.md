@@ -132,6 +132,7 @@ dotnet tool update --global dotnet-ef
 
 Na pasta da solution, execute:
 
+- se algo mudou: 
 ```bash
 dotnet ef migrations add UpdateSurvivalMissionsToWaves --project src/AdaptiveTrials.Infrastructure --startup-project src/AdaptiveTrials.Api
 ```
