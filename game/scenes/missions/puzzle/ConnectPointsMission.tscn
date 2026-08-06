@@ -1,0 +1,90 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/missions/puzzle/ConnectPointsMissionController.cs" id="1_controller"]
+[ext_resource type="PackedScene" path="res://scenes/missions/puzzle/shared/FlowConnectBoard.tscn" id="2_board"]
+[ext_resource type="PackedScene" path="res://scenes/components/MissionHud.tscn" id="3_hud"]
+[ext_resource type="PackedScene" path="res://scenes/components/MissionResultPopup.tscn" id="4_popup"]
+
+[sub_resource type="Gradient" id="Gradient_bg"]
+colors = PackedColorArray(0.137255, 0.0901961, 0.172549, 1, 0.270588, 0.176471, 0.337255, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture_bg"]
+gradient = SubResource("Gradient_bg")
+width = 1280
+height = 720
+fill_from = Vector2(0.1, 0)
+fill_to = Vector2(0.9, 1)
+
+[node name="ConnectPointsMission" type="Node2D"]
+
+[node name="Background" type="Sprite2D" parent="."]
+position = Vector2(640, 360)
+texture = SubResource("GradientTexture_bg")
+
+[node name="PuzzleInterface" type="CanvasLayer" parent="."]
+layer = 0
+
+[node name="PuzzleArea" type="Control" parent="PuzzleInterface"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+
+[node name="TitleLabel" type="Label" parent="PuzzleInterface/PuzzleArea"]
+offset_left = 320.0
+offset_top = 238.0
+offset_right = 960.0
+offset_bottom = 278.0
+theme_override_colors/font_color = Color(0.92549, 0.878431, 0.960784, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.45)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 3
+theme_override_font_sizes/font_size = 28
+text = "CONNECT THE COLORED PATHS"
+horizontal_alignment = 1
+
+[node name="InstructionLabel" type="Label" parent="PuzzleInterface/PuzzleArea"]
+offset_left = 210.0
+offset_top = 278.0
+offset_right = 1070.0
+offset_bottom = 308.0
+theme_override_colors/font_color = Color(0.796078, 0.741176, 0.831373, 1)
+theme_override_font_sizes/font_size = 15
+text = "Drag from one colored point to its matching pair. Paths cannot cross."
+horizontal_alignment = 1
+
+[node name="FlowConnectBoard" parent="PuzzleInterface/PuzzleArea" instance=ExtResource("2_board")]
+layout_mode = 0
+offset_left = 460.0
+offset_top = 310.0
+offset_right = 820.0
+offset_bottom = 670.0
+
+[node name="CoverageLabel" type="Label" parent="PuzzleInterface/PuzzleArea"]
+offset_left = 390.0
+offset_top = 674.0
+offset_right = 890.0
+offset_bottom = 700.0
+theme_override_colors/font_color = Color(0.941176, 0.776471, 0.454902, 1)
+theme_override_font_sizes/font_size = 15
+text = "Coverage: 0% / 75%"
+horizontal_alignment = 1
+
+[node name="FeedbackLabel" type="Label" parent="PuzzleInterface/PuzzleArea"]
+offset_left = 220.0
+offset_top = 700.0
+offset_right = 1060.0
+offset_bottom = 724.0
+theme_override_colors/font_color = Color(0.760784, 0.705882, 0.807843, 1)
+theme_override_font_sizes/font_size = 14
+text = "Right-click to cancel the current path."
+horizontal_alignment = 1
+
+[node name="MissionHud" parent="." instance=ExtResource("3_hud")]
+
+[node name="MissionResultPopup" parent="." instance=ExtResource("4_popup")]
+
+[node name="ConnectPointsMissionController" type="Node" parent="."]
+script = ExtResource("1_controller")

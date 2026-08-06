@@ -273,6 +273,14 @@ private static string? ResolveMissionScene(
 			"res://scenes/missions/puzzle/" +
 			"RepeatSequenceMission.tscn",
 
+		"conectar pontos" =>
+			"res://scenes/missions/puzzle/" +
+			"ConnectPointsMission.tscn",
+
+		"connect points" =>
+			"res://scenes/missions/puzzle/" +
+			"ConnectPointsMission.tscn",
+
 		_ => null
 	};
 }
