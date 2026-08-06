@@ -1,0 +1,134 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/tests/CombatWaveManagerTestController.cs" id="1_controller"]
+[ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="2_player"]
+[ext_resource type="PackedScene" path="res://scenes/missions/combat/shared/CombatWaveManager.tscn" id="3_wave_manager"]
+[ext_resource type="PackedScene" path="res://scenes/missions/combat/shared/WaveAnnouncement.tscn" id="4_announcement"]
+
+[sub_resource type="RectangleShape2D" id="WallHorizontal"]
+size = Vector2(1120, 28)
+
+[sub_resource type="RectangleShape2D" id="WallVertical"]
+size = Vector2(28, 590)
+
+[sub_resource type="StyleBoxFlat" id="PanelStyle"]
+bg_color = Color(0.105882, 0.0705882, 0.168627, 0.94)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.541176, 0.403922, 0.760784, 1)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[node name="CombatWaveManagerTest" type="Node2D"]
+script = ExtResource("1_controller")
+
+[node name="Background" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(0, 0, 1280, 0, 1280, 720, 0, 720)
+color = Color(0.0705882, 0.0470588, 0.117647, 1)
+
+[node name="Arena" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(80, 80, 1200, 80, 1200, 670, 80, 670)
+color = Color(0.145098, 0.101961, 0.211765, 1)
+
+[node name="TopWall" type="StaticBody2D" parent="."]
+position = Vector2(640, 80)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="TopWall"]
+shape = SubResource("WallHorizontal")
+
+[node name="BottomWall" type="StaticBody2D" parent="."]
+position = Vector2(640, 670)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="BottomWall"]
+shape = SubResource("WallHorizontal")
+
+[node name="LeftWall" type="StaticBody2D" parent="."]
+position = Vector2(80, 375)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="LeftWall"]
+shape = SubResource("WallVertical")
+
+[node name="RightWall" type="StaticBody2D" parent="."]
+position = Vector2(1200, 375)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="RightWall"]
+shape = SubResource("WallVertical")
+
+[node name="SpawnPoints" type="Node2D" parent="."]
+
+[node name="Spawn01" type="Marker2D" parent="SpawnPoints"]
+position = Vector2(220, 170)
+
+[node name="Spawn02" type="Marker2D" parent="SpawnPoints"]
+position = Vector2(640, 150)
+
+[node name="Spawn03" type="Marker2D" parent="SpawnPoints"]
+position = Vector2(1060, 175)
+
+[node name="Spawn04" type="Marker2D" parent="SpawnPoints"]
+position = Vector2(210, 560)
+
+[node name="Spawn05" type="Marker2D" parent="SpawnPoints"]
+position = Vector2(650, 580)
+
+[node name="Spawn06" type="Marker2D" parent="SpawnPoints"]
+position = Vector2(1070, 550)
+
+[node name="DynamicEnemies" type="Node2D" parent="."]
+
+[node name="Player" parent="." instance=ExtResource("2_player")]
+position = Vector2(640, 400)
+initial_visual_mode = 2
+
+[node name="CombatWaveManager" parent="." instance=ExtResource("3_wave_manager")]
+
+[node name="Interface" type="CanvasLayer" parent="."]
+
+[node name="WaveAnnouncement" parent="Interface" instance=ExtResource("4_announcement")]
+
+[node name="Panel" type="PanelContainer" parent="Interface"]
+offset_left = 24.0
+offset_top = 20.0
+offset_right = 380.0
+offset_bottom = 192.0
+theme_override_styles/panel = SubResource("PanelStyle")
+
+[node name="Margin" type="MarginContainer" parent="Interface/Panel"]
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 14
+
+[node name="Content" type="VBoxContainer" parent="Interface/Panel/Margin"]
+theme_override_constants/separation = 5
+
+[node name="Title" type="Label" parent="Interface/Panel/Margin/Content"]
+theme_override_font_sizes/font_size = 20
+text = "COMBAT WAVE TEST"
+
+[node name="WaveLabel" type="Label" parent="Interface/Panel/Margin/Content"]
+text = "Wave: 0/3"
+
+[node name="EnemyLabel" type="Label" parent="Interface/Panel/Margin/Content"]
+text = "Enemies: 0"
+
+[node name="HealthLabel" type="Label" parent="Interface/Panel/Margin/Content"]
+text = "Health: 5/5"
+
+[node name="StatusLabel" type="Label" parent="Interface/Panel/Margin/Content"]
+custom_minimum_size = Vector2(320, 40)
+text = "Preparing waves..."
+autowrap_mode = 2
+
+[node name="Controls" type="Label" parent="Interface"]
+offset_left = 820.0
+offset_top = 24.0
+offset_right = 1240.0
+offset_bottom = 86.0
+theme_override_font_sizes/font_size = 16
+text = "WASD / Arrows: Move    F: Cast orb    R: Restart"
+horizontal_alignment = 2

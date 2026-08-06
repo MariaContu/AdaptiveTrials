@@ -1,0 +1,72 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://scripts/missions/combat/shared/CombatEnemyController.cs" id="1_enemy"]
+[ext_resource type="Script" path="res://scripts/missions/combat/shared/HealthComponent.cs" id="2_health"]
+[ext_resource type="Script" path="res://scripts/missions/combat/shared/DamageArea.cs" id="3_damage"]
+[ext_resource type="PackedScene" path="res://scenes/missions/combat/shared/EnemyMagicOrb.tscn" id="4_enemy_orb"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleBody"]
+radius = 15.0
+height = 38.0
+
+[sub_resource type="CircleShape2D" id="CircleHurtbox"]
+radius = 20.0
+
+[sub_resource type="CircleShape2D" id="CircleDetection"]
+radius = 340.0
+
+[sub_resource type="CircleShape2D" id="CircleAttack"]
+radius = 42.0
+
+[node name="CombatEnemy" type="CharacterBody2D"]
+collision_layer = 1
+collision_mask = 1
+script = ExtResource("1_enemy")
+enemy_orb_scene = ExtResource("4_enemy_orb")
+
+[node name="Visual" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-18, -20, 18, -20, 23, 8, 0, 25, -23, 8)
+color = Color(0.42, 0.16, 0.56, 1)
+
+[node name="Eye" type="Polygon2D" parent="Visual"]
+polygon = PackedVector2Array(3, -8, 13, -5, 3, -2)
+color = Color(0.95, 0.82, 1, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CapsuleBody")
+
+[node name="Hurtbox" type="Area2D" parent="."]
+collision_layer = 8
+collision_mask = 0
+monitoring = false
+monitorable = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox"]
+shape = SubResource("CircleHurtbox")
+
+[node name="DetectionArea" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 32
+monitoring = true
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="DetectionArea"]
+shape = SubResource("CircleDetection")
+
+[node name="AttackArea" type="Area2D" parent="."]
+collision_layer = 16
+collision_mask = 32
+monitoring = false
+monitorable = false
+script = ExtResource("3_damage")
+repeat_while_overlapping = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AttackArea"]
+shape = SubResource("CircleAttack")
+
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("2_health")
+maximum_health = 3
+invulnerability_seconds = 0.15
+visual_target_path = NodePath("../Visual")
+flash_interval_seconds = 0.06

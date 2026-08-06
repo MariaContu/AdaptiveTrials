@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using AdaptiveTrials.Game.Missions.Combat.Shared;
 using AdaptiveTrials.Game.Interactions;
 using Godot;
 
@@ -7,8 +8,21 @@ namespace AdaptiveTrials.Game.Player;
 /// <summary>
 /// Controla a movimentação, as animações e as interações do jogador.
 /// </summary>
-public partial class PlayerController : CharacterBody2D
+public partial class PlayerController : CharacterBody2D, IDamageable
 {
+	[Signal]
+	public delegate void MagicOrbCastEventHandler(MagicOrb orb);
+
+	[Signal]
+	public delegate void HealthChangedEventHandler(
+		int currentHealth,
+		int maximumHealth);
+
+	[Signal]
+	public delegate void DamagedEventHandler(int damage, Node source);
+
+	[Signal]
+	public delegate void DiedEventHandler(Node source);
 	[Export]
 	public float MovementSpeed { get; set; } = 220.0f;
 
@@ -16,8 +30,28 @@ public partial class PlayerController : CharacterBody2D
 	public PlayerVisualMode InitialVisualMode { get; set; } =
 		PlayerVisualMode.Normal;
 
+	[ExportGroup("Magic Attack")]
+	[Export]
+	public PackedScene? MagicOrbScene { get; set; }
+
+	[Export]
+	public int MagicOrbDamage { get; set; } = 1;
+
+	[Export]
+	public float MagicOrbSpeed { get; set; } = 520.0f;
+
+	[Export]
+	public float MagicOrbLifetimeSeconds { get; set; } = 1.4f;
+
+	[Export]
+	public float MagicOrbSpawnDistance { get; set; } = 48.0f;
+
+	[Export]
+	public float MagicOrbCooldownSeconds { get; set; } = 0.45f;
+
 	private AnimatedSprite2D _animatedSprite = null!;
 	private Area2D _interactionArea = null!;
+	private HealthComponent _healthComponent = null!;
 
 	private readonly List<Node> _nearbyInteractables = new();
 
@@ -25,6 +59,17 @@ public partial class PlayerController : CharacterBody2D
 	private PlayerDirection _direction = PlayerDirection.Down;
 
 	private bool _movementEnabled = true;
+	private float _magicOrbCooldownRemaining;
+
+	public bool CanReceiveDamage =>
+		_healthComponent is not null &&
+		_healthComponent.CanReceiveDamage;
+
+	public int CurrentHealth =>
+		_healthComponent?.CurrentHealth ?? 0;
+
+	public int MaximumHealth =>
+		_healthComponent?.MaximumHealth ?? 0;
 
 	public override void _Ready()
 	{
@@ -34,10 +79,17 @@ public partial class PlayerController : CharacterBody2D
 		_interactionArea =
 			GetNode<Area2D>("InteractionArea");
 
+		_healthComponent =
+			GetNode<HealthComponent>("HealthComponent");
+
 		_interactionArea.BodyEntered += OnInteractionBodyEntered;
 		_interactionArea.BodyExited += OnInteractionBodyExited;
 		_interactionArea.AreaEntered += OnInteractionAreaEntered;
 		_interactionArea.AreaExited += OnInteractionAreaExited;
+
+		_healthComponent.HealthChanged += OnHealthChanged;
+		_healthComponent.DamageReceived += OnDamageReceived;
+		_healthComponent.Depleted += OnHealthDepleted;
 
 		SetVisualMode(InitialVisualMode);
 		UpdateAnimation(Vector2.Zero);
@@ -45,6 +97,10 @@ public partial class PlayerController : CharacterBody2D
 
 	public override void _PhysicsProcess(double delta)
 	{
+		_magicOrbCooldownRemaining = Mathf.Max(
+			0.0f,
+			_magicOrbCooldownRemaining - (float)delta);
+
 		if (!_movementEnabled)
 		{
 			Velocity = Vector2.Zero;
@@ -83,6 +139,13 @@ public partial class PlayerController : CharacterBody2D
 		if (inputEvent.IsActionPressed("debug_combat_mode"))
 		{
 			SetVisualMode(PlayerVisualMode.Combat);
+			GetViewport().SetInputAsHandled();
+			return;
+		}
+
+		if (inputEvent.IsActionPressed("attack"))
+		{
+			TryCastMagicOrb();
 			GetViewport().SetInputAsHandled();
 			return;
 		}
@@ -133,6 +196,25 @@ public partial class PlayerController : CharacterBody2D
 	public PlayerVisualMode GetVisualMode()
 	{
 		return _visualMode;
+	}
+
+
+	/// <summary>
+	/// Encaminha o dano ao componente reutilizável de vida.
+	/// </summary>
+	public void ReceiveDamage(int damage, Node source)
+	{
+		_healthComponent.TryReceiveDamage(damage, source);
+	}
+
+	public void RestoreFullHealth()
+	{
+		_healthComponent.RestoreFullHealth();
+	}
+
+	public void SetDamageEnabled(bool enabled)
+	{
+		_healthComponent.SetDamageEnabled(enabled);
 	}
 
 	private void UpdateDirection(Vector2 movement)
@@ -212,6 +294,75 @@ public partial class PlayerController : CharacterBody2D
 		_animatedSprite.Frame = 0;
 	}
 
+	private void TryCastMagicOrb()
+	{
+		if (_visualMode != PlayerVisualMode.Combat)
+		{
+			GD.Print("O ataque mágico está disponível apenas no modo de combate.");
+			return;
+		}
+
+		if (_magicOrbCooldownRemaining > 0.0f)
+		{
+			return;
+		}
+
+		if (MagicOrbScene is null)
+		{
+			GD.PushError("A cena da orbe mágica não foi configurada no Player.");
+			return;
+		}
+
+		Node? currentScene = GetTree().CurrentScene;
+
+		if (currentScene is null)
+		{
+			GD.PushError("Não foi possível localizar a cena atual para criar a orbe.");
+			return;
+		}
+
+		MagicOrb? orb = MagicOrbScene.Instantiate<MagicOrb>();
+
+		if (orb is null)
+		{
+			GD.PushError("A cena configurada não possui MagicOrb no nó raiz.");
+			return;
+		}
+
+		Vector2 attackDirection = GetDirectionVector();
+
+		orb.Initialize(
+			attackDirection,
+			MagicOrbDamage,
+			this,
+			MagicOrbSpeed,
+			MagicOrbLifetimeSeconds);
+
+		currentScene.AddChild(orb);
+		orb.GlobalPosition =
+			GlobalPosition +
+			attackDirection * MagicOrbSpawnDistance;
+
+		_magicOrbCooldownRemaining =
+			Mathf.Max(0.05f, MagicOrbCooldownSeconds);
+
+		EmitSignal(SignalName.MagicOrbCast, orb);
+
+		GD.Print($"Orbe mágica lançada para {_direction}.");
+	}
+
+	private Vector2 GetDirectionVector()
+	{
+		return _direction switch
+		{
+			PlayerDirection.Down => Vector2.Down,
+			PlayerDirection.Up => Vector2.Up,
+			PlayerDirection.Right => Vector2.Right,
+			PlayerDirection.Left => Vector2.Left,
+			_ => Vector2.Down
+		};
+	}
+
 	private void TryInteract()
 	{
 		for (int index = _nearbyInteractables.Count - 1;
@@ -288,5 +439,29 @@ public partial class PlayerController : CharacterBody2D
 	private void UnregisterInteractable(Node node)
 	{
 		_nearbyInteractables.Remove(node);
+	}
+
+
+	private void OnHealthChanged(int currentHealth, int maximumHealth)
+	{
+		EmitSignal(
+			SignalName.HealthChanged,
+			currentHealth,
+			maximumHealth);
+
+		GD.Print($"Vida do jogador: {currentHealth}/{maximumHealth}.");
+	}
+
+	private void OnDamageReceived(int damage, Node source)
+	{
+		EmitSignal(SignalName.Damaged, damage, source);
+	}
+
+	private void OnHealthDepleted(Node source)
+	{
+		SetMovementEnabled(false);
+		SetDamageEnabled(false);
+		EmitSignal(SignalName.Died, source);
+		GD.Print("O jogador ficou sem vida.");
 	}
 }

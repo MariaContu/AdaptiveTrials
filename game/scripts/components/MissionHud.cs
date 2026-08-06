@@ -153,6 +153,15 @@ public partial class MissionHud : CanvasLayer
 		SetAttemptsVisible(true);
 	}
 
+	public void SetAttemptsText(string text)
+	{
+		_attemptsLabel.Text = string.IsNullOrWhiteSpace(text)
+			? "Status"
+			: text;
+
+		SetAttemptsVisible(true);
+	}
+
 	public void SetAttemptsVisible(bool visible)
 	{
 		_attemptsLabel.Visible = visible;

@@ -1,0 +1,47 @@
+[gd_scene format=3 uid="uid://ht7puvfewwo2"]
+
+[ext_resource type="PackedScene" uid="uid://dqetu3bq4c1ws" path="res://scenes/player/Player.tscn" id="1_player"]
+[ext_resource type="PackedScene" path="res://scenes/tests/DamageableTarget.tscn" id="2_target"]
+
+[node name="PlayerMagicOrbTest" type="Node2D" unique_id=1461729867]
+
+[node name="Background" type="ColorRect" parent="." unique_id=532878147]
+offset_right = 1280.0
+offset_bottom = 720.0
+mouse_filter = 2
+color = Color(0.929412, 0.898039, 0.976471, 1)
+
+[node name="Title" type="Label" parent="." unique_id=1627619701]
+offset_left = 34.0
+offset_top = 26.0
+offset_right = 820.0
+offset_bottom = 62.0
+theme_override_colors/font_color = Color(0.14902, 0.0862745, 0.223529, 1)
+theme_override_font_sizes/font_size = 24
+text = "TESTE DE COMBATE — ORBE MÁGICA"
+
+[node name="Instructions" type="Label" parent="." unique_id=1688151533]
+offset_left = 34.0
+offset_top = 68.0
+offset_right = 830.0
+offset_bottom = 126.0
+theme_override_colors/font_color = Color(0.286275, 0.211765, 0.368627, 1)
+theme_override_font_sizes/font_size = 18
+text = "WASD ou setas: mover | F: lançar orbe
+A orbe deve sair na última direção observada pelo personagem."
+
+[node name="Player" parent="." unique_id=1993069009 instance=ExtResource("1_player")]
+position = Vector2(640, 360)
+InitialVisualMode = 1
+
+[node name="TargetRight" parent="." unique_id=626978091 instance=ExtResource("2_target")]
+position = Vector2(940, 360)
+
+[node name="TargetUp" parent="." unique_id=1377119491 instance=ExtResource("2_target")]
+position = Vector2(640, 160)
+
+[node name="TargetDown" parent="." unique_id=1584563328 instance=ExtResource("2_target")]
+position = Vector2(640, 600)
+
+[node name="TargetLeft" parent="." unique_id=230681269 instance=ExtResource("2_target")]
+position = Vector2(340, 360)
