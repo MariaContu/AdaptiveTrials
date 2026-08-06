@@ -281,6 +281,18 @@ private static string? ResolveMissionScene(
 			"res://scenes/missions/puzzle/" +
 			"ConnectPointsMission.tscn",
 
+		"decifrar código" =>
+			"res://scenes/missions/puzzle/" +
+			"DecipherCodeMission.tscn",
+
+		"decifrar codigo" =>
+			"res://scenes/missions/puzzle/" +
+			"DecipherCodeMission.tscn",
+
+		"decipher code" =>
+			"res://scenes/missions/puzzle/" +
+			"DecipherCodeMission.tscn",
+
 		_ => null
 	};
 }
