@@ -70,7 +70,7 @@ public partial class ConnectPointsFlowLogicTestController : Node
         _titleLabel.Text =
             $"CONNECT PATHS — {GetDifficultyText(safeDifficulty).ToUpperInvariant()}";
         _statusLabel.Text =
-            "Drag from a colored endpoint to the matching endpoint.";
+            "Arraste de um ponto colorido até o ponto correspondente.";
         _statusLabel.Modulate = new Color("#c2b4ce");
         UpdateAttempts();
 
@@ -98,13 +98,13 @@ public partial class ConnectPointsFlowLogicTestController : Node
         _failures++;
         UpdateAttempts();
         _statusLabel.Text =
-            "INVALID MOVE — paths must use adjacent empty cells and cannot cross.";
+            $"TENTATIVA INVÁLIDA — {_board.LastInvalidMoveReason}";
         _statusLabel.Modulate = new Color("#e18b96");
 
         if (_failures >= _maximumFailures)
         {
             _board.SetInputEnabled(false);
-            _statusLabel.Text = "FAILED — PRESS R TO RESTART";
+            _statusLabel.Text = "FALHA — PRESSIONE R PARA REINICIAR";
         }
     }
 
@@ -118,14 +118,14 @@ public partial class ConnectPointsFlowLogicTestController : Node
     private void OnBoardCompleted()
     {
         _board.SetInputEnabled(false);
-        _statusLabel.Text = "SUCCESS — PRESS R TO RESTART";
+        _statusLabel.Text = "SUCESSO — PRESSIONE R PARA REINICIAR";
         _statusLabel.Modulate = new Color("#8fc9a5");
     }
 
     private void UpdateAttempts()
     {
         int remaining = Math.Max(0, _maximumFailures - _failures);
-        _attemptsLabel.Text = $"Attempts: {remaining}/{_maximumFailures}";
+        _attemptsLabel.Text = $"Tentativas: {remaining}/{_maximumFailures}";
     }
 
     private static string GetDifficultyText(int difficulty) => difficulty switch

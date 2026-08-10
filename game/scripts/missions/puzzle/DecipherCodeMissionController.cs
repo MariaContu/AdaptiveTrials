@@ -114,9 +114,9 @@ public partial class DecipherCodeMissionController : Node
 
         _objectiveText = _boardCount switch
         {
-            1 => "Discover one hidden sequence of five symbols.",
-            2 => "Discover two hidden sequences at the same time.",
-            _ => "Discover four hidden sequences at the same time."
+            1 => "Descubra uma sequência oculta de cinco símbolos.",
+            2 => "Descubra duas sequências ocultas ao mesmo tempo.",
+            _ => "Descubra quatro sequências ocultas ao mesmo tempo."
         };
 
         _missionHud.Configure(
@@ -124,7 +124,7 @@ public partial class DecipherCodeMissionController : Node
             _mission.Type,
             _objectiveText,
             _boardCount);
-        _missionHud.SetProgress(0, _boardCount, "Sequences solved");
+        _missionHud.SetProgress(0, _boardCount, "Sequências descobertas");
         _missionHud.SetAttempts(_maximumAttempts, _maximumAttempts);
         _missionHud.SetVisibleState(true);
 
@@ -152,7 +152,7 @@ public partial class DecipherCodeMissionController : Node
         _missionHud.SetProgress(
             _bestSolvedBoards,
             _boardCount,
-            "Sequences solved");
+            "Sequências descobertas");
         _missionHud.SetAttempts(remainingAttempts, _maximumAttempts);
 
         if (solvedBoards < _boardCount)
@@ -171,7 +171,7 @@ public partial class DecipherCodeMissionController : Node
     {
         if (!_missionFinished && !_isFinalizingMission)
         {
-            _ = FinishMissionAsync(true);
+            _ = FinishMissionAsync(true, "Todas as sequências foram descobertas");
         }
     }
 
@@ -182,11 +182,11 @@ public partial class DecipherCodeMissionController : Node
         if (!_missionFinished && !_isFinalizingMission)
         {
             _bestSolvedBoards = Math.Max(_bestSolvedBoards, solvedBoards);
-            _ = FinishMissionAsync(false);
+            _ = FinishMissionAsync(false, "Tentativas esgotadas");
         }
     }
 
-    private async Task FinishMissionAsync(bool success)
+    private async Task FinishMissionAsync(bool success, string finishReason)
     {
         if (_missionFinished || _isFinalizingMission)
         {
@@ -202,7 +202,7 @@ public partial class DecipherCodeMissionController : Node
             CompletionTime = _elapsedTime,
             Failures = _failures,
             Success = success,
-            Persistence = CalculatePersistence(_failures)
+            Persistence = CalculatePersistence(success, _failures)
         };
 
         _resultRegistered =
@@ -218,11 +218,12 @@ public partial class DecipherCodeMissionController : Node
             _mission.Name,
             _objectiveText,
             _elapsedTime,
-            "Sequences Solved",
+            "Sequências descobertas",
             $"{_bestSolvedBoards}/{_boardCount}",
             GetDifficultyText(_mission.Difficulty),
             _failures);
 
+        GD.Print($"MotivoEncerramento={finishReason}");
         PrintMissionResult();
     }
 
@@ -269,18 +270,20 @@ public partial class DecipherCodeMissionController : Node
         GD.PushError(message);
     }
 
-    private static double CalculatePersistence(int failures)
+    private static double CalculatePersistence(bool success, int failures)
     {
-        return Math.Max(0d, 1d - (failures * 0.2d));
+        return success
+            ? 1.0
+            : Math.Max(0d, 1d - (Math.Max(0, failures) * 0.2d));
     }
 
     private static string GetDifficultyText(int difficulty)
     {
         return difficulty switch
         {
-            1 => "Easy",
-            2 => "Medium",
-            3 => "Hard",
+            1 => "Fácil",
+            2 => "Médio",
+            3 => "Difícil",
             _ => difficulty.ToString(CultureInfo.InvariantCulture)
         };
     }

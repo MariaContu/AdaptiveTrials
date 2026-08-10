@@ -184,7 +184,7 @@ public partial class MissionSummaryRow : PanelContainer
 				new Color("#86AB8A");
 
 			_resultLabel.Text =
-				"SUCCESS";
+				"CONCLUÍDA";
 
 			_resultLabel.Modulate =
 				new Color("#416E48");
@@ -203,7 +203,7 @@ public partial class MissionSummaryRow : PanelContainer
 			new Color("#C77C87");
 
 		_resultLabel.Text =
-			"FAILED";
+			"NÃO CONCLUÍDA";
 
 		_resultLabel.Modulate =
 			new Color("#914955");
@@ -219,16 +219,16 @@ public partial class MissionSummaryRow : PanelContainer
 		return missionType switch
 		{
 			MissionType.Combat =>
-				"Combat",
+				"Combate",
 
 			MissionType.Exploration =>
-				"Exploration",
+				"Exploração",
 
 			MissionType.Puzzle =>
-				"Puzzle",
+				"Quebra-cabeça",
 
 			_ =>
-				"Unknown"
+				"Desconhecida"
 		};
 	}
 
@@ -256,10 +256,10 @@ public partial class MissionSummaryRow : PanelContainer
 	{
 		return difficulty switch
 		{
-			1 => "Easy",
-			2 => "Medium",
-			3 => "Hard",
-			_ => $"Level {difficulty}"
+			1 => "Fácil",
+			2 => "Médio",
+			3 => "Difícil",
+			_ => $"Nível {difficulty}"
 		};
 	}
 

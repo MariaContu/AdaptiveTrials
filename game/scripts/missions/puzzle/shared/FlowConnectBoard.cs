@@ -50,6 +50,7 @@ public partial class FlowConnectBoard : Control
     public int TotalPairs => _pairCount;
     public int CoveragePercent => Mathf.RoundToInt(GetCoverageRatio() * 100.0f);
     public int RequiredCoveragePercent => Mathf.RoundToInt(_requiredCoverage * 100.0f);
+    public string LastInvalidMoveReason { get; private set; } = string.Empty;
 
     public override void _Ready()
     {
@@ -83,6 +84,14 @@ public partial class FlowConnectBoard : Control
             {
                 _lastPointerCell = cell;
                 HandleCell(cell);
+                AcceptEvent();
+                return;
+            }
+
+            if (mouseButton.ButtonIndex == MouseButton.Left && !mouseButton.Pressed)
+            {
+                FinishDragAttempt();
+                _lastPointerCell = new Vector2I(-1, -1);
                 AcceptEvent();
                 return;
             }
@@ -162,6 +171,7 @@ public partial class FlowConnectBoard : Control
         _activePath.Clear();
         _activeColor = -1;
         _lastPointerCell = new Vector2I(-1, -1);
+        LastInvalidMoveReason = string.Empty;
         SetInputEnabled(true);
         QueueRedraw();
     }
@@ -241,7 +251,7 @@ public partial class FlowConnectBoard : Control
 
         if (!AreAdjacent(current, cell))
         {
-            EmitSignal(SignalName.InvalidMove);
+            // Movimento rápido do mouse pode pular células. Isso não é uma falha do jogador.
             return;
         }
 
@@ -253,7 +263,6 @@ public partial class FlowConnectBoard : Control
 
         if (_activePath.Contains(cell))
         {
-            EmitSignal(SignalName.InvalidMove);
             return;
         }
 
@@ -265,7 +274,7 @@ public partial class FlowConnectBoard : Control
             }
             else
             {
-                EmitSignal(SignalName.InvalidMove);
+                // O caminho permanece ativo; se o jogador soltar aqui, a tentativa será contada uma única vez.
             }
 
             return;
@@ -273,7 +282,6 @@ public partial class FlowConnectBoard : Control
 
         if (_occupiedCells.ContainsKey(cell))
         {
-            EmitSignal(SignalName.InvalidMove);
             return;
         }
 
@@ -375,6 +383,29 @@ public partial class FlowConnectBoard : Control
         }
 
         QueueRedraw();
+    }
+
+
+    private void FinishDragAttempt()
+    {
+        if (_activeColor < 0 || _activePath.Count == 0)
+        {
+            return;
+        }
+
+        // Apenas um caminho realmente iniciado e liberado sem chegar ao par conta como erro.
+        bool shouldCountAsInvalidAttempt = _activePath.Count > 1;
+        CancelActivePath();
+
+        if (!shouldCountAsInvalidAttempt)
+        {
+            return;
+        }
+
+        LastInvalidMoveReason =
+            "O caminho foi liberado antes de alcançar o ponto correspondente.";
+
+        EmitSignal(SignalName.InvalidMove);
     }
 
     private void CancelActivePath()

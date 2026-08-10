@@ -359,7 +359,7 @@ public partial class RepeatSequenceMissionController : Node
 
         if (_inputIndex >= _sequenceSize)
         {
-            _ = FinishMissionAsync(true);
+            _ = FinishMissionAsync(true, "Sequência reproduzida corretamente");
         }
     }
 
@@ -392,7 +392,7 @@ public partial class RepeatSequenceMissionController : Node
 
         if (_failures >= _maximumFailures)
         {
-            await FinishMissionAsync(false);
+            await FinishMissionAsync(false, "Limite de tentativas incorretas atingido");
             return;
         }
 
@@ -413,7 +413,7 @@ public partial class RepeatSequenceMissionController : Node
         }
     }
 
-    private async Task FinishMissionAsync(bool success)
+    private async Task FinishMissionAsync(bool success, string finishReason)
     {
         if (_missionFinished || _isFinalizingMission)
         {
@@ -431,7 +431,7 @@ public partial class RepeatSequenceMissionController : Node
             CompletionTime = _elapsedTime,
             Failures = _failures,
             Success = success,
-            Persistence = CalculatePersistence(_failures)
+            Persistence = CalculatePersistence(success, _failures)
         };
 
         _resultRegistered = await _sessionManager.RegisterCurrentMissionResultAsync(Result);
@@ -451,6 +451,7 @@ public partial class RepeatSequenceMissionController : Node
             GetDifficultyText(_mission.Difficulty),
             _failures);
 
+        GD.Print($"MotivoEncerramento={finishReason}");
         PrintMissionResult();
     }
 
@@ -546,8 +547,10 @@ public partial class RepeatSequenceMissionController : Node
         };
     }
 
-    private static double CalculatePersistence(int failures) =>
-        Math.Max(0.0, 1.0 - Math.Max(0, failures) * 0.2);
+    private static double CalculatePersistence(bool success, int failures) =>
+        success
+            ? 1.0
+            : Math.Max(0.0, 1.0 - Math.Max(0, failures) * 0.2);
 
     private static string GetDifficultyText(int difficulty)
     {

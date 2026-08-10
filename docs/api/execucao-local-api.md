@@ -134,7 +134,7 @@ Na pasta da solution, execute:
 
 - se algo mudou: 
 ```bash
-dotnet ef migrations add UpdateSurvivalMissionsToWaves --project src/AdaptiveTrials.Infrastructure --startup-project src/AdaptiveTrials.Api
+dotnet ef migrations add NOME_DA_CHANGE --project src/AdaptiveTrials.Infrastructure --startup-project src/AdaptiveTrials.Api
 ```
 
 ```bash
