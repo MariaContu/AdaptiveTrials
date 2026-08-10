@@ -100,7 +100,7 @@ public partial class AvoidEnemiesMissionController : Node
 		if (currentMission is null)
 		{
 			ShowInitializationError(
-				"No active mission was found.");
+				"Nenhuma missão ativa foi encontrada.");
 
 			return;
 		}
@@ -110,7 +110,7 @@ public partial class AvoidEnemiesMissionController : Node
 		if (_mission.Type != MissionType.Exploration)
 		{
 			ShowInitializationError(
-				"The active mission is not an exploration mission.");
+				"A missão ativa não é uma missão de exploração.");
 
 			return;
 		}
@@ -179,8 +179,8 @@ public partial class AvoidEnemiesMissionController : Node
 		_activeEnemies.Clear();
 
 		_objectiveText =
-			"Avoid the enemy patrols and reach " +
-			"the destination without being detected.";
+			"Evite as patrulhas inimigas e alcance " +
+			"o destino sem ser detectado.";
 
 		_player.GlobalPosition =
 			_playerSpawn.GlobalPosition;
@@ -245,10 +245,10 @@ public partial class AvoidEnemiesMissionController : Node
 			_requiredEnemies)
 		{
 			ShowInitializationError(
-				$"The map contains " +
-				$"{patrolDefinitions.Count} patrol routes, " +
-				$"but the mission requires " +
-				$"{_requiredEnemies} enemies.");
+				$"O mapa contém " +
+				$"{patrolDefinitions.Count} rotas de patrulha, " +
+				$"mas a missão exige " +
+				$"{_requiredEnemies} inimigos.");
 
 			return;
 		}
@@ -274,9 +274,9 @@ public partial class AvoidEnemiesMissionController : Node
 				end is null)
 			{
 				ShowInitializationError(
-					$"The patrol route " +
-					$"{patrolDefinition.Name} does not " +
-					"contain Start and End markers.");
+					$"A rota de patrulha " +
+					$"{patrolDefinition.Name} não contém " +
+					"os marcadores de início e fim.");
 
 				return;
 			}
@@ -481,7 +481,7 @@ public partial class AvoidEnemiesMissionController : Node
 			objective: _objectiveText,
 			completionTime: _elapsedTime,
 			statisticTitle:
-				"Times Detected",
+				"Vezes detectado",
 			statisticValue:
 				_failures.ToString(),
 			difficulty:
@@ -655,14 +655,14 @@ public partial class AvoidEnemiesMissionController : Node
 			_resultPopup.ShowResult(
 				success: false,
 				missionName:
-					"Mission unavailable",
+					"Missão indisponível",
 				objective:
 					message,
 				completionTime: 0,
 				statisticTitle:
 					"Status",
 				statisticValue:
-					"Initialization error",
+					"Erro de inicialização",
 				difficulty: "-",
 				failures: 0);
 		}
@@ -802,10 +802,10 @@ public partial class AvoidEnemiesMissionController : Node
 	{
 		return difficulty switch
 		{
-			1 => "Easy",
-			2 => "Medium",
-			3 => "Hard",
-			_ => $"Level {difficulty}"
+			1 => "Fácil",
+			2 => "Média",
+			3 => "Difícil",
+			_ => $"Nível {difficulty}"
 		};
 	}
 

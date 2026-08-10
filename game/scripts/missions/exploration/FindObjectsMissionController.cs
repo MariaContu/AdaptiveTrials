@@ -68,7 +68,7 @@ public partial class FindObjectsMissionController : Node
 		if (currentMission is null)
 		{
 			ShowInitializationError(
-				"No active mission was found.");
+				"Nenhuma missão ativa foi encontrada.");
 
 			return;
 		}
@@ -78,7 +78,7 @@ public partial class FindObjectsMissionController : Node
 		if (_mission.Type != MissionType.Exploration)
 		{
 			ShowInitializationError(
-				"The active mission is not an exploration mission.");
+				"A missão ativa não é uma missão de exploração.");
 
 			return;
 		}
@@ -145,8 +145,8 @@ public partial class FindObjectsMissionController : Node
 		Result = null;
 
 		_objectiveText =
-			$"Find and collect {_requiredItems} objects " +
-			"scattered across the area.";
+			$"Encontre e colete {_requiredItems} objetos " +
+			"espalhados pelo cenário.";
 
 		_player.GlobalPosition =
 			_playerSpawn.GlobalPosition;
@@ -169,7 +169,7 @@ public partial class FindObjectsMissionController : Node
 		_missionHud.SetProgress(
 			0,
 			_requiredItems,
-			"Objects");
+			"Objetos");
 
 		_missionHud.SetAttemptsVisible(
 			false);
@@ -200,9 +200,9 @@ public partial class FindObjectsMissionController : Node
 			_requiredItems)
 		{
 			ShowInitializationError(
-				$"The map contains {spawnPoints.Count} " +
-				$"spawn points, but the mission requires " +
-				$"{_requiredItems} objects.");
+				$"O mapa contém apenas {spawnPoints.Count} " +
+				$"pontos de surgimento, mas a missão exige " +
+				$"{_requiredItems} objetos.");
 
 			return;
 		}
@@ -248,7 +248,7 @@ public partial class FindObjectsMissionController : Node
 		_missionHud.SetProgress(
 			_collectedItems,
 			_requiredItems,
-			"Objects");
+			"Objetos");
 
 		GD.Print(
 			$"Progresso: " +
@@ -314,7 +314,7 @@ public partial class FindObjectsMissionController : Node
 			objective: _objectiveText,
 			completionTime: _elapsedTime,
 			statisticTitle:
-				"Objects Collected",
+				"Objetos coletados",
 			statisticValue:
 				$"{_collectedItems}/" +
 				$"{_requiredItems}",
@@ -419,14 +419,14 @@ public partial class FindObjectsMissionController : Node
 			_resultPopup.ShowResult(
 				success: false,
 				missionName:
-					"Mission unavailable",
+					"Missão indisponível",
 				objective:
 					message,
 				completionTime: 0,
 				statisticTitle:
 					"Status",
 				statisticValue:
-					"Initialization error",
+					"Erro de inicialização",
 				difficulty: "-",
 				failures: 0);
 		}
@@ -503,10 +503,10 @@ public partial class FindObjectsMissionController : Node
 	{
 		return difficulty switch
 		{
-			1 => "Easy",
-			2 => "Medium",
-			3 => "Hard",
-			_ => $"Level {difficulty}"
+			1 => "Fácil",
+			2 => "Média",
+			3 => "Difícil",
+			_ => $"Nível {difficulty}"
 		};
 	}
 

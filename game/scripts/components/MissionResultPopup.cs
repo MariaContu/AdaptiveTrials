@@ -126,28 +126,28 @@ public partial class MissionResultPopup : CanvasLayer
 
 		_resultTitleLabel.Text =
 			success
-				? "SUCCESS"
-				: "MISSION FAILED";
+				? "CONCLUÍDA"
+				: "NÃO CONCLUÍDA";
 
 		_missionNameLabel.Text =
 			string.IsNullOrWhiteSpace(missionName)
-				? "Mission"
+				? "Missão"
 				: missionName;
 
 		_objectiveLabel.Text =
 			string.IsNullOrWhiteSpace(objective)
-				? "Complete the mission."
+				? "Conclua a missão."
 				: objective;
 
 		_timeTitleLabel.Text =
-			"Time Spent";
+			"Tempo gasto";
 
 		_timeValueLabel.Text =
 			FormatTime(completionTime);
 
 		_statisticTitleLabel.Text =
 			string.IsNullOrWhiteSpace(statisticTitle)
-				? "Mission Progress"
+				? "Progresso da missão"
 				: statisticTitle;
 
 		_statisticValueLabel.Text =
@@ -156,7 +156,7 @@ public partial class MissionResultPopup : CanvasLayer
 				: statisticValue;
 
 		_difficultyTitleLabel.Text =
-			"Difficulty";
+			"Dificuldade";
 
 		_difficultyValueLabel.Text =
 			string.IsNullOrWhiteSpace(difficulty)
@@ -164,7 +164,7 @@ public partial class MissionResultPopup : CanvasLayer
 				: difficulty;
 
 		_failuresTitleLabel.Text =
-			"Failures";
+			"Erros";
 
 		_failuresValueLabel.Text =
 			Mathf.Max(0, failures).ToString();
@@ -387,25 +387,25 @@ public partial class MissionResultPopup : CanvasLayer
 	private void ConfigureStaticLabels()
 	{
 		_timeTitleLabel.Text =
-			"Time Spent";
+			"Tempo gasto";
 
 		_timeValueLabel.Text =
 			"00:00";
 
 		_statisticTitleLabel.Text =
-			"Mission Progress";
+			"Progresso da missão";
 
 		_statisticValueLabel.Text =
 			"-";
 
 		_difficultyTitleLabel.Text =
-			"Difficulty";
+			"Dificuldade";
 
 		_difficultyValueLabel.Text =
 			"-";
 
 		_failuresTitleLabel.Text =
-			"Failures";
+			"Erros";
 
 		_failuresValueLabel.Text =
 			"0";

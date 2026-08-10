@@ -49,7 +49,7 @@ public partial class CombatEnemyTestController : Node2D
 
     private void OnPlayerHealthChanged(int currentHealth, int maximumHealth)
     {
-        _playerHealthLabel.Text = $"PLAYER: {currentHealth}/{maximumHealth}";
+        _playerHealthLabel.Text = $"JOGADOR: {currentHealth}/{maximumHealth}";
     }
 
     private void OnEnemyHealthChanged(int currentHealth, int maximumHealth)

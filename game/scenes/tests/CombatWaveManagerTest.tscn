@@ -108,20 +108,20 @@ theme_override_constants/separation = 5
 
 [node name="Title" type="Label" parent="Interface/Panel/Margin/Content"]
 theme_override_font_sizes/font_size = 20
-text = "COMBAT WAVE TEST"
+text = "TESTE DE ONDAS DE COMBATE"
 
 [node name="WaveLabel" type="Label" parent="Interface/Panel/Margin/Content"]
-text = "Wave: 0/3"
+text = "Onda: 0/3"
 
 [node name="EnemyLabel" type="Label" parent="Interface/Panel/Margin/Content"]
-text = "Enemies: 0"
+text = "Inimigos: 0"
 
 [node name="HealthLabel" type="Label" parent="Interface/Panel/Margin/Content"]
-text = "Health: 5/5"
+text = "Vida: 5/5"
 
 [node name="StatusLabel" type="Label" parent="Interface/Panel/Margin/Content"]
 custom_minimum_size = Vector2(320, 40)
-text = "Preparing waves..."
+text = "Preparando ondas..."
 autowrap_mode = 2
 
 [node name="Controls" type="Label" parent="Interface"]
@@ -130,5 +130,5 @@ offset_top = 24.0
 offset_right = 1240.0
 offset_bottom = 86.0
 theme_override_font_sizes/font_size = 16
-text = "WASD / Arrows: Move    F: Cast orb    R: Restart"
+text = "WASD / Setas: mover    F: lançar orbe    R: reiniciar"
 horizontal_alignment = 2

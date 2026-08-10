@@ -64,14 +64,14 @@ public partial class DefendObjectMissionController : Node
         MissionDto? currentMission = _sessionManager.CurrentMission;
         if (currentMission is null)
         {
-            ShowInitializationError("No active mission was found.");
+            ShowInitializationError("Nenhuma missão ativa foi encontrada.");
             return;
         }
 
         _mission = currentMission;
         if (_mission.Type != MissionType.Combat)
         {
-            ShowInitializationError("The active mission is not a combat mission.");
+            ShowInitializationError("A missão ativa não é uma missão de combate.");
             return;
         }
 
@@ -120,7 +120,7 @@ public partial class DefendObjectMissionController : Node
         Result = null;
 
         _objectiveText =
-            $"Protect the crystal and defeat all {_totalWaves} enemy waves.";
+            $"Proteja o cristal e derrote todas as {_totalWaves} ondas de inimigos.";
 
         _player.GlobalPosition = _playerSpawn.GlobalPosition;
         _player.Velocity = Vector2.Zero;
@@ -137,7 +137,7 @@ public partial class DefendObjectMissionController : Node
             _mission.Type,
             _objectiveText,
             _totalWaves);
-        _missionHud.SetProgress(0, _totalWaves, "Waves");
+        _missionHud.SetProgress(0, _totalWaves, "Ondas");
         _missionHud.SetElapsedTime(0.0);
         UpdateStatusText();
         _missionHud.SetVisibleState(true);
@@ -232,7 +232,7 @@ public partial class DefendObjectMissionController : Node
         }
 
         _completedWaves = Math.Clamp(completedWave, 0, totalWaves);
-        _missionHud.SetProgress(_completedWaves, _totalWaves, "Waves");
+        _missionHud.SetProgress(_completedWaves, _totalWaves, "Ondas");
         UpdateStatusText();
     }
 
@@ -250,8 +250,8 @@ public partial class DefendObjectMissionController : Node
         }
 
         _completedWaves = _totalWaves;
-        _missionHud.SetProgress(_completedWaves, _totalWaves, "Waves");
-        _ = FinishMissionAsync(true, "All enemy waves were defeated.");
+        _missionHud.SetProgress(_completedWaves, _totalWaves, "Ondas");
+        _ = FinishMissionAsync(true, "Todas as ondas de inimigos foram derrotadas.");
     }
 
     private void OnPlayerHealthChanged(int currentHealth, int maximumHealth)
@@ -269,7 +269,7 @@ public partial class DefendObjectMissionController : Node
         _missionHud.SetAttemptsText(
             $"Crystal: {_defensibleObject.CurrentHealth}/" +
             $"{_defensibleObject.MaximumHealth} | " +
-            $"Health: {_player.CurrentHealth}/{_player.MaximumHealth} | " +
+            $"Vida: {_player.CurrentHealth}/{_player.MaximumHealth} | " +
             $"Enemies: {_activeEnemies}");
     }
 
@@ -281,7 +281,7 @@ public partial class DefendObjectMissionController : Node
         }
 
         _failures = 1;
-        _ = FinishMissionAsync(false, "The player was defeated.");
+        _ = FinishMissionAsync(false, "O jogador foi derrotado.");
     }
 
     private void OnObjectDestroyed(Node source)
@@ -292,7 +292,7 @@ public partial class DefendObjectMissionController : Node
         }
 
         _failures = 1;
-        _ = FinishMissionAsync(false, "The protected crystal was destroyed.");
+        _ = FinishMissionAsync(false, "O cristal protegido foi destruído.");
     }
 
     private async Task FinishMissionAsync(bool success, string resultDetail)
@@ -370,7 +370,7 @@ public partial class DefendObjectMissionController : Node
         _missionHud.SetVisibleState(false);
         _resultPopup.ShowResult(
             false,
-            "Mission unavailable",
+            "Missão indisponível",
             message,
             0,
             "Status",
@@ -411,10 +411,10 @@ public partial class DefendObjectMissionController : Node
     {
         return difficulty switch
         {
-            1 => "Easy",
-            2 => "Medium",
-            3 => "Hard",
-            _ => $"Level {difficulty}"
+            1 => "Fácil",
+            2 => "Média",
+            3 => "Difícil",
+            _ => $"Nível {difficulty}"
         };
     }
 

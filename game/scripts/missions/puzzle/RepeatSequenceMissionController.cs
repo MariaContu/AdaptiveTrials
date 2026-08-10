@@ -73,14 +73,14 @@ public partial class RepeatSequenceMissionController : Node
         MissionDto? currentMission = _sessionManager.CurrentMission;
         if (currentMission is null)
         {
-            ShowInitializationError("No active mission was found.");
+            ShowInitializationError("Nenhuma missão ativa foi encontrada.");
             return;
         }
 
         _mission = currentMission;
         if (_mission.Type != MissionType.Puzzle)
         {
-            ShowInitializationError("The active mission is not a puzzle mission.");
+            ShowInitializationError("A missão ativa não é uma missão de quebra-cabeça.");
             return;
         }
 
@@ -215,7 +215,7 @@ public partial class RepeatSequenceMissionController : Node
         if (_runeButtons.Count != 9)
         {
             ShowInitializationError(
-                $"The sequence board requires 9 rune buttons, but {_runeButtons.Count} were found.");
+                $"O tabuleiro de sequência exige 9 botões de runa, mas foram encontrados {_runeButtons.Count}.");
             return;
         }
 
@@ -229,7 +229,7 @@ public partial class RepeatSequenceMissionController : Node
         Result = null;
 
         _objectiveText =
-            $"Watch the {_sequenceSize}-rune sequence and repeat it in the same order.";
+            $"Observe a sequência de {_sequenceSize} runas e repita-a na mesma ordem.";
 
         for (int index = 0; index < _runeButtons.Count; index++)
         {
@@ -244,13 +244,13 @@ public partial class RepeatSequenceMissionController : Node
             _mission.Type,
             _objectiveText,
             _sequenceSize);
-        _missionHud.SetProgress(0, _sequenceSize, "Sequence");
+        _missionHud.SetProgress(0, _sequenceSize, "Sequência");
         _missionHud.SetAttempts(_maximumFailures, _maximumFailures);
         _missionHud.SetVisibleState(true);
 
         _phaseLabel.Text = "MEMORIZE";
-        _instructionLabel.Text = "Watch the grid carefully.";
-        _sequenceProgressLabel.Text = $"Sequence: {_sequenceSize} runes";
+        _instructionLabel.Text = "Observe a grade com atenção.";
+        _sequenceProgressLabel.Text = $"Sequência: {_sequenceSize} runas";
         _feedbackLabel.Text = string.Empty;
         _feedbackLabel.Modulate = Colors.White;
         _puzzleArea.Visible = true;
@@ -297,10 +297,10 @@ public partial class RepeatSequenceMissionController : Node
         SetButtonsInputEnabled(false);
 
         _phaseLabel.Text = "MEMORIZE";
-        _instructionLabel.Text = "Watch the highlighted squares.";
-        _sequenceProgressLabel.Text = $"Sequence: {_sequenceSize} runes";
+        _instructionLabel.Text = "Observe os quadrados destacados.";
+        _sequenceProgressLabel.Text = $"Sequência: {_sequenceSize} runas";
         _feedbackLabel.Text = string.Empty;
-        _missionHud.SetProgress(0, _sequenceSize, "Sequence");
+        _missionHud.SetProgress(0, _sequenceSize, "Sequência");
 
         await WaitAsync(0.55f);
 
@@ -313,7 +313,7 @@ public partial class RepeatSequenceMissionController : Node
 
             PuzzleRuneButton button = _runeButtons[_sequence[index]];
             button.ShowHighlight();
-            _sequenceProgressLabel.Text = $"Showing {index + 1}/{_sequenceSize}";
+            _sequenceProgressLabel.Text = $"Exibindo {index + 1}/{_sequenceSize}";
             await WaitAsync(_highlightSeconds);
             button.RestoreAppearance();
             await WaitAsync(_pauseSeconds);
@@ -327,9 +327,9 @@ public partial class RepeatSequenceMissionController : Node
         _inputIndex = 0;
         _acceptingInput = true;
         SetButtonsInputEnabled(true);
-        _phaseLabel.Text = "REPEAT";
-        _instructionLabel.Text = "Repeat the order by clicking the grid or using keys 1–9.";
-        _sequenceProgressLabel.Text = $"Your input: 0/{_sequenceSize}";
+        _phaseLabel.Text = "REPITA";
+        _instructionLabel.Text = "Repita a ordem clicando na grade ou usando as teclas 1–9.";
+        _sequenceProgressLabel.Text = $"Sua sequência: 0/{_sequenceSize}";
     }
 
     private void HandleRuneSelected(int runeIndex)
@@ -352,9 +352,9 @@ public partial class RepeatSequenceMissionController : Node
 
         _ = FlashPlayerInputAsync(runeIndex);
         _inputIndex++;
-        _missionHud.SetProgress(_inputIndex, _sequenceSize, "Sequence");
-        _sequenceProgressLabel.Text = $"Your input: {_inputIndex}/{_sequenceSize}";
-        _feedbackLabel.Text = "Correct";
+        _missionHud.SetProgress(_inputIndex, _sequenceSize, "Sequência");
+        _sequenceProgressLabel.Text = $"Sua sequência: {_inputIndex}/{_sequenceSize}";
+        _feedbackLabel.Text = "Correto";
         _feedbackLabel.Modulate = new Color("#8fc9a5");
 
         if (_inputIndex >= _sequenceSize)
@@ -377,9 +377,9 @@ public partial class RepeatSequenceMissionController : Node
         int remainingAttempts = Math.Max(0, _maximumFailures - _failures);
         _missionHud.SetAttempts(remainingAttempts, _maximumFailures);
         _runeButtons[runeIndex].ShowError();
-        _phaseLabel.Text = "INCORRECT";
-        _instructionLabel.Text = "The same sequence will be shown again.";
-        _feedbackLabel.Text = "Wrong square";
+        _phaseLabel.Text = "INCORRETO";
+        _instructionLabel.Text = "A mesma sequência será exibida novamente.";
+        _feedbackLabel.Text = "Quadrado incorreto";
         _feedbackLabel.Modulate = new Color("#d8808c");
 
         GD.Print(
@@ -446,7 +446,7 @@ public partial class RepeatSequenceMissionController : Node
             _mission.Name,
             _objectiveText,
             _elapsedTime,
-            "Sequence Repeated",
+            "Sequência repetida",
             success ? $"{_sequenceSize}/{_sequenceSize}" : $"{_inputIndex}/{_sequenceSize}",
             GetDifficultyText(_mission.Difficulty),
             _failures);
@@ -510,7 +510,7 @@ public partial class RepeatSequenceMissionController : Node
         _presentationGeneration++;
         _missionHud.SetVisibleState(false);
         _puzzleArea.Visible = false;
-        _resultPopup.ShowResult(false, "Repeat Sequence", message, 0, "Initialization", "Failed", "-", 1);
+        _resultPopup.ShowResult(false, "Repetir Sequência", message, 0, "Inicialização", "Falhou", "-", 1);
         GD.PushError(message);
     }
 
@@ -556,10 +556,10 @@ public partial class RepeatSequenceMissionController : Node
     {
         return difficulty switch
         {
-            1 => "Easy",
-            2 => "Medium",
-            3 => "Hard",
-            _ => $"Level {difficulty}"
+            1 => "Fácil",
+            2 => "Média",
+            3 => "Difícil",
+            _ => $"Nível {difficulty}"
         };
     }
 }

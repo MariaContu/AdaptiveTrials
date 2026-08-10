@@ -91,7 +91,7 @@ theme_override_constants/separation = 13
 layout_mode = 2
 theme_override_colors/font_color = Color(0.02745098, 0.3254902, 0.10980392, 1)
 theme_override_font_sizes/font_size = 34
-text = "SUCCESS"
+text = "CONCLUÍDA"
 horizontal_alignment = 1
 
 [node name="MissionNameLabel" type="Label" parent="Overlay/CenterContainer/ResultPanel/ResultMargin/ResultContent" unique_id=1866267126]
@@ -108,7 +108,7 @@ layout_mode = 2
 layout_mode = 2
 theme_override_colors/font_color = Color(0.3254902, 0.4392157, 0.3764706, 1)
 theme_override_font_sizes/font_size = 14
-text = "Objective"
+text = "Objetivo"
 
 [node name="ObjectiveLabel" type="Label" parent="Overlay/CenterContainer/ResultPanel/ResultMargin/ResultContent" unique_id=1098361909]
 layout_mode = 2
@@ -128,7 +128,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.12941177, 0.26666668, 0.18039216, 1)
 theme_override_font_sizes/font_size = 0
-text = "Time Spent"
+text = "Tempo gasto"
 
 [node name="TimeValueLabel" type="Label" parent="Overlay/CenterContainer/ResultPanel/ResultMargin/ResultContent/StatisticsGrid" unique_id=2118138660]
 custom_minimum_size = Vector2(100, 0)
@@ -143,7 +143,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.12941177, 0.26666668, 0.18039216, 1)
 theme_override_font_sizes/font_size = 0
-text = "Basic Statistic"
+text = "Estatística"
 
 [node name="StatisticValueLabel" type="Label" parent="Overlay/CenterContainer/ResultPanel/ResultMargin/ResultContent/StatisticsGrid" unique_id=510724909]
 custom_minimum_size = Vector2(100, 0)
@@ -158,14 +158,14 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.12941177, 0.26666668, 0.18039216, 1)
 theme_override_font_sizes/font_size = 0
-text = "Difficulty"
+text = "Dificuldade"
 
 [node name="DifficultyValueLabel" type="Label" parent="Overlay/CenterContainer/ResultPanel/ResultMargin/ResultContent/StatisticsGrid" unique_id=637717324]
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.02745098, 0.3254902, 0.10980392, 1)
 theme_override_font_sizes/font_size = 0
-text = "Easy"
+text = "Fácil"
 horizontal_alignment = 2
 
 [node name="FailuresTitleLabel" type="Label" parent="Overlay/CenterContainer/ResultPanel/ResultMargin/ResultContent/StatisticsGrid" unique_id=205086980]
@@ -173,7 +173,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.12941177, 0.26666668, 0.18039216, 1)
 theme_override_font_sizes/font_size = 0
-text = "Failures"
+text = "Erros"
 
 [node name="FailuresValueLabel" type="Label" parent="Overlay/CenterContainer/ResultPanel/ResultMargin/ResultContent/StatisticsGrid" unique_id=2065254861]
 custom_minimum_size = Vector2(100, 0)
@@ -193,4 +193,4 @@ theme_override_font_sizes/font_size = 20
 theme_override_styles/normal = SubResource("StyleBoxFlat_x1cdp")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_5n14n")
 theme_override_styles/hover = SubResource("StyleBoxFlat_euaam")
-text = "LET'S GO"
+text = "CONTINUAR"

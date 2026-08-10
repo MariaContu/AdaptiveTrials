@@ -61,14 +61,14 @@ public partial class SurviveMissionController : Node
         MissionDto? currentMission = _sessionManager.CurrentMission;
         if (currentMission is null)
         {
-            ShowInitializationError("No active mission was found.");
+            ShowInitializationError("Nenhuma missão ativa foi encontrada.");
             return;
         }
 
         _mission = currentMission;
         if (_mission.Type != MissionType.Combat)
         {
-            ShowInitializationError("The active mission is not a combat mission.");
+            ShowInitializationError("A missão ativa não é uma missão de combate.");
             return;
         }
 
@@ -115,7 +115,7 @@ public partial class SurviveMissionController : Node
         _resultRegistered = false;
         Result = null;
 
-        _objectiveText = $"Defeat all {_totalWaves} enemy waves and stay alive.";
+        _objectiveText = $"Derrote todas as {_totalWaves} ondas de inimigos e permaneça vivo.";
 
         _player.GlobalPosition = _playerSpawn.GlobalPosition;
         _player.Velocity = Vector2.Zero;
@@ -129,7 +129,7 @@ public partial class SurviveMissionController : Node
             _mission.Type,
             _objectiveText,
             _totalWaves);
-        _missionHud.SetProgress(0, _totalWaves, "Waves");
+        _missionHud.SetProgress(0, _totalWaves, "Ondas");
         _missionHud.SetElapsedTime(0.0);
         UpdateStatusText();
         _missionHud.SetVisibleState(true);
@@ -223,7 +223,7 @@ public partial class SurviveMissionController : Node
         }
 
         _completedWaves = Math.Clamp(completedWave, 0, totalWaves);
-        _missionHud.SetProgress(_completedWaves, _totalWaves, "Waves");
+        _missionHud.SetProgress(_completedWaves, _totalWaves, "Ondas");
         UpdateStatusText();
     }
 
@@ -241,7 +241,7 @@ public partial class SurviveMissionController : Node
         }
 
         _completedWaves = _totalWaves;
-        _missionHud.SetProgress(_completedWaves, _totalWaves, "Waves");
+        _missionHud.SetProgress(_completedWaves, _totalWaves, "Ondas");
         _ = FinishMissionAsync(true);
     }
 
@@ -258,7 +258,7 @@ public partial class SurviveMissionController : Node
     private void UpdateStatusText(int currentHealth, int maximumHealth)
     {
         _missionHud.SetAttemptsText(
-            $"Health: {currentHealth}/{maximumHealth} | " +
+            $"Vida: {currentHealth}/{maximumHealth} | " +
             $"Enemies: {_activeEnemies}");
     }
 
@@ -345,7 +345,7 @@ public partial class SurviveMissionController : Node
         _missionHud.SetVisibleState(false);
         _resultPopup.ShowResult(
             false,
-            "Mission unavailable",
+            "Missão indisponível",
             message,
             0,
             "Status",
@@ -383,10 +383,10 @@ public partial class SurviveMissionController : Node
     {
         return difficulty switch
         {
-            1 => "Easy",
-            2 => "Medium",
-            3 => "Hard",
-            _ => $"Level {difficulty}"
+            1 => "Fácil",
+            2 => "Média",
+            3 => "Difícil",
+            _ => $"Nível {difficulty}"
         };
     }
 

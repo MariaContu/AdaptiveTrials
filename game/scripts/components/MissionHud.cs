@@ -90,7 +90,7 @@ public partial class MissionHud : CanvasLayer
 
 		_missionTitleLabel.Text =
 			string.IsNullOrWhiteSpace(missionTitle)
-				? "Mission"
+				? "Missão"
 				: missionTitle;
 
 		_missionCategoryLabel.Text =
@@ -101,8 +101,8 @@ public partial class MissionHud : CanvasLayer
 
 		_objectiveLabel.Text =
 			string.IsNullOrWhiteSpace(objective)
-				? "Objective: Complete the mission."
-				: $"Objective: {objective}";
+				? "Objetivo: Conclua a missão."
+				: $"Objetivo: {objective}";
 
 		_progressBar.MinValue = 0;
 		_progressBar.MaxValue = safeMaximum;
@@ -115,7 +115,7 @@ public partial class MissionHud : CanvasLayer
 	public void SetProgress(
 		int current,
 		int total,
-		string noun = "Progress")
+		string noun = "Progresso")
 	{
 		int safeTotal =
 			Mathf.Max(1, total);
@@ -148,7 +148,7 @@ public partial class MissionHud : CanvasLayer
 				safeMaximum);
 
 		_attemptsLabel.Text =
-			$"Attempts: {safeRemaining}/{safeMaximum}";
+			$"Tentativas: {safeRemaining}/{safeMaximum}";
 
 		SetAttemptsVisible(true);
 	}
@@ -170,7 +170,7 @@ public partial class MissionHud : CanvasLayer
 	public void SetElapsedTime(double elapsedSeconds)
 	{
 		_timerLabel.Text =
-			$"Time: {FormatTime(elapsedSeconds)}";
+			$"Tempo: {FormatTime(elapsedSeconds)}";
 	}
 
 	public void SetVisibleState(bool visible)
@@ -189,10 +189,10 @@ public partial class MissionHud : CanvasLayer
 	{
 		return missionType switch
 		{
-			MissionType.Combat => "Fight",
-			MissionType.Exploration => "Exploration",
-			MissionType.Puzzle => "Puzzle",
-			_ => "Unknown"
+			MissionType.Combat => "Combate",
+			MissionType.Exploration => "Exploração",
+			MissionType.Puzzle => "Quebra-cabeça",
+			_ => "Desconhecida"
 		};
 	}
 

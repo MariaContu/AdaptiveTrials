@@ -99,16 +99,16 @@ Exemplo:
 
 ```json
 {
-  "ConnectionStrings": {
-    "DefaultConnection": "Data Source=adaptive_trials.db"
-  },
-  "Logging": {
-    "LogLevel": {
-      "Default": "Information",
-      "Microsoft.AspNetCore": "Warning"
-    }
-  },
-  "AllowedHosts": "*"
+    "ConnectionStrings": {
+        "DefaultConnection": "Data Source=adaptive_trials.db"
+    },
+    "Logging": {
+        "LogLevel": {
+            "Default": "Information",
+            "Microsoft.AspNetCore": "Warning"
+        }
+    },
+    "AllowedHosts": "*"
 }
 ```
 
@@ -132,7 +132,8 @@ dotnet tool update --global dotnet-ef
 
 Na pasta da solution, execute:
 
-- se algo mudou: 
+- se algo mudou:
+
 ```bash
 dotnet ef migrations add NOME_DA_CHANGE --project src/AdaptiveTrials.Infrastructure --startup-project src/AdaptiveTrials.Api
 ```
@@ -190,7 +191,7 @@ Body para modo controle:
 
 ```json
 {
-  "mode": 1
+    "mode": 1
 }
 ```
 
@@ -198,7 +199,7 @@ Body para modo adaptativo:
 
 ```json
 {
-  "mode": 2
+    "mode": 2
 }
 ```
 
@@ -231,9 +232,9 @@ Exemplo de body:
 
 ```json
 {
-  "combat": 4,
-  "exploration": 3,
-  "puzzle": 3
+    "combat": 4,
+    "exploration": 3,
+    "puzzle": 3
 }
 ```
 
@@ -253,8 +254,8 @@ Exemplo de body:
 
 ```json
 {
-  "playerId": 1,
-  "sessionId": 1
+    "playerId": 1,
+    "sessionId": 1
 }
 ```
 
@@ -284,11 +285,11 @@ Exemplo de body:
 
 ```json
 {
-  "missionId": 1,
-  "completionTime": 48.5,
-  "failures": 1,
-  "success": true,
-  "persistence": 0.85
+    "missionId": 1,
+    "completionTime": 48.5,
+    "failures": 1,
+    "success": true,
+    "persistence": 0.85
 }
 ```
 

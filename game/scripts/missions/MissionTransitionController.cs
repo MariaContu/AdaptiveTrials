@@ -93,7 +93,7 @@ public partial class MissionTransitionController : Node
 		if (!_sessionManager.HasActiveSession)
 		{
 			ShowBlockingError(
-				"No active session was found.");
+				"Nenhuma sessão ativa foi encontrada.");
 
 			return;
 		}
@@ -104,7 +104,7 @@ public partial class MissionTransitionController : Node
 		if (mission is null)
 		{
 			ShowBlockingError(
-				"No mission is available for this session.");
+				"Nenhuma missão está disponível para esta sessão.");
 
 			return;
 		}
@@ -113,7 +113,7 @@ public partial class MissionTransitionController : Node
 			_sessionManager.CurrentMissionIndex + 1;
 
 		_missionCounter.Text =
-			$"Mission {currentNumber}/" +
+			$"Missão {currentNumber}/" +
 			$"{_sessionManager.TotalMissionCount}";
 
 		_missionTitle.Text = mission.Name;
@@ -122,7 +122,7 @@ public partial class MissionTransitionController : Node
 			GetCategoryText(mission.Type);
 
 		_missionDifficulty.Text =
-			$"Difficulty: " +
+			$"Dificuldade: " +
 			GetDifficultyText(
 				mission.Difficulty);
 
@@ -149,10 +149,10 @@ public partial class MissionTransitionController : Node
 	{
 		return difficulty switch
 		{
-			1 => "Easy",
-			2 => "Medium",
-			3 => "Hard",
-			_ => $"Level {difficulty}"
+			1 => "Fácil",
+			2 => "Média",
+			3 => "Difícil",
+			_ => $"Nível {difficulty}"
 		};
 	}
 
@@ -164,7 +164,7 @@ public partial class MissionTransitionController : Node
 	if (mission is null)
 	{
 		ShowBlockingError(
-			"The mission could not be started.");
+			"Não foi possível iniciar a missão.");
 
 		return;
 	}
@@ -172,7 +172,7 @@ public partial class MissionTransitionController : Node
 	_startMissionButton.Disabled = true;
 
 	_statusLabel.Text =
-		"Preparing mission...";
+		"Preparando missão...";
 
 	string? scenePath =
 		ResolveMissionScene(mission);
@@ -180,7 +180,7 @@ public partial class MissionTransitionController : Node
 	if (scenePath is null)
 	{
 		_statusLabel.Text =
-			"This mission template has not been implemented yet.";
+			"Este tipo de missão ainda não foi implementado.";
 
 		_startMissionButton.Disabled = false;
 
@@ -197,7 +197,7 @@ public partial class MissionTransitionController : Node
 	if (navigationError != Error.Ok)
 	{
 		_statusLabel.Text =
-			"The mission could not be opened.";
+			"Não foi possível abrir a missão.";
 
 		_startMissionButton.Disabled = false;
 
@@ -306,7 +306,7 @@ private static string? ResolveMissionScene(
 	private void ShowBlockingError(string message)
 	{
 		_missionCounter.Text =
-			"Mission unavailable";
+			"Missão indisponível";
 
 		_missionTitle.Text = message;
 		_missionCategory.Text = string.Empty;
@@ -315,7 +315,7 @@ private static string? ResolveMissionScene(
 		_missionIcon.Text = "!";
 
 		_statusLabel.Text =
-			"Return to the main menu and start a new session.";
+			"Retorne ao menu principal e inicie uma nova sessão.";
 
 		_startMissionButton.Disabled = true;
 
@@ -327,10 +327,10 @@ private static string? ResolveMissionScene(
 	{
 		return type switch
 		{
-			MissionType.Combat => "Combat",
-			MissionType.Exploration => "Exploration",
-			MissionType.Puzzle => "Puzzle",
-			_ => "Unknown"
+			MissionType.Combat => "Combate",
+			MissionType.Exploration => "Exploração",
+			MissionType.Puzzle => "Quebra-cabeça",
+			_ => "Desconhecida"
 		};
 	}
 
@@ -352,31 +352,31 @@ private static string? ResolveMissionScene(
 		return mission.Template switch
 		{
 			"Eliminar Alvo" =>
-				"Defeat the required enemies.",
+				"Derrote os inimigos necessários.",
 
 			"Sobreviver" =>
-				"Survive until time runs out.",
+				"Sobreviva até concluir todas as ondas.",
 
 			"Defender Objeto" =>
-				"Protect the objective.",
+				"Proteja o objetivo.",
 
 			"Encontrar Objetos" =>
-				"Find the required objects.",
+				"Encontre os objetos necessários.",
 
 			"Chegar ao Destino" =>
-				"Reach the indicated destination.",
+				"Chegue ao destino indicado.",
 
 			"Evitar Inimigos" =>
-				"Reach the objective without being detected.",
+				"Chegue ao objetivo sem ser detectado.",
 
 			"Repetir Sequência" =>
-				"Repeat the sequence in the correct order.",
+				"Repita a sequência na ordem correta.",
 
 			"Conectar Pontos" =>
-				"Connect the elements correctly.",
+				"Conecte os elementos corretamente.",
 
 			"Decifrar Código" =>
-				"Discover the correct code.",
+				"Descubra o código correto.",
 
 			_ =>
 				mission.Template

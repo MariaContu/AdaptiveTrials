@@ -154,7 +154,7 @@ theme_override_constants/separation = 24
 layout_mode = 2
 theme_override_colors/font_color = Color(0.20784314, 0.16078432, 0.21176471, 1)
 theme_override_font_sizes/font_size = 38
-text = "Mission 1/6"
+text = "Missão 1/6"
 horizontal_alignment = 1
 
 [node name="Separator" type="HSeparator" parent="CenterContainer/MissionPanel/PanelMargin/Content" unique_id=1542941575]
@@ -227,7 +227,7 @@ layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_5alc0")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_e56fx")
 theme_override_styles/hover = SubResource("StyleBoxFlat_hxul1")
-text = "LET'S GO"
+text = "INICIAR MISSÃO"
 
 [node name="StatusLabel" type="Label" parent="CenterContainer/MissionPanel/PanelMargin/Content" unique_id=1281129982]
 layout_mode = 2

@@ -278,7 +278,7 @@ public partial class ConnectPointsMissionController : Node
             _objectiveText,
             _elapsedTime,
             "Caminhos conectados",
-            $"{_board.CompletedPairs}/{_board.TotalPairs} | {_board.CoveragePercent}% coverage",
+            $"{_board.CompletedPairs}/{_board.TotalPairs} | {_board.CoveragePercent}% de cobertura",
             GetDifficultyText(_mission.Difficulty),
             _failures);
 
@@ -364,6 +364,6 @@ public partial class ConnectPointsMissionController : Node
         1 => "Fácil",
         2 => "Médio",
         3 => "Difícil",
-        _ => $"Level {difficulty}"
+        _ => $"Nível {difficulty}"
     };
 }

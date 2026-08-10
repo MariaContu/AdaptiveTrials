@@ -115,7 +115,7 @@ public partial class CombatWaveManagerTestController : Node2D
 
     private void StartTest()
     {
-        _statusLabel.Text = "Defeat all three waves.";
+        _statusLabel.Text = "Derrote as três ondas.";
         _waveManager.StartWaves();
     }
 
@@ -124,8 +124,8 @@ public partial class CombatWaveManagerTestController : Node2D
         int totalWaves,
         int enemyCount)
     {
-        _waveLabel.Text = $"Wave: {currentWave}/{totalWaves}";
-        _statusLabel.Text = $"Wave {currentWave} incoming...";
+        _waveLabel.Text = $"Onda: {currentWave}/{totalWaves}";
+        _statusLabel.Text = $"Onda {currentWave} chegando...";
         _waveAnnouncement.ShowWave(currentWave, totalWaves, enemyCount);
     }
 
@@ -133,30 +133,30 @@ public partial class CombatWaveManagerTestController : Node2D
     {
         _statusLabel.Text =
             completedWave < totalWaves
-                ? $"Wave {completedWave} complete. Next wave incoming..."
-                : $"Wave {completedWave} complete.";
+                ? $"Onda {completedWave} concluída. Próxima onda chegando..."
+                : $"Onda {completedWave} concluída.";
     }
 
     private void OnActiveEnemyCountChanged(int activeEnemies)
     {
-        _enemyLabel.Text = $"Enemies: {activeEnemies}";
+        _enemyLabel.Text = $"Inimigos: {activeEnemies}";
     }
 
     private void OnPlayerHealthChanged(int currentHealth, int maximumHealth)
     {
-        _healthLabel.Text = $"Health: {currentHealth}/{maximumHealth}";
+        _healthLabel.Text = $"Vida: {currentHealth}/{maximumHealth}";
     }
 
     private void OnPlayerDied(Node source)
     {
         _waveManager.StopAndClear();
         _player.SetMovementEnabled(false);
-        _statusLabel.Text = "Player defeated. Press R to restart.";
+        _statusLabel.Text = "Jogador derrotado. Pressione R para reiniciar.";
     }
 
     private void OnAllWavesCompleted()
     {
         _player.SetDamageEnabled(false);
-        _statusLabel.Text = "All waves complete. Press R to restart.";
+        _statusLabel.Text = "Todas as ondas concluídas. Pressione R para reiniciar.";
     }
 }

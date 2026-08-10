@@ -66,8 +66,8 @@ public partial class ConnectPointsLogicTestController : Node
         };
 
         _failures = 0;
-        _titleLabel.Text = $"CONNECT POINTS — {GetDifficultyText(safeDifficulty).ToUpperInvariant()}";
-        _statusLabel.Text = "Select two matching symbols.";
+        _titleLabel.Text = $"CONECTAR PONTOS — {GetDifficultyText(safeDifficulty).ToUpperInvariant()}";
+        _statusLabel.Text = "Selecione dois símbolos correspondentes.";
         UpdateAttempts();
         _board.Configure(totalPoints);
         _board.SetInputEnabled(true);
@@ -75,7 +75,7 @@ public partial class ConnectPointsLogicTestController : Node
 
     private void OnPairConnected(int connectedPairs, int totalPairs)
     {
-        _statusLabel.Text = $"PAIR CONNECTED — {connectedPairs}/{totalPairs}";
+        _statusLabel.Text = $"PAR CONECTADO — {connectedPairs}/{totalPairs}";
         _statusLabel.Modulate = new Color("#8fc9a5");
     }
 
@@ -83,35 +83,35 @@ public partial class ConnectPointsLogicTestController : Node
     {
         _failures++;
         UpdateAttempts();
-        _statusLabel.Text = "WRONG PAIR";
+        _statusLabel.Text = "PAR INCORRETO";
         _statusLabel.Modulate = new Color("#d8808c");
 
         if (_failures >= _maximumFailures)
         {
             _board.SetInputEnabled(false);
-            _statusLabel.Text = "FAILED — PRESS R TO RESTART";
+            _statusLabel.Text = "FALHA — PRESSIONE R PARA REINICIAR";
         }
     }
 
     private void OnBoardCompleted()
     {
         _board.SetInputEnabled(false);
-        _statusLabel.Text = "SUCCESS — PRESS R TO GENERATE A NEW BOARD";
+        _statusLabel.Text = "SUCESSO — PRESSIONE R PARA GERAR UM NOVO TABULEIRO";
         _statusLabel.Modulate = new Color("#8fc9a5");
     }
 
     private void UpdateAttempts()
     {
         int remaining = Math.Max(0, _maximumFailures - _failures);
-        _attemptsLabel.Text = $"Attempts: {remaining}/{_maximumFailures}";
+        _attemptsLabel.Text = $"Tentativas: {remaining}/{_maximumFailures}";
     }
 
     private static string GetDifficultyText(int difficulty) =>
         difficulty switch
         {
-            1 => "Easy",
-            2 => "Medium",
-            3 => "Hard",
-            _ => "Medium"
+            1 => "Fácil",
+            2 => "Média",
+            3 => "Difícil",
+            _ => "Média"
         };
 }

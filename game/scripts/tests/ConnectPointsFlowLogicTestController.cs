@@ -68,7 +68,7 @@ public partial class ConnectPointsFlowLogicTestController : Node
 
         _failures = 0;
         _titleLabel.Text =
-            $"CONNECT PATHS — {GetDifficultyText(safeDifficulty).ToUpperInvariant()}";
+            $"CONECTAR CAMINHOS — {GetDifficultyText(safeDifficulty).ToUpperInvariant()}";
         _statusLabel.Text =
             "Arraste de um ponto colorido até o ponto correspondente.";
         _statusLabel.Modulate = new Color("#c2b4ce");
@@ -89,7 +89,7 @@ public partial class ConnectPointsFlowLogicTestController : Node
     private void OnPairCompleted(int completedPairs, int totalPairs)
     {
         _statusLabel.Text =
-            $"PATH COMPLETED — {completedPairs}/{totalPairs}. Click an endpoint to redraw.";
+            $"CAMINHO CONCLUÍDO — {completedPairs}/{totalPairs}. Clique em uma extremidade para refazer.";
         _statusLabel.Modulate = new Color("#8fc9a5");
     }
 
@@ -111,7 +111,7 @@ public partial class ConnectPointsFlowLogicTestController : Node
     private void OnCoverageRequired(int currentPercent, int requiredPercent)
     {
         _statusLabel.Text =
-            $"COVERAGE {currentPercent}% — redraw paths to reach {requiredPercent}%.";
+            $"COBERTURA {currentPercent}% — refaça caminhos até alcançar {requiredPercent}%.";
         _statusLabel.Modulate = new Color("#f0c674");
     }
 
@@ -130,9 +130,9 @@ public partial class ConnectPointsFlowLogicTestController : Node
 
     private static string GetDifficultyText(int difficulty) => difficulty switch
     {
-        1 => "Easy",
-        2 => "Medium",
-        3 => "Hard",
-        _ => "Medium"
+        1 => "Fácil",
+        2 => "Média",
+        3 => "Difícil",
+        _ => "Média"
     };
 }
