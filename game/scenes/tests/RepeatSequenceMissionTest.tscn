@@ -107,7 +107,7 @@ custom_minimum_size = Vector2(0, 58)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.28627452, 0.22745098, 0.30588236, 1)
 theme_override_font_sizes/font_size = 18
-text = "Watch the runes carefully."
+text = "Observe as runas com atenção."
 horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 2
@@ -116,7 +116,7 @@ autowrap_mode = 2
 layout_mode = 2
 theme_override_colors/font_color = Color(0.38431373, 0.30588236, 0.4117647, 1)
 theme_override_font_sizes/font_size = 16
-text = "Sequence length: 3"
+text = "Tamanho da sequência: 3"
 horizontal_alignment = 1
 
 [node name="RuneButtons" type="HBoxContainer" parent="PuzzleInterface/BoardCenter/BoardPanel/BoardMargin/BoardContent"]
@@ -156,7 +156,7 @@ vertical_alignment = 1
 layout_mode = 2
 theme_override_colors/font_color = Color(0.42352942, 0.3529412, 0.44705883, 1)
 theme_override_font_sizes/font_size = 13
-text = "Click the runes or use keys 1, 2, 3 and 4."
+text = "Clique nas runas ou use as teclas 1, 2, 3 e 4."
 horizontal_alignment = 1
 
 [node name="MissionHud" parent="." instance=ExtResource("3_hud")]

@@ -107,7 +107,7 @@ public partial class ReachDestinationMissionController : Node
 		if (currentMission is null)
 		{
 			ShowInitializationError(
-				"No active mission was found.");
+				"Nenhuma missão ativa foi encontrada.");
 
 			return;
 		}
@@ -117,7 +117,7 @@ public partial class ReachDestinationMissionController : Node
 		if (_mission.Type != MissionType.Exploration)
 		{
 			ShowInitializationError(
-				"The active mission is not an exploration mission.");
+				"A missão ativa não é uma missão de exploração.");
 
 			return;
 		}
@@ -192,8 +192,8 @@ public partial class ReachDestinationMissionController : Node
 		_activeHazards.Clear();
 
 		_objectiveText =
-			$"Reach {_requiredCheckpoints} checkpoints " +
-			"and arrive at the destination.";
+			$"Alcance {_requiredCheckpoints} checkpoints " +
+			"e chegue ao destino.";
 
 		_player.GlobalPosition =
 			_playerSpawn.GlobalPosition;
@@ -219,7 +219,7 @@ public partial class ReachDestinationMissionController : Node
 		_missionHud.SetProgress(
 			0,
 			_requiredCheckpoints + 1,
-			"Route");
+			"Rota");
 
 		_missionHud.SetAttempts(
 			_maxFailures,
@@ -278,10 +278,9 @@ public partial class ReachDestinationMissionController : Node
 			_requiredCheckpoints)
 		{
 			ShowInitializationError(
-				$"The map contains only " +
-				$"{spawnPoints.Count} unique checkpoint " +
-				$"positions, but the mission requires " +
-				$"{_requiredCheckpoints}.");
+				$"O mapa contém apenas " +
+				$"{spawnPoints.Count} posições únicas de checkpoint, " +
+				$"mas a missão exige {_requiredCheckpoints}.");
 
 			return;
 		}
@@ -348,10 +347,9 @@ public partial class ReachDestinationMissionController : Node
 			_requiredHazards)
 		{
 			ShowInitializationError(
-				$"The map contains only " +
-				$"{spawnPoints.Count} unique hazard " +
-				$"positions, but the mission requires " +
-				$"{_requiredHazards}.");
+				$"O mapa contém apenas " +
+				$"{spawnPoints.Count} posições únicas de perigo, " +
+				$"mas a missão exige {_requiredHazards}.");
 
 			return;
 		}
@@ -426,7 +424,7 @@ public partial class ReachDestinationMissionController : Node
 		_missionHud.SetProgress(
 			_reachedCheckpoints,
 			_requiredCheckpoints + 1,
-			"Route");
+			"Rota");
 
 		GD.Print(
 			$"Checkpoint alcançado: " +
@@ -474,7 +472,7 @@ public partial class ReachDestinationMissionController : Node
 		_missionHud.SetProgress(
 			_requiredCheckpoints + 1,
 			_requiredCheckpoints + 1,
-			"Route");
+			"Rota");
 
 		_ = FinishMissionAsync(
 			success: true);
@@ -830,14 +828,14 @@ public partial class ReachDestinationMissionController : Node
 			_resultPopup.ShowResult(
 				success: false,
 				missionName:
-					"Mission unavailable",
+					"Missão indisponível",
 				objective:
 					message,
 				completionTime: 0,
 				statisticTitle:
 					"Status",
 				statisticValue:
-					"Initialization error",
+					"Erro de inicialização",
 				difficulty: "-",
 				failures: 0);
 		}
@@ -931,10 +929,10 @@ public partial class ReachDestinationMissionController : Node
 	{
 		return difficulty switch
 		{
-			1 => "Easy",
-			2 => "Medium",
-			3 => "Hard",
-			_ => $"Level {difficulty}"
+			1 => "Fácil",
+			2 => "Média",
+			3 => "Difícil",
+			_ => $"Nível {difficulty}"
 		};
 	}
 

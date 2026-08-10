@@ -188,7 +188,7 @@ public partial class RepeatSequenceLogicTestController : Node
         _inputIndex = 0;
         _acceptingInput = true;
         SetButtonsEnabled(true);
-        _phaseLabel.Text = "REPEAT";
+        _phaseLabel.Text = "REPITA";
         _statusLabel.Text = "Repita clicando na grade ou usando as teclas 1–9.";
         _progressLabel.Text = $"Progresso: 0/{_sequenceSize}";
     }
@@ -226,7 +226,7 @@ public partial class RepeatSequenceLogicTestController : Node
         UpdateAttempts();
 
         _buttons[runeIndex].ShowError();
-        _phaseLabel.Text = "INCORRECT";
+        _phaseLabel.Text = "INCORRETO";
         _statusLabel.Text = "A mesma sequência será exibida novamente.";
         _statusLabel.Modulate = new Color("#d8808c");
         await WaitAsync(0.55f);
@@ -260,7 +260,7 @@ public partial class RepeatSequenceLogicTestController : Node
         _acceptingInput = false;
         _presentationGeneration++;
         SetButtonsEnabled(false);
-        _phaseLabel.Text = success ? "SUCCESS" : "FAILED";
+        _phaseLabel.Text = success ? "SUCESSO" : "FALHA";
         _statusLabel.Text = success
             ? "Sequência concluída. Pressione R para gerar outra."
             : "Limite de erros atingido. Pressione R para tentar novamente.";

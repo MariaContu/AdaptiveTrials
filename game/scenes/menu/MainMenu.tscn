@@ -133,9 +133,6 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_m2yvp")
-AnimationSpeed = 0.5
-WaveLength = 900.0
-ShadowOffset = 50.0
 
 [node name="InterfaceMargin" type="MarginContainer" parent="." unique_id=305523431]
 layout_mode = 1
@@ -191,7 +188,7 @@ theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_outline_color = Color(0.44313726, 0.39607844, 0.41568628, 1)
 theme_override_constants/outline_size = 10
 theme_override_font_sizes/font_size = 24
-text = "Choose a Mode"
+text = "Escolha um modo"
 horizontal_alignment = 1
 
 [node name="ModeCardsCenter" type="CenterContainer" parent="InterfaceMargin/InterfaceRoot" unique_id=88019393]
@@ -212,9 +209,9 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_uwj7d")
 theme_override_styles/hover = SubResource("StyleBoxFlat_5n14n")
 toggle_mode = true
 keep_pressed_outside = true
-text = "CONTROL
+text = "CONTROLE
 
-Casual game experience"
+Experiência casual"
 text_overrun_behavior = 3
 
 [node name="AdaptiveModeButton" type="Button" parent="InterfaceMargin/InterfaceRoot/ModeCardsCenter/ModeCards" unique_id=129059281]
@@ -226,9 +223,9 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_uwj7d")
 theme_override_styles/hover = SubResource("StyleBoxFlat_qrcb4")
 toggle_mode = true
 keep_pressed_outside = true
-text = "ADAPTIVE
+text = "ADAPTATIVO
 
-Adapted game experience"
+Experiência adaptada"
 text_overrun_behavior = 3
 
 [node name="StartCenter" type="CenterContainer" parent="InterfaceMargin/InterfaceRoot" unique_id=463384015]
@@ -241,7 +238,7 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_m2yvp")
 theme_override_styles/hover = SubResource("StyleBoxFlat_s3dsm")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_2nud1")
 disabled = true
-text = "START"
+text = "INICIAR"
 
 [node name="StatusLabel" type="Label" parent="InterfaceMargin/InterfaceRoot" unique_id=1791670615]
 custom_minimum_size = Vector2(0, 30)

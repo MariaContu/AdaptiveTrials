@@ -313,7 +313,7 @@ public class AppDbContext : DbContext
             new Mission
             {
                 Id = 14,
-                Name = "Stealth Básico",
+                Name = "Furtividade Básica",
                 Type = MissionType.Exploration,
                 Template = "Evitar Inimigos",
                 Difficulty = 1,
@@ -330,7 +330,7 @@ public class AppDbContext : DbContext
             new Mission
             {
                 Id = 25,
-                Name = "Stealth Intermediário",
+                Name = "Furtividade Intermediária",
                 Type = MissionType.Exploration,
                 Template = "Evitar Inimigos",
                 Difficulty = 2,
@@ -347,7 +347,7 @@ public class AppDbContext : DbContext
             new Mission
             {
                 Id = 15,
-                Name = "Stealth Avançado",
+                Name = "Furtividade Avançada",
                 Type = MissionType.Exploration,
                 Template = "Evitar Inimigos",
                 Difficulty = 3,

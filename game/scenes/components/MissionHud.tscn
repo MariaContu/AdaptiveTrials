@@ -77,18 +77,18 @@ layout_mode = 2
 [node name="MissionTitleLabel" type="Label" parent="TopCenter/HudPanel/HudMargin/HudContent/Header/MissionInfo" unique_id=985889216]
 layout_mode = 2
 theme_override_font_sizes/font_size = 21
-text = "Find the Objects"
+text = "Encontrar Objetos"
 
 [node name="MissionCategoryLabel" type="Label" parent="TopCenter/HudPanel/HudMargin/HudContent/Header/MissionInfo" unique_id=1569090137]
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
-text = "Exploration"
+text = "Exploração"
 
 [node name="ObjectiveLabel" type="Label" parent="TopCenter/HudPanel/HudMargin/HudContent" unique_id=1747835985]
 custom_minimum_size = Vector2(0, 18)
 layout_mode = 2
 theme_override_font_sizes/font_size = 13
-text = "Objective: Find and collect 3 objects."
+text = "Objetivo: Encontre e colete 3 objetos."
 autowrap_mode = 3
 
 [node name="ProgressArea" type="Control" parent="TopCenter/HudPanel/HudMargin/HudContent" unique_id=2009966059]
@@ -134,7 +134,7 @@ size_flags_horizontal = 3
 custom_minimum_size = Vector2(120, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
-text = "Attempts: 3/3"
+text = "Tentativas: 3/3"
 horizontal_alignment = 1
 
 [node name="TimerLabel" type="Label" parent="TopCenter/HudPanel/HudMargin/HudContent/Footer" unique_id=1576524781]

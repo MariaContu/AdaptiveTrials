@@ -48,14 +48,14 @@ public partial class DecipherCodeMissionController : Node
         MissionDto? currentMission = _sessionManager.CurrentMission;
         if (currentMission is null)
         {
-            ShowInitializationError("No active mission was found.");
+            ShowInitializationError("Nenhuma missão ativa foi encontrada.");
             return;
         }
 
         _mission = currentMission;
         if (_mission.Type != MissionType.Puzzle)
         {
-            ShowInitializationError("The active mission is not a puzzle mission.");
+            ShowInitializationError("A missão ativa não é uma missão de quebra-cabeça.");
             return;
         }
 
@@ -260,11 +260,11 @@ public partial class DecipherCodeMissionController : Node
         _puzzleArea.Visible = false;
         _resultPopup.ShowResult(
             false,
-            "Decipher Code",
+            "Decifrar Código",
             message,
             0,
             "Initialization",
-            "Failed",
+            "Falhou",
             "-",
             1);
         GD.PushError(message);

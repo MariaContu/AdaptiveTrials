@@ -55,14 +55,14 @@ public partial class EliminateTargetMissionController : Node
         MissionDto? currentMission = _sessionManager.CurrentMission;
         if (currentMission is null)
         {
-            ShowInitializationError("No active mission was found.");
+            ShowInitializationError("Nenhuma missão ativa foi encontrada.");
             return;
         }
 
         _mission = currentMission;
         if (_mission.Type != MissionType.Combat)
         {
-            ShowInitializationError("The active mission is not a combat mission.");
+            ShowInitializationError("A missão ativa não é uma missão de combate.");
             return;
         }
 
@@ -102,7 +102,7 @@ public partial class EliminateTargetMissionController : Node
         _resultRegistered = false;
         Result = null;
 
-        _objectiveText = "Defeat the main target before your health reaches zero.";
+        _objectiveText = "Derrote o alvo principal antes que sua vida chegue a zero.";
 
         _player.GlobalPosition = _playerSpawn.GlobalPosition;
         _player.Velocity = Vector2.Zero;
@@ -112,8 +112,8 @@ public partial class EliminateTargetMissionController : Node
         _player.SetMovementEnabled(true);
 
         _missionHud.Configure(_mission.Name, _mission.Type, _objectiveText, settings.TargetHealth);
-        _missionHud.SetProgress(0, settings.TargetHealth, "Target Damage");
-        _missionHud.SetAttemptsText($"Health: {_player.CurrentHealth}/{_player.MaximumHealth}");
+        _missionHud.SetProgress(0, settings.TargetHealth, "Dano no alvo");
+        _missionHud.SetAttemptsText($"Vida: {_player.CurrentHealth}/{_player.MaximumHealth}");
         _missionHud.SetVisibleState(true);
         _resultPopup.HidePopup();
 
@@ -180,12 +180,12 @@ public partial class EliminateTargetMissionController : Node
     private void OnTargetHealthChanged(int currentHealth, int maximumHealth)
     {
         int damageDone = Mathf.Max(0, maximumHealth - currentHealth);
-        _missionHud.SetProgress(damageDone, maximumHealth, "Target Damage");
+        _missionHud.SetProgress(damageDone, maximumHealth, "Dano no alvo");
     }
 
     private void OnPlayerHealthChanged(int currentHealth, int maximumHealth)
     {
-        _missionHud.SetAttemptsText($"Health: {currentHealth}/{maximumHealth}");
+        _missionHud.SetAttemptsText($"Vida: {currentHealth}/{maximumHealth}");
     }
 
     private void OnEnemyDefeated(CombatEnemyController enemy)
@@ -251,8 +251,8 @@ public partial class EliminateTargetMissionController : Node
             _mission.Name,
             _objectiveText,
             _elapsedTime,
-            "Main Target",
-            success ? "Defeated" : "Still active",
+            "Alvo principal",
+            success ? "Derrotado" : "Ainda ativo",
             GetDifficultyText(_mission.Difficulty),
             _failures);
 
@@ -284,7 +284,7 @@ public partial class EliminateTargetMissionController : Node
         _missionFinished = true;
         _player.SetMovementEnabled(false);
         _missionHud.SetVisibleState(false);
-        _resultPopup.ShowResult(false, "Mission unavailable", message, 0, "Status", "Initialization error", "-", 0);
+        _resultPopup.ShowResult(false, "Missão indisponível", message, 0, "Status", "Erro de inicialização", "-", 0);
         GD.PushError(message);
     }
 
@@ -313,10 +313,10 @@ public partial class EliminateTargetMissionController : Node
     {
         return difficulty switch
         {
-            1 => "Easy",
-            2 => "Medium",
-            3 => "Hard",
-            _ => $"Level {difficulty}"
+            1 => "Fácil",
+            2 => "Média",
+            3 => "Difícil",
+            _ => $"Nível {difficulty}"
         };
     }
 

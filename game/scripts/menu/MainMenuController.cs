@@ -135,8 +135,8 @@ public partial class MainMenuController : Node
 		_startButton.Disabled = false;
 
 		_statusLabel.Text = controlSelected
-			? "Control mode selected."
-			: "Adaptive mode selected.";
+			? "Modo Controle selecionado."
+			: "Modo Adaptativo selecionado.";
 
 		GD.Print(
 			$"Modo selecionado: {mode} ({(int)mode})");
@@ -157,12 +157,12 @@ public partial class MainMenuController : Node
 		if (_selectedMode is null)
 		{
 			_statusLabel.Text =
-				"Choose a mode before starting.";
+				"Escolha um modo antes de iniciar.";
 
 			return;
 		}
 
-		SetLoadingState(true, "Creating session...");
+		SetLoadingState(true, "Criando sessão...");
 
 		try
 		{
@@ -194,7 +194,7 @@ public partial class MainMenuController : Node
 			if (!result.IsSuccess || result.Data is null)
 			{
 				ShowRequestError(
-					"The session could not be created.",
+					"Não foi possível criar a sessão.",
 					result.ErrorMessage);
 
 				return;
@@ -229,8 +229,7 @@ public partial class MainMenuController : Node
 			if (IsInstanceValid(this))
 			{
 				ShowRequestError(
-					"An unexpected error occurred " +
-					"while creating the session.",
+					"Ocorreu um erro inesperado ao criar a sessão.",
 					exception.Message);
 			}
 		}
@@ -255,7 +254,7 @@ public partial class MainMenuController : Node
 
 			default:
 				ShowRequestError(
-					"The selected game mode is invalid.",
+					"O modo de jogo selecionado é inválido.",
 					$"Mode received: {(int)mode}");
 				break;
 		}
@@ -285,7 +284,7 @@ public partial class MainMenuController : Node
 	{
 		SetLoadingState(
 			true,
-			"Preparing control missions...");
+			"Preparando missões do modo Controle...");
 
 		ApiResult<IReadOnlyList<MissionDto>>
 			catalogResult =
@@ -300,7 +299,7 @@ public partial class MainMenuController : Node
 			catalogResult.Data is null)
 		{
 			ShowRequestError(
-				"The mission catalog could not be loaded.",
+				"Não foi possível carregar o catálogo de missões.",
 				catalogResult.ErrorMessage);
 
 			return false;
@@ -329,8 +328,7 @@ public partial class MainMenuController : Node
 				$"do modo controle: {exception}");
 
 			ShowRequestError(
-				"The control mission sequence " +
-				"could not be prepared.",
+				"Não foi possível preparar a sequência de missões do modo Controle.",
 				exception.Message);
 
 			return false;
@@ -341,7 +339,7 @@ public partial class MainMenuController : Node
 	{
 		SetLoadingState(
 			true,
-			"Opening the first mission...");
+			"Abrindo a primeira missão...");
 
 		Error navigationError =
 			GetTree().ChangeSceneToFile(
@@ -358,7 +356,7 @@ public partial class MainMenuController : Node
 			$"Erro: {navigationError}");
 
 		ShowRequestError(
-			"The mission screen could not be opened.",
+			"Não foi possível abrir a tela da missão.",
 			navigationError.ToString());
 	}
 
@@ -374,8 +372,7 @@ public partial class MainMenuController : Node
 		 */
 
 		_statusLabel.Text =
-			"Adaptive profile setup will be " +
-			"implemented in the next stage.";
+			"A configuração do perfil adaptativo será implementada na próxima etapa.";
 
 		SetLoadingState(false);
 
@@ -422,7 +419,7 @@ public partial class MainMenuController : Node
 		}
 
 		_statusLabel.Text =
-			"Settings will be implemented later.";
+			"As configurações serão implementadas posteriormente.";
 	}
 
 	private void OnExitPressed()
