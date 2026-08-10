@@ -46,9 +46,9 @@ mouse_filter = 1
 
 [node name="BoardCenter" type="CenterContainer" parent="PuzzleInterface/PuzzleArea"]
 offset_left = 0.0
-offset_top = 95.0
+offset_top = 88.0
 offset_right = 1280.0
-offset_bottom = 680.0
+offset_bottom = 710.0
 
 [node name="DecipherCodeBoard" parent="PuzzleInterface/PuzzleArea/BoardCenter" instance=ExtResource("2_board")]
 layout_mode = 2

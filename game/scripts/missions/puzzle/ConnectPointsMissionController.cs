@@ -51,14 +51,14 @@ public partial class ConnectPointsMissionController : Node
         MissionDto? currentMission = _sessionManager.CurrentMission;
         if (currentMission is null)
         {
-            ShowInitializationError("No active mission was found.");
+            ShowInitializationError("Nenhuma missão ativa foi encontrada.");
             return;
         }
 
         _mission = currentMission;
         if (_mission.Type != MissionType.Puzzle)
         {
-            ShowInitializationError("The active mission is not a puzzle mission.");
+            ShowInitializationError("A missão ativa não é uma missão de quebra-cabeça.");
             return;
         }
 
@@ -153,14 +153,14 @@ public partial class ConnectPointsMissionController : Node
             _mission.Type,
             _objectiveText,
             _board.TotalPairs);
-        _missionHud.SetProgress(0, _board.TotalPairs, "Paths");
+        _missionHud.SetProgress(0, _board.TotalPairs, "Caminhos");
         _missionHud.SetAttempts(_maximumFailures, _maximumFailures);
         _missionHud.SetVisibleState(true);
 
         _instructionLabel.Text =
-            "Drag from one colored point to its matching pair. Paths cannot cross.";
+            "Arraste de um ponto colorido até o par correspondente. Os caminhos não podem se cruzar.";
         _feedbackLabel.Text =
-            "Right-click to cancel the current path. Click an endpoint to redraw its route.";
+            "Clique com o botão direito para cancelar. Clique em uma extremidade para refazer um caminho.";
         _feedbackLabel.Modulate = new Color("#c2b4ce");
         UpdateCoverageText();
         _resultPopup.HidePopup();
@@ -179,10 +179,10 @@ public partial class ConnectPointsMissionController : Node
     {
         return _mission.Difficulty switch
         {
-            1 => $"Connect all {_board.TotalPairs} color pairs without crossing paths.",
-            2 => $"Connect all {_board.TotalPairs} pairs and cover at least {_board.RequiredCoveragePercent}% of the grid.",
-            3 => $"Connect all {_board.TotalPairs} pairs and fill the entire grid.",
-            _ => $"Connect all {_board.TotalPairs} color pairs."
+            1 => $"Conecte os {_board.TotalPairs} pares de cores sem cruzar os caminhos.",
+            2 => $"Conecte os {_board.TotalPairs} pares e cubra pelo menos {_board.RequiredCoveragePercent}% da grade.",
+            3 => $"Conecte os {_board.TotalPairs} pares e preencha toda a grade.",
+            _ => $"Conecte os {_board.TotalPairs} pares de cores."
         };
     }
 
@@ -193,8 +193,8 @@ public partial class ConnectPointsMissionController : Node
             return;
         }
 
-        _missionHud.SetProgress(completedPairs, totalPairs, "Paths");
-        _feedbackLabel.Text = "Path completed. You can click its endpoint to redraw it.";
+        _missionHud.SetProgress(completedPairs, totalPairs, "Caminhos");
+        _feedbackLabel.Text = "Caminho concluído. Clique em uma extremidade para refazê-lo.";
         _feedbackLabel.Modulate = new Color("#8fc9a5");
         UpdateCoverageText();
     }
@@ -209,14 +209,18 @@ public partial class ConnectPointsMissionController : Node
         _failures++;
         int remainingAttempts = Math.Max(0, _maximumFailures - _failures);
         _missionHud.SetAttempts(remainingAttempts, _maximumFailures);
-        _feedbackLabel.Text = "Invalid move: use adjacent empty cells and avoid other paths.";
+        _feedbackLabel.Text = "Tentativa inválida. O caminho deve terminar no ponto correspondente.";
         _feedbackLabel.Modulate = new Color("#e18b96");
 
-        GD.Print($"Falha em Conectar Pontos: Failures={_failures}/{_maximumFailures}");
+        GD.Print(
+            $"Erro em Conectar Pontos: Erros={_failures}/{_maximumFailures}, " +
+            $"Motivo={_board.LastInvalidMoveReason}");
 
         if (_failures >= _maximumFailures)
         {
-            _ = FinishMissionAsync(false);
+            _ = FinishMissionAsync(
+                false,
+                "Limite de tentativas inválidas atingido");
         }
     }
 
@@ -228,8 +232,8 @@ public partial class ConnectPointsMissionController : Node
         }
 
         _feedbackLabel.Text =
-            $"All pairs are connected, but coverage is {currentPercent}%. " +
-            $"Redraw paths until reaching {requiredPercent}%.";
+            $"Todos os pares estão conectados, mas a cobertura é {currentPercent}%. " +
+            $"Refaça os caminhos até atingir {requiredPercent}%.";
         _feedbackLabel.Modulate = new Color("#f0c674");
         UpdateCoverageText();
     }
@@ -238,11 +242,11 @@ public partial class ConnectPointsMissionController : Node
     {
         if (!_missionFinished && !_isFinalizingMission)
         {
-            _ = FinishMissionAsync(true);
+            _ = FinishMissionAsync(true, "Tabuleiro concluído");
         }
     }
 
-    private async Task FinishMissionAsync(bool success)
+    private async Task FinishMissionAsync(bool success, string finishReason)
     {
         if (_missionFinished || _isFinalizingMission)
         {
@@ -258,7 +262,7 @@ public partial class ConnectPointsMissionController : Node
             CompletionTime = _elapsedTime,
             Failures = _failures,
             Success = success,
-            Persistence = CalculatePersistence(_failures)
+            Persistence = CalculatePersistence(success, _failures)
         };
 
         _resultRegistered = await _sessionManager.RegisterCurrentMissionResultAsync(Result);
@@ -273,11 +277,12 @@ public partial class ConnectPointsMissionController : Node
             _mission.Name,
             _objectiveText,
             _elapsedTime,
-            "Paths Connected",
+            "Caminhos conectados",
             $"{_board.CompletedPairs}/{_board.TotalPairs} | {_board.CoveragePercent}% coverage",
             GetDifficultyText(_mission.Difficulty),
             _failures);
 
+        GD.Print($"MotivoEncerramento={finishReason}");
         PrintMissionResult();
     }
 
@@ -304,7 +309,7 @@ public partial class ConnectPointsMissionController : Node
     private void UpdateCoverageText()
     {
         _coverageLabel.Text =
-            $"Coverage: {_board.CoveragePercent}% / {_board.RequiredCoveragePercent}%";
+            $"Cobertura: {_board.CoveragePercent}% / {_board.RequiredCoveragePercent}%";
     }
 
     private void ShowInitializationError(string message)
@@ -314,11 +319,11 @@ public partial class ConnectPointsMissionController : Node
         GetNode<Control>("../PuzzleInterface/PuzzleArea").Visible = false;
         _resultPopup.ShowResult(
             false,
-            "Connect Points",
+            "Conectar Pontos",
             message,
             0,
-            "Initialization",
-            "Failed",
+            "Inicialização",
+            "Falhou",
             "-",
             1);
         GD.PushError(message);
@@ -349,14 +354,16 @@ public partial class ConnectPointsMissionController : Node
         _ => 5
     };
 
-    private static double CalculatePersistence(int failures) =>
-        Math.Max(0.0, 1.0 - Math.Max(0, failures) * 0.2);
+    private static double CalculatePersistence(bool success, int failures) =>
+        success
+            ? 1.0
+            : Math.Max(0.0, 1.0 - Math.Max(0, failures) * 0.2);
 
     private static string GetDifficultyText(int difficulty) => difficulty switch
     {
-        1 => "Easy",
-        2 => "Medium",
-        3 => "Hard",
+        1 => "Fácil",
+        2 => "Médio",
+        3 => "Difícil",
         _ => $"Level {difficulty}"
     };
 }

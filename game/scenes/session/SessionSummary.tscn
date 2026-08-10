@@ -124,13 +124,13 @@ theme_override_constants/separation = 3
 layout_mode = 2
 theme_override_colors/font_color = Color(0.94509804, 0.9098039, 0.9490196, 1)
 theme_override_font_sizes/font_size = 32
-text = "SESSION SUMMARY"
+text = "RESUMO DA SESSÃO"
 
 [node name="SubtitleLabel" type="Label" parent="MainMargin/MainContent/Header/HeaderText" unique_id=1033911975]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7882353, 0.7294118, 0.8039216, 1)
 theme_override_font_sizes/font_size = 15
-text = "Review your performance across all completed missions."
+text = "Confira o desempenho registrado durante esta sessão."
 
 [node name="HeaderSpacer" type="Control" parent="MainMargin/MainContent/Header" unique_id=781864701]
 layout_mode = 2
@@ -145,7 +145,7 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_nx8pl")
 layout_mode = 2
 theme_override_colors/font_color = Color(0.3137255, 0.23137255, 0.32941177, 1)
 theme_override_font_sizes/font_size = 13
-text = "6/6 COMPLETED"
+text = "6/6 CONCLUÍDAS"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -174,13 +174,13 @@ theme_override_constants/separation = 8
 layout_mode = 2
 theme_override_colors/font_color = Color(0.30588236, 0.22352941, 0.32156864, 1)
 theme_override_font_sizes/font_size = 20
-text = "COMPLETED MISSIONS"
+text = "MISSÕES REALIZADAS"
 
 [node name="MissionsSubtitleLabel" type="Label" parent="MainMargin/MainContent/MainPanel/PanelMargin/Columns/MissionsColumn" unique_id=703670631]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.5019608, 0.42352942, 0.5176471, 1)
 theme_override_font_sizes/font_size = 13
-text = "Individual results from this session."
+text = "Resultados individuais desta sessão."
 
 [node name="MissionsScroll" type="ScrollContainer" parent="MainMargin/MainContent/MainPanel/PanelMargin/Columns/MissionsColumn" unique_id=264434854]
 custom_minimum_size = Vector2(620, 390)
@@ -208,7 +208,7 @@ theme_override_constants/separation = 12
 layout_mode = 2
 theme_override_colors/font_color = Color(0.30588236, 0.22352941, 0.32156864, 1)
 theme_override_font_sizes/font_size = 20
-text = "SESSION STATISTICS
+text = "ESTATÍSTICAS DA SESSÃO
 "
 
 [node name="AverageTimeCard" type="PanelContainer" parent="MainMargin/MainContent/MainPanel/PanelMargin/Columns/StatisticsColumn" unique_id=295847931]
@@ -230,7 +230,7 @@ theme_override_constants/separation = 4
 layout_mode = 2
 theme_override_colors/font_color = Color(0.5019608, 0.42352942, 0.5176471, 1)
 theme_override_font_sizes/font_size = 12
-text = "AVERAGE TIME"
+text = "TEMPO MÉDIO"
 
 [node name="CardValue" type="Label" parent="MainMargin/MainContent/MainPanel/PanelMargin/Columns/StatisticsColumn/AverageTimeCard/CardMargin/CardContent" unique_id=1506798355]
 layout_mode = 2
@@ -257,7 +257,7 @@ theme_override_constants/separation = 4
 layout_mode = 2
 theme_override_colors/font_color = Color(0.5019608, 0.42352942, 0.5176471, 1)
 theme_override_font_sizes/font_size = 12
-text = "SUCCESS RATE"
+text = "TAXA DE SUCESSO"
 
 [node name="CardValue" type="Label" parent="MainMargin/MainContent/MainPanel/PanelMargin/Columns/StatisticsColumn/SuccessRateCard/CardMargin/CardContent" unique_id=1413678718]
 layout_mode = 2
@@ -284,13 +284,20 @@ theme_override_constants/separation = 4
 layout_mode = 2
 theme_override_colors/font_color = Color(0.5019608, 0.42352942, 0.5176471, 1)
 theme_override_font_sizes/font_size = 12
-text = "TOTAL FAILURES"
+text = "MISSÕES NÃO CONCLUÍDAS"
 
 [node name="CardValue" type="Label" parent="MainMargin/MainContent/MainPanel/PanelMargin/Columns/StatisticsColumn/FailuresCard/CardMargin/CardContent" unique_id=1067434190]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.3019608, 0.21960784, 0.31764707, 1)
 theme_override_font_sizes/font_size = 25
 text = "0"
+
+[node name="CardDetail" type="Label" parent="MainMargin/MainContent/MainPanel/PanelMargin/Columns/StatisticsColumn/FailuresCard/CardMargin/CardContent"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5019608, 0.42352942, 0.5176471, 1)
+theme_override_font_sizes/font_size = 12
+text = "Erros durante as missões: 0"
+autowrap_mode = 3
 
 [node name="BestCategoryCard" type="PanelContainer" parent="MainMargin/MainContent/MainPanel/PanelMargin/Columns/StatisticsColumn" unique_id=2085676088]
 layout_mode = 2
@@ -311,7 +318,7 @@ theme_override_constants/separation = 4
 layout_mode = 2
 theme_override_colors/font_color = Color(0.5019608, 0.42352942, 0.5176471, 1)
 theme_override_font_sizes/font_size = 12
-text = "BEST CATEGORY"
+text = "MELHOR CATEGORIA"
 
 [node name="CardValue" type="Label" parent="MainMargin/MainContent/MainPanel/PanelMargin/Columns/StatisticsColumn/BestCategoryCard/CardMargin/CardContent" unique_id=142175839]
 layout_mode = 2
@@ -323,7 +330,7 @@ text = "-"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.5019608, 0.42352942, 0.5176471, 1)
 theme_override_font_sizes/font_size = 12
-text = "Performance data unavailable."
+text = "Dados de desempenho indisponíveis."
 autowrap_mode = 3
 
 [node name="Footer" type="HBoxContainer" parent="MainMargin/MainContent" unique_id=1887659960]
@@ -335,7 +342,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.7882353, 0.7294118, 0.8039216, 1)
 theme_override_font_sizes/font_size = 13
-text = "Session successfully completed."
+text = "Sessão concluída com sucesso."
 horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 3
@@ -354,7 +361,7 @@ theme_override_font_sizes/font_size = 15
 theme_override_styles/normal = SubResource("StyleBoxFlat_urxdj")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_q8mm6")
 theme_override_styles/hover = SubResource("StyleBoxFlat_317kg")
-text = "CONTINUE"
+text = "CONTINUAR"
 
 [node name="SessionSummaryController" type="Node" parent="." unique_id=245437621]
 script = ExtResource("1_45cnt")

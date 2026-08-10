@@ -23,7 +23,8 @@ public partial class SessionSummaryController : Node
 
 	private Label _averageTimeValue = null!;
 	private Label _successRateValue = null!;
-	private Label _failuresValue = null!;
+	private Label _failedMissionsValue = null!;
+	private Label _mistakesDetail = null!;
 	private Label _bestCategoryValue = null!;
 	private Label _bestCategoryDetail = null!;
 
@@ -85,11 +86,17 @@ public partial class SessionSummaryController : Node
 				"SuccessRateCard/CardMargin/" +
 				"CardContent/CardValue");
 
-		_failuresValue =
+		_failedMissionsValue =
 			GetNode<Label>(
 				statisticsPath +
 				"FailuresCard/CardMargin/" +
 				"CardContent/CardValue");
+
+		_mistakesDetail =
+			GetNode<Label>(
+				statisticsPath +
+				"FailuresCard/CardMargin/" +
+				"CardContent/CardDetail");
 
 		_bestCategoryValue =
 			GetNode<Label>(
@@ -119,7 +126,7 @@ public partial class SessionSummaryController : Node
 		if (!_sessionManager.SessionEnded)
 		{
 			ShowBlockingError(
-				"The session has not been completed.");
+				"A sessão ainda não foi concluída.");
 
 			return;
 		}
@@ -130,7 +137,7 @@ public partial class SessionSummaryController : Node
 		if (records.Count == 0)
 		{
 			ShowBlockingError(
-				"No mission results are available.");
+				"Nenhum resultado de missão está disponível.");
 
 			return;
 		}
@@ -159,7 +166,10 @@ public partial class SessionSummaryController : Node
 				record =>
 					record.Result.Success);
 
-		int totalFailures =
+		int failedMissions =
+			totalMissions - successfulMissions;
+
+		int totalMistakes =
 			records.Sum(
 				record =>
 					record.Result.Failures);
@@ -177,7 +187,7 @@ public partial class SessionSummaryController : Node
 
 		_completedBadgeLabel.Text =
 			$"{successfulMissions}/" +
-			$"{totalMissions} SUCCESSFUL";
+			$"{totalMissions} CONCLUÍDAS";
 
 		_averageTimeValue.Text =
 			FormatTime(
@@ -186,8 +196,11 @@ public partial class SessionSummaryController : Node
 		_successRateValue.Text =
 			$"{Math.Round(successRate * 100):0}%";
 
-		_failuresValue.Text =
-			totalFailures.ToString();
+		_failedMissionsValue.Text =
+			failedMissions.ToString();
+
+		_mistakesDetail.Text =
+			$"Erros durante as missões: {totalMistakes}";
 
 		CategoryPerformance? bestCategory =
 			CalculateBestCategory(
@@ -201,8 +214,8 @@ public partial class SessionSummaryController : Node
 
 			_bestCategoryDetail.Text =
 				$"{bestCategory.SuccessfulMissions}/" +
-				$"{bestCategory.TotalMissions} successful" +
-				$"  •  Avg. " +
+				$"{bestCategory.TotalMissions} concluídas" +
+				$"  •  Média " +
 				$"{FormatTime(bestCategory.AverageTime)}";
 		}
 		else
@@ -211,11 +224,11 @@ public partial class SessionSummaryController : Node
 				"-";
 
 			_bestCategoryDetail.Text =
-				"Performance data unavailable.";
+				"Dados de desempenho indisponíveis.";
 		}
 
 		_statusLabel.Text =
-			"Session successfully completed and recorded.";
+			"Sessão concluída e registrada com sucesso.";
 
 		_continueButton.Disabled =
 			false;
@@ -224,7 +237,8 @@ public partial class SessionSummaryController : Node
 			$"Resumo da sessão carregado: " +
 			$"Missions={totalMissions}, " +
 			$"Successful={successfulMissions}, " +
-			$"Failures={totalFailures}, " +
+			$"FailedMissions={failedMissions}, " +
+			$"Mistakes={totalMistakes}, " +
 			$"AverageTime={averageTime:F2}");
 	}
 
@@ -243,7 +257,7 @@ public partial class SessionSummaryController : Node
 		ClearMissionList();
 
 		_completedBadgeLabel.Text =
-			"UNAVAILABLE";
+			"INDISPONÍVEL";
 
 		_averageTimeValue.Text =
 			"-";
@@ -251,14 +265,17 @@ public partial class SessionSummaryController : Node
 		_successRateValue.Text =
 			"-";
 
-		_failuresValue.Text =
+		_failedMissionsValue.Text =
+			"-";
+
+		_mistakesDetail.Text =
 			"-";
 
 		_bestCategoryValue.Text =
 			"-";
 
 		_bestCategoryDetail.Text =
-			"Performance data unavailable.";
+			"Dados de desempenho indisponíveis.";
 
 		_statusLabel.Text =
 			message;
@@ -286,8 +303,7 @@ public partial class SessionSummaryController : Node
 				scenePath))
 		{
 			_statusLabel.Text =
-				"The questionnaire information screen " +
-				"was not found.";
+				"A tela de dados do questionário não foi encontrada.";
 
 			_continueButton.Disabled =
 				false;
@@ -311,7 +327,7 @@ public partial class SessionSummaryController : Node
 		}
 
 		_statusLabel.Text =
-			"The next screen could not be opened.";
+			"Não foi possível abrir a próxima tela.";
 
 		_continueButton.Disabled =
 			false;
@@ -359,16 +375,16 @@ public partial class SessionSummaryController : Node
 		return missionType switch
 		{
 			MissionType.Combat =>
-				"Combat",
+				"Combate",
 
 			MissionType.Exploration =>
-				"Exploration",
+				"Exploração",
 
 			MissionType.Puzzle =>
-				"Puzzle",
+				"Quebra-cabeça",
 
 			_ =>
-				"Unknown"
+				"Desconhecida"
 		};
 	}
 
