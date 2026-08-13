@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=13 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="1_player"]
 [ext_resource type="PackedScene" path="res://scenes/components/MissionHud.tscn" id="2_hud"]
@@ -26,9 +26,52 @@ corner_radius_top_right = 18
 corner_radius_bottom_right = 18
 corner_radius_bottom_left = 18
 
+
+[sub_resource type="StyleBoxFlat" id="outer_arena_frame"]
+bg_color = Color(0.258824, 0.188235, 0.305882, 1)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.647059, 0.521569, 0.72549, 1)
+corner_radius_top_left = 24
+corner_radius_top_right = 24
+corner_radius_bottom_right = 24
+corner_radius_bottom_left = 24
+shadow_color = Color(0.0431373, 0.027451, 0.0627451, 0.24)
+shadow_size = 10
+
+[sub_resource type="StyleBoxFlat" id="outer_arena_fill"]
+bg_color = Color(0.129412, 0.0862745, 0.160784, 1)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
+
 [node name="DefendObjectMission" type="Node2D"]
 
 [node name="Environment" type="Node2D" parent="."]
+
+
+[node name="ViewportBackdrop" type="Polygon2D" parent="Environment"]
+color = Color(0.0862745, 0.054902, 0.113725, 1)
+polygon = PackedVector2Array(-80, -60, 1360, -60, 1360, 780, -80, 780)
+
+[node name="ArenaFrameShadow" type="Panel" parent="Environment"]
+offset_left = 42.0
+offset_top = 56.0
+offset_right = 1238.0
+offset_bottom = 704.0
+theme_override_styles/panel = SubResource("outer_arena_frame")
+mouse_filter = 2
+
+[node name="ArenaFrameFill" type="Panel" parent="Environment"]
+offset_left = 58.0
+offset_top = 72.0
+offset_right = 1222.0
+offset_bottom = 688.0
+theme_override_styles/panel = SubResource("outer_arena_fill")
+mouse_filter = 2
 
 [node name="Background" type="Polygon2D" parent="Environment"]
 color = Color(0.065, 0.035, 0.1, 1)
@@ -97,7 +140,12 @@ position = Vector2(640, 610)
 [node name="DefensibleObject" parent="." instance=ExtResource("6_object")]
 position = Vector2(640, 370)
 
+[node name="MissionCamera" type="Camera2D" parent="."]
+position = Vector2(640, 360)
+enabled = true
+
 [node name="Player" parent="." instance=ExtResource("1_player")]
+follow_camera = false
 initial_visual_mode = 2
 
 [node name="CombatWaveManager" parent="." instance=ExtResource("4_waves")]

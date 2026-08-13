@@ -17,9 +17,52 @@ size = Vector2(40, 648)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_57ddn"]
 size = Vector2(40, 648)
 
+
+[sub_resource type="StyleBoxFlat" id="outer_field_frame"]
+bg_color = Color(0.258824, 0.188235, 0.305882, 1)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.647059, 0.521569, 0.72549, 1)
+corner_radius_top_left = 24
+corner_radius_top_right = 24
+corner_radius_bottom_right = 24
+corner_radius_bottom_left = 24
+shadow_color = Color(0.0431373, 0.027451, 0.0627451, 0.24)
+shadow_size = 10
+
+[sub_resource type="StyleBoxFlat" id="outer_field_fill"]
+bg_color = Color(0.203922, 0.156863, 0.231373, 1)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
+
 [node name="FindObjectsMission" type="Node2D" unique_id=1204971648]
 
 [node name="Environment" type="Node2D" parent="." unique_id=426859292]
+
+
+[node name="ViewportBackdrop" type="Polygon2D" parent="Environment"]
+color = Color(0.0862745, 0.054902, 0.113725, 1)
+polygon = PackedVector2Array(-140, -100, 1292, -100, 1292, 760, -140, 760)
+
+[node name="FieldFrameShadow" type="Panel" parent="Environment"]
+offset_left = -18.0
+offset_top = -18.0
+offset_right = 1170.0
+offset_bottom = 666.0
+theme_override_styles/panel = SubResource("outer_field_frame")
+mouse_filter = 2
+
+[node name="FieldFrameFill" type="Panel" parent="Environment"]
+offset_left = 6.0
+offset_top = 6.0
+offset_right = 1146.0
+offset_bottom = 642.0
+theme_override_styles/panel = SubResource("outer_field_fill")
+mouse_filter = 2
 
 [node name="Background" type="Polygon2D" parent="Environment" unique_id=77805511]
 color = Color(0.44705883, 0.37254903, 0.4117647, 1)
@@ -92,7 +135,12 @@ position = Vector2(520, 520)
 
 [node name="DynamicObjects" type="Node2D" parent="." unique_id=637196125]
 
+[node name="MissionCamera" type="Camera2D" parent="."]
+position = Vector2(576, 324)
+enabled = true
+
 [node name="Player" parent="." unique_id=632016709 instance=ExtResource("1_h0dl7")]
+follow_camera = false
 
 [node name="MissionHud" parent="." unique_id=1740890340 instance=ExtResource("2_1gw2u")]
 
