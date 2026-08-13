@@ -7,32 +7,39 @@ using Godot;
 namespace AdaptiveTrials.Game.Session;
 
 /// <summary>
-/// Exibe os resultados e as estatísticas
-/// da sessão experimental concluída.
+/// Apresenta o resumo final de uma sessão concluída.
+/// Esta é a última tela do fluxo antes do retorno ao menu.
 /// </summary>
 public partial class SessionSummaryController : Node
 {
-	private static readonly PackedScene
-		MissionSummaryRowScene =
-			GD.Load<PackedScene>(
-				"res://scenes/session/components/" +
-				"MissionSummaryRow.tscn");
+	private const string MainMenuScenePath =
+		"res://scenes/menu/MainMenu.tscn";
 
+	private static readonly PackedScene MissionSummaryRowScene =
+		GD.Load<PackedScene>(
+			"res://scenes/session/components/MissionSummaryRow.tscn");
+
+	private Label _subtitleLabel = null!;
 	private Label _completedBadgeLabel = null!;
 	private VBoxContainer _missionList = null!;
 
 	private Label _averageTimeValue = null!;
+	private Label _averageTimeDetail = null!;
 	private Label _successRateValue = null!;
+	private Label _successRateDetail = null!;
 	private Label _failedMissionsValue = null!;
-	private Label _mistakesDetail = null!;
+	private Label _failedMissionsDetail = null!;
 	private Label _bestCategoryValue = null!;
 	private Label _bestCategoryDetail = null!;
 
+	private Label _combatPerformanceValue = null!;
+	private Label _explorationPerformanceValue = null!;
+	private Label _puzzlePerformanceValue = null!;
+
 	private Label _statusLabel = null!;
-	private Button _continueButton = null!;
+	private Button _returnButton = null!;
 
 	private SessionManager _sessionManager = null!;
-
 	private bool _isNavigating;
 
 	public override void _Ready()
@@ -40,94 +47,83 @@ public partial class SessionSummaryController : Node
 		GetReferences();
 
 		_sessionManager =
-			GetNode<SessionManager>(
-				"/root/SessionManager");
+			GetNode<SessionManager>("/root/SessionManager");
 
-		_continueButton.Pressed +=
-			OnContinuePressed;
+		_returnButton.Pressed += OnReturnToMenuPressed;
 
 		LoadSessionSummary();
 	}
 
 	private void GetReferences()
 	{
-		const string mainContentPath =
-			"../MainMargin/MainContent/";
+		const string root =
+			"../ScreenMargin/SummaryPanel/PanelMargin/RootContent/";
 
-		const string columnsPath =
-			mainContentPath +
-			"MainPanel/PanelMargin/Columns/";
+		const string stats =
+			root + "Body/StatsSection/";
 
-		const string statisticsPath =
-			columnsPath +
-			"StatisticsColumn/";
+		_subtitleLabel =
+			GetNode<Label>(root + "Header/HeaderText/SubtitleLabel");
 
 		_completedBadgeLabel =
-			GetNode<Label>(
-				mainContentPath +
-				"Header/CompletedBadge/" +
-				"CompletedBadgeLabel");
+			GetNode<Label>(root + "Header/CompletedBadge/CompletedBadgeLabel");
 
 		_missionList =
 			GetNode<VBoxContainer>(
-				columnsPath +
-				"MissionsColumn/MissionsScroll/" +
-				"MissionList");
+				root +
+				"Body/MissionsSection/SectionMargin/MissionsContent/" +
+				"MissionsScroll/MissionList");
 
 		_averageTimeValue =
 			GetNode<Label>(
-				statisticsPath +
-				"AverageTimeCard/CardMargin/" +
-				"CardContent/CardValue");
+				stats + "MetricsGrid/AverageTimeCard/Margin/Content/Value");
+		_averageTimeDetail =
+			GetNode<Label>(
+				stats + "MetricsGrid/AverageTimeCard/Margin/Content/Detail");
 
 		_successRateValue =
 			GetNode<Label>(
-				statisticsPath +
-				"SuccessRateCard/CardMargin/" +
-				"CardContent/CardValue");
+				stats + "MetricsGrid/SuccessRateCard/Margin/Content/Value");
+		_successRateDetail =
+			GetNode<Label>(
+				stats + "MetricsGrid/SuccessRateCard/Margin/Content/Detail");
 
 		_failedMissionsValue =
 			GetNode<Label>(
-				statisticsPath +
-				"FailuresCard/CardMargin/" +
-				"CardContent/CardValue");
-
-		_mistakesDetail =
+				stats + "MetricsGrid/FailedCard/Margin/Content/Value");
+		_failedMissionsDetail =
 			GetNode<Label>(
-				statisticsPath +
-				"FailuresCard/CardMargin/" +
-				"CardContent/CardDetail");
+				stats + "MetricsGrid/FailedCard/Margin/Content/Detail");
 
 		_bestCategoryValue =
 			GetNode<Label>(
-				statisticsPath +
-				"BestCategoryCard/CardMargin/" +
-				"CardContent/CardValue");
-
+				stats + "MetricsGrid/BestCategoryCard/Margin/Content/Value");
 		_bestCategoryDetail =
 			GetNode<Label>(
-				statisticsPath +
-				"BestCategoryCard/CardMargin/" +
-				"CardContent/CardDetail");
+				stats + "MetricsGrid/BestCategoryCard/Margin/Content/Detail");
+
+		const string categoryRoot =
+			stats + "CategoryPanel/Margin/Content/";
+
+		_combatPerformanceValue =
+			GetNode<Label>(categoryRoot + "CombatRow/Value");
+		_explorationPerformanceValue =
+			GetNode<Label>(categoryRoot + "ExplorationRow/Value");
+		_puzzlePerformanceValue =
+			GetNode<Label>(categoryRoot + "PuzzleRow/Value");
 
 		_statusLabel =
-			GetNode<Label>(
-				mainContentPath +
-				"Footer/StatusLabel");
+			GetNode<Label>(root + "Footer/StatusLabel");
 
-		_continueButton =
-			GetNode<Button>(
-				mainContentPath +
-				"Footer/ContinueButton");
+		_returnButton =
+			GetNode<Button>(root + "Footer/ReturnButton");
 	}
 
 	private void LoadSessionSummary()
 	{
 		if (!_sessionManager.SessionEnded)
 		{
-			ShowBlockingError(
-				"A sessão ainda não foi concluída.");
-
+			ShowBlockingError("A sessão ainda não foi concluída.");
 			return;
 		}
 
@@ -138,155 +134,176 @@ public partial class SessionSummaryController : Node
 		{
 			ShowBlockingError(
 				"Nenhum resultado de missão está disponível.");
-
 			return;
 		}
 
 		ClearMissionList();
 
-		foreach (CompletedMissionRecord record
-				 in records)
+		foreach (CompletedMissionRecord record in records)
 		{
 			MissionSummaryRow row =
-				MissionSummaryRowScene
-					.Instantiate<MissionSummaryRow>();
+				MissionSummaryRowScene.Instantiate<MissionSummaryRow>();
 
-			_missionList.AddChild(
-				row);
-
-			row.Configure(
-				record);
+			_missionList.AddChild(row);
+			row.Configure(record);
 		}
 
-		int totalMissions =
-			records.Count;
-
+		int totalMissions = records.Count;
 		int successfulMissions =
-			records.Count(
-				record =>
-					record.Result.Success);
-
-		int failedMissions =
-			totalMissions - successfulMissions;
-
+			records.Count(record => record.Result.Success);
+		int failedMissions = totalMissions - successfulMissions;
 		int totalMistakes =
-			records.Sum(
-				record =>
-					record.Result.Failures);
+			records.Sum(record => record.Result.Failures);
 
+		double totalTime =
+			records.Sum(record => record.Result.CompletionTime);
 		double averageTime =
-			records.Average(
-				record =>
-					record.Result.CompletionTime);
-
+			records.Average(record => record.Result.CompletionTime);
 		double successRate =
 			totalMissions == 0
 				? 0
-				: successfulMissions /
-				  (double)totalMissions;
+				: successfulMissions / (double)totalMissions;
+
+		string modeText = GetModeText(_sessionManager.Mode);
+
+		_subtitleLabel.Text =
+			$"Modo {modeText} • {totalMissions} missões registradas";
 
 		_completedBadgeLabel.Text =
-			$"{successfulMissions}/" +
-			$"{totalMissions} CONCLUÍDAS";
+			$"{successfulMissions}/{totalMissions} CONCLUÍDAS";
 
-		_averageTimeValue.Text =
-			FormatTime(
-				averageTime);
+		_averageTimeValue.Text = FormatTime(averageTime);
+		_averageTimeDetail.Text = $"Total: {FormatTime(totalTime)}";
 
 		_successRateValue.Text =
 			$"{Math.Round(successRate * 100):0}%";
+		_successRateDetail.Text =
+			$"{successfulMissions} de {totalMissions} concluídas";
 
-		_failedMissionsValue.Text =
-			failedMissions.ToString();
+		_failedMissionsValue.Text = failedMissions.ToString();
+		_failedMissionsDetail.Text =
+			$"{totalMistakes} erros durante as missões";
 
-		_mistakesDetail.Text =
-			$"Erros durante as missões: {totalMistakes}";
+		List<CategoryPerformance> performances =
+			CalculateCategoryPerformances(records);
 
 		CategoryPerformance? bestCategory =
-			CalculateBestCategory(
-				records);
+			performances
+				.OrderByDescending(performance => performance.SuccessRate)
+				.ThenBy(performance => performance.AverageTime)
+				.FirstOrDefault();
 
-		if (bestCategory is not null)
+		if (bestCategory is null)
 		{
-			_bestCategoryValue.Text =
-				GetCategoryText(
-					bestCategory.MissionType);
-
-			_bestCategoryDetail.Text =
-				$"{bestCategory.SuccessfulMissions}/" +
-				$"{bestCategory.TotalMissions} concluídas" +
-				$"  •  Média " +
-				$"{FormatTime(bestCategory.AverageTime)}";
+			_bestCategoryValue.Text = "-";
+			_bestCategoryDetail.Text = "Sem dados";
 		}
 		else
 		{
 			_bestCategoryValue.Text =
-				"-";
-
+				GetCategoryText(bestCategory.MissionType);
 			_bestCategoryDetail.Text =
-				"Dados de desempenho indisponíveis.";
+				$"{bestCategory.SuccessfulMissions}/" +
+				$"{bestCategory.TotalMissions} • " +
+				$"média {FormatTime(bestCategory.AverageTime)}";
 		}
 
-		_statusLabel.Text =
-			"Sessão concluída e registrada com sucesso.";
+		SetCategoryPerformance(
+			MissionType.Combat,
+			performances,
+			_combatPerformanceValue);
+		SetCategoryPerformance(
+			MissionType.Exploration,
+			performances,
+			_explorationPerformanceValue);
+		SetCategoryPerformance(
+			MissionType.Puzzle,
+			performances,
+			_puzzlePerformanceValue);
 
-		_continueButton.Disabled =
-			false;
+		_statusLabel.Text =
+			"Sessão finalizada. Você já pode voltar ao menu.";
+
+		_returnButton.Disabled = false;
 
 		GD.Print(
 			$"Resumo da sessão carregado: " +
+			$"Mode={modeText}, " +
 			$"Missions={totalMissions}, " +
 			$"Successful={successfulMissions}, " +
 			$"FailedMissions={failedMissions}, " +
 			$"Mistakes={totalMistakes}, " +
+			$"TotalTime={totalTime:F2}, " +
 			$"AverageTime={averageTime:F2}");
+	}
+
+	private static void SetCategoryPerformance(
+		MissionType type,
+		IReadOnlyList<CategoryPerformance> performances,
+		Label target)
+	{
+		CategoryPerformance? performance =
+			performances.FirstOrDefault(item => item.MissionType == type);
+
+		target.Text =
+			performance is null
+				? "Sem dados"
+				: $"{performance.SuccessfulMissions}/" +
+				  $"{performance.TotalMissions} • " +
+				  $"{FormatTime(performance.AverageTime)}";
+	}
+
+	private static List<CategoryPerformance>
+		CalculateCategoryPerformances(
+			IReadOnlyList<CompletedMissionRecord> records)
+	{
+		return records
+			.GroupBy(record => record.Mission.Type)
+			.Select(group =>
+				new CategoryPerformance(
+					group.Key,
+					group.Count(),
+					group.Count(record => record.Result.Success),
+					group.Average(
+						record => record.Result.CompletionTime)))
+			.ToList();
 	}
 
 	private void ClearMissionList()
 	{
-		foreach (Node child
-				 in _missionList.GetChildren())
+		foreach (Node child in _missionList.GetChildren())
 		{
 			child.QueueFree();
 		}
 	}
 
-	private void ShowBlockingError(
-		string message)
+	private void ShowBlockingError(string message)
 	{
 		ClearMissionList();
 
-		_completedBadgeLabel.Text =
-			"INDISPONÍVEL";
+		_subtitleLabel.Text =
+			"Não foi possível carregar o resumo da sessão";
+		_completedBadgeLabel.Text = "INDISPONÍVEL";
 
-		_averageTimeValue.Text =
-			"-";
+		_averageTimeValue.Text = "-";
+		_averageTimeDetail.Text = "-";
+		_successRateValue.Text = "-";
+		_successRateDetail.Text = "-";
+		_failedMissionsValue.Text = "-";
+		_failedMissionsDetail.Text = "-";
+		_bestCategoryValue.Text = "-";
+		_bestCategoryDetail.Text = "-";
+		_combatPerformanceValue.Text = "Sem dados";
+		_explorationPerformanceValue.Text = "Sem dados";
+		_puzzlePerformanceValue.Text = "Sem dados";
 
-		_successRateValue.Text =
-			"-";
-
-		_failedMissionsValue.Text =
-			"-";
-
-		_mistakesDetail.Text =
-			"-";
-
-		_bestCategoryValue.Text =
-			"-";
-
-		_bestCategoryDetail.Text =
-			"Dados de desempenho indisponíveis.";
-
-		_statusLabel.Text =
-			message;
-
-		_continueButton.Disabled =
-			true;
+		_statusLabel.Text = message;
+		_returnButton.Disabled = true;
 
 		GD.PushError(message);
 	}
 
-	private void OnContinuePressed()
+	private void OnReturnToMenuPressed()
 	{
 		if (_isNavigating)
 		{
@@ -294,114 +311,59 @@ public partial class SessionSummaryController : Node
 		}
 
 		_isNavigating = true;
-		_continueButton.Disabled = true;
+		_returnButton.Disabled = true;
 
-		const string scenePath =
-			SessionManager.QuestionnaireInfoScenePath;
-
-		if (!ResourceLoader.Exists(
-				scenePath))
+		if (!ResourceLoader.Exists(MainMenuScenePath))
 		{
-			_statusLabel.Text =
-				"A tela de dados do questionário não foi encontrada.";
-
-			_continueButton.Disabled =
-				false;
-
-			_isNavigating =
-				false;
-
-			GD.PushError(
-				$"Cena não encontrada: {scenePath}");
-
+			_statusLabel.Text = "A tela inicial não foi encontrada.";
+			_returnButton.Disabled = false;
+			_isNavigating = false;
+			GD.PushError($"Cena não encontrada: {MainMenuScenePath}");
 			return;
 		}
 
 		Error navigationError =
-			GetTree().ChangeSceneToFile(
-				scenePath);
+			GetTree().ChangeSceneToFile(MainMenuScenePath);
 
-		if (navigationError == Error.Ok)
+		if (navigationError != Error.Ok)
 		{
+			_statusLabel.Text = "Não foi possível retornar ao menu.";
+			_returnButton.Disabled = false;
+			_isNavigating = false;
+			GD.PushError(
+				$"Erro ao abrir {MainMenuScenePath}: {navigationError}");
 			return;
 		}
 
-		_statusLabel.Text =
-			"Não foi possível abrir a próxima tela.";
-
-		_continueButton.Disabled =
-			false;
-
-		_isNavigating =
-			false;
-
-		GD.PushError(
-			$"Erro ao abrir {scenePath}: " +
-			$"{navigationError}");
+		_sessionManager.ClearSession();
 	}
 
-	private static CategoryPerformance?
-		CalculateBestCategory(
-			IReadOnlyList<CompletedMissionRecord> records)
+	private static string GetModeText(GameMode? mode)
 	{
-		return records
-			.GroupBy(
-				record =>
-					record.Mission.Type)
-			.Select(
-				group =>
-					new CategoryPerformance(
-						group.Key,
-						group.Count(),
-						group.Count(
-							record =>
-								record.Result.Success),
-						group.Average(
-							record =>
-								record.Result
-									.CompletionTime)))
-			.OrderByDescending(
-				performance =>
-					performance.SuccessRate)
-			.ThenBy(
-				performance =>
-					performance.AverageTime)
-			.FirstOrDefault();
-	}
-
-	private static string GetCategoryText(
-		MissionType missionType)
-	{
-		return missionType switch
+		return mode switch
 		{
-			MissionType.Combat =>
-				"Combate",
-
-			MissionType.Exploration =>
-				"Exploração",
-
-			MissionType.Puzzle =>
-				"Quebra-cabeça",
-
-			_ =>
-				"Desconhecida"
+			GameMode.Control => "Controle",
+			GameMode.Adaptive => "Adaptativo",
+			_ => "Desconhecido"
 		};
 	}
 
-	private static string FormatTime(
-		double seconds)
+	private static string GetCategoryText(MissionType missionType)
 	{
-		int totalSeconds =
-			Math.Max(
-				0,
-				(int)Math.Round(seconds));
+		return missionType switch
+		{
+			MissionType.Combat => "Combate",
+			MissionType.Exploration => "Exploração",
+			MissionType.Puzzle => "Quebra-cabeça",
+			_ => "Desconhecida"
+		};
+	}
 
-		int minutes =
-			totalSeconds / 60;
-
-		int remainingSeconds =
-			totalSeconds % 60;
-
+	private static string FormatTime(double seconds)
+	{
+		int totalSeconds = Math.Max(0, (int)Math.Round(seconds));
+		int minutes = totalSeconds / 60;
+		int remainingSeconds = totalSeconds % 60;
 		return $"{minutes:00}:{remainingSeconds:00}";
 	}
 
@@ -414,7 +376,6 @@ public partial class SessionSummaryController : Node
 		public double SuccessRate =>
 			TotalMissions == 0
 				? 0
-				: SuccessfulMissions /
-				  (double)TotalMissions;
+				: SuccessfulMissions / (double)TotalMissions;
 	}
 }

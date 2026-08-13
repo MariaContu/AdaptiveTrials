@@ -22,8 +22,6 @@ public partial class SessionManager : Node
 	public const string SessionSummaryScenePath =
 		"res://scenes/session/SessionSummary.tscn";
 
-	public const string QuestionnaireInfoScenePath =
-		"res://scenes/session/QuestionnaireInfo.tscn";
 
 	private readonly List<MissionDto> _missionSequence =
 		new();

@@ -5,278 +5,148 @@ using Godot;
 namespace AdaptiveTrials.Game.Session;
 
 /// <summary>
-/// Exibe o resultado individual de uma missão
-/// na tela de resumo da sessão.
+/// Representa uma missão concluída no resumo final da sessão.
 /// </summary>
 public partial class MissionSummaryRow : PanelContainer
 {
 	private PanelContainer _categoryIconPanel = null!;
 	private Label _categoryIcon = null!;
-
 	private Label _missionNameLabel = null!;
 	private Label _missionDetailsLabel = null!;
-
 	private Label _timeValueLabel = null!;
-
 	private PanelContainer _resultPanel = null!;
 	private Label _resultLabel = null!;
 
 	public override void _Ready()
 	{
 		_categoryIconPanel =
-			GetNode<PanelContainer>(
-				"RowMargin/Content/CategoryIconPanel");
-
+			GetNode<PanelContainer>("RowMargin/Content/CategoryIconPanel");
 		_categoryIcon =
-			GetNode<Label>(
-				"RowMargin/Content/CategoryIconPanel/" +
-				"CategoryIcon");
-
+			GetNode<Label>("RowMargin/Content/CategoryIconPanel/CategoryIcon");
 		_missionNameLabel =
-			GetNode<Label>(
-				"RowMargin/Content/MissionInfo/" +
-				"MissionNameLabel");
-
+			GetNode<Label>("RowMargin/Content/MissionInfo/MissionNameLabel");
 		_missionDetailsLabel =
-			GetNode<Label>(
-				"RowMargin/Content/MissionInfo/" +
-				"MissionDetailsLabel");
-
+			GetNode<Label>("RowMargin/Content/MissionInfo/MissionDetailsLabel");
 		_timeValueLabel =
-			GetNode<Label>(
-				"RowMargin/Content/TimeContainer/" +
-				"TimeValueLabel");
-
+			GetNode<Label>("RowMargin/Content/TimeContainer/TimeValueLabel");
 		_resultPanel =
-			GetNode<PanelContainer>(
-				"RowMargin/Content/ResultPanel");
-
+			GetNode<PanelContainer>("RowMargin/Content/ResultPanel");
 		_resultLabel =
-			GetNode<Label>(
-				"RowMargin/Content/ResultPanel/" +
-				"ResultLabel");
+			GetNode<Label>("RowMargin/Content/ResultPanel/ResultLabel");
 	}
 
-	public void Configure(
-		CompletedMissionRecord record)
+	public void Configure(CompletedMissionRecord record)
 	{
-		ArgumentNullException.ThrowIfNull(
-			record);
+		ArgumentNullException.ThrowIfNull(record);
 
-		_missionNameLabel.Text =
-			record.Mission.Name;
-
+		_missionNameLabel.Text = record.Mission.Name;
 		_missionDetailsLabel.Text =
-			$"{GetCategoryText(record.Mission.Type)}" +
-			$"  •  " +
+			$"{GetCategoryText(record.Mission.Type)} • " +
 			$"{GetDifficultyText(record.Mission.Difficulty)}";
+		_categoryIcon.Text = GetCategoryIcon(record.Mission.Type);
+		_timeValueLabel.Text = FormatTime(record.Result.CompletionTime);
 
-		_categoryIcon.Text =
-			GetCategoryIcon(record.Mission.Type);
-
-		_timeValueLabel.Text =
-			FormatTime(
-				record.Result.CompletionTime);
-
-		ApplyCategoryStyle(
-			record.Mission.Type);
-
-		ApplyResultStyle(
-			record.Result.Success);
+		ApplyCategoryStyle(record.Mission.Type);
+		ApplyResultStyle(record.Result.Success);
 	}
 
-	private void ApplyCategoryStyle(
-		MissionType missionType)
+	private void ApplyCategoryStyle(MissionType missionType)
 	{
-		StyleBoxFlat style =
-			new()
-			{
-				BorderWidthLeft = 2,
-				BorderWidthTop = 2,
-				BorderWidthRight = 2,
-				BorderWidthBottom = 2,
-
-				CornerRadiusTopLeft = 12,
-				CornerRadiusTopRight = 12,
-				CornerRadiusBottomRight = 12,
-				CornerRadiusBottomLeft = 12
-			};
+		StyleBoxFlat style = new()
+		{
+			CornerRadiusTopLeft = 12,
+			CornerRadiusTopRight = 12,
+			CornerRadiusBottomRight = 12,
+			CornerRadiusBottomLeft = 12
+		};
 
 		switch (missionType)
 		{
 			case MissionType.Combat:
-				style.BgColor =
-					new Color("#F1D9DC");
-
-				style.BorderColor =
-					new Color("#C98891");
-
-				_categoryIcon.Modulate =
-					new Color("#874A54");
-
+				style.BgColor = new Color("#B9878D");
+				_categoryIcon.Modulate = new Color("#3E252A");
 				break;
-
 			case MissionType.Exploration:
-				style.BgColor =
-					new Color("#DCEBDD");
-
-				style.BorderColor =
-					new Color("#8FAF91");
-
-				_categoryIcon.Modulate =
-					new Color("#4F7655");
-
+				style.BgColor = new Color("#91A58D");
+				_categoryIcon.Modulate = new Color("#26362A");
 				break;
-
 			case MissionType.Puzzle:
-				style.BgColor =
-					new Color("#DDDDF0");
-
-				style.BorderColor =
-					new Color("#9293BF");
-
-				_categoryIcon.Modulate =
-					new Color("#565888");
-
+				style.BgColor = new Color("#8E899E");
+				_categoryIcon.Modulate = new Color("#292637");
 				break;
-
 			default:
-				style.BgColor =
-					new Color("#DED0E2");
-
-				style.BorderColor =
-					new Color("#B89DBE");
-
-				_categoryIcon.Modulate =
-					new Color("#57405B");
-
+				style.BgColor = new Color("#96858F");
+				_categoryIcon.Modulate = new Color("#342933");
 				break;
 		}
 
-		_categoryIconPanel.AddThemeStyleboxOverride(
-			"panel",
-			style);
+		_categoryIconPanel.AddThemeStyleboxOverride("panel", style);
 	}
 
-	private void ApplyResultStyle(
-		bool success)
+	private void ApplyResultStyle(bool success)
 	{
-		StyleBoxFlat style =
-			new()
-			{
-				BorderWidthLeft = 2,
-				BorderWidthTop = 2,
-				BorderWidthRight = 2,
-				BorderWidthBottom = 2,
-
-				CornerRadiusTopLeft = 12,
-				CornerRadiusTopRight = 12,
-				CornerRadiusBottomRight = 12,
-				CornerRadiusBottomLeft = 12
-			};
+		StyleBoxFlat style = new()
+		{
+			CornerRadiusTopLeft = 10,
+			CornerRadiusTopRight = 10,
+			CornerRadiusBottomRight = 10,
+			CornerRadiusBottomLeft = 10
+		};
 
 		if (success)
 		{
-			style.BgColor =
-				new Color("#DDEBDD");
-
-			style.BorderColor =
-				new Color("#86AB8A");
-
-			_resultLabel.Text =
-				"CONCLUÍDA";
-
-			_resultLabel.Modulate =
-				new Color("#416E48");
-
-			_resultPanel.AddThemeStyleboxOverride(
-				"panel",
-				style);
-
-			return;
+			style.BgColor = new Color("#4F8159");
+			_resultLabel.Text = "✓";
+			_resultLabel.Modulate = new Color("#F1F3ED");
+		}
+		else
+		{
+			style.BgColor = new Color("#98515C");
+			_resultLabel.Text = "×";
+			_resultLabel.Modulate = new Color("#F5EDEE");
 		}
 
-		style.BgColor =
-			new Color("#F1D7DA");
-
-		style.BorderColor =
-			new Color("#C77C87");
-
-		_resultLabel.Text =
-			"NÃO CONCLUÍDA";
-
-		_resultLabel.Modulate =
-			new Color("#914955");
-
-		_resultPanel.AddThemeStyleboxOverride(
-			"panel",
-			style);
+		_resultPanel.AddThemeStyleboxOverride("panel", style);
 	}
 
-	private static string GetCategoryText(
-		MissionType missionType)
+	private static string GetCategoryText(MissionType missionType)
 	{
 		return missionType switch
 		{
-			MissionType.Combat =>
-				"Combate",
-
-			MissionType.Exploration =>
-				"Exploração",
-
-			MissionType.Puzzle =>
-				"Quebra-cabeça",
-
-			_ =>
-				"Desconhecida"
+			MissionType.Combat => "Combate",
+			MissionType.Exploration => "Exploração",
+			MissionType.Puzzle => "Quebra-cabeça",
+			_ => "Desconhecida"
 		};
 	}
 
-	private static string GetCategoryIcon(
-		MissionType missionType)
-	{
-		return missionType switch
-		{
-			MissionType.Combat =>
-				"⚔",
-
-			MissionType.Exploration =>
-				"⌖",
-
-			MissionType.Puzzle =>
-				"◆",
-
-			_ =>
-				"?"
-		};
-	}
-
-	private static string GetDifficultyText(
-		int difficulty)
+	private static string GetDifficultyText(int difficulty)
 	{
 		return difficulty switch
 		{
 			1 => "Fácil",
-			2 => "Médio",
+			2 => "Média",
 			3 => "Difícil",
-			_ => $"Nível {difficulty}"
+			_ => "Desconhecida"
 		};
 	}
 
-	private static string FormatTime(
-		double seconds)
+	private static string GetCategoryIcon(MissionType missionType)
 	{
-		int totalSeconds =
-			Math.Max(
-				0,
-				(int)Math.Round(seconds));
+		return missionType switch
+		{
+			MissionType.Combat => "⚔",
+			MissionType.Exploration => "⌖",
+			MissionType.Puzzle => "◇",
+			_ => "?"
+		};
+	}
 
-		int minutes =
-			totalSeconds / 60;
-
-		int remainingSeconds =
-			totalSeconds % 60;
-
+	private static string FormatTime(double seconds)
+	{
+		int totalSeconds = Math.Max(0, (int)Math.Round(seconds));
+		int minutes = totalSeconds / 60;
+		int remainingSeconds = totalSeconds % 60;
 		return $"{minutes:00}:{remainingSeconds:00}";
 	}
 }
