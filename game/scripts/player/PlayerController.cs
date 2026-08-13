@@ -30,6 +30,10 @@ public partial class PlayerController : CharacterBody2D, IDamageable
 	public PlayerVisualMode InitialVisualMode { get; set; } =
 		PlayerVisualMode.Normal;
 
+	[ExportGroup("Camera")]
+	[Export]
+	public bool FollowCamera { get; set; } = true;
+
 	[ExportGroup("Magic Attack")]
 	[Export]
 	public PackedScene? MagicOrbScene { get; set; }
@@ -81,6 +85,12 @@ public partial class PlayerController : CharacterBody2D, IDamageable
 
 		_healthComponent =
 			GetNode<HealthComponent>("HealthComponent");
+
+		Camera2D camera =
+			GetNode<Camera2D>("Camera2D");
+
+		camera.Enabled =
+			FollowCamera;
 
 		_interactionArea.BodyEntered += OnInteractionBodyEntered;
 		_interactionArea.BodyExited += OnInteractionBodyExited;

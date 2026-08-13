@@ -1,142 +1,186 @@
-[gd_scene format=3 uid="uid://bw7sc5nogylfp"]
+[gd_scene load_steps=7 format=3 uid="uid://bw7sc5nogylfp"]
 
 [ext_resource type="Script" uid="uid://ddvaknu6kyww3" path="res://scripts/components/MissionHud.cs" id="1_408wd"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ye642"]
-bg_color = Color(0.64705884, 0.56078434, 0.5647059, 1)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(0.44705883, 0.37254903, 0.4117647, 1)
-corner_radius_top_left = 22
-corner_radius_top_right = 22
-corner_radius_bottom_right = 22
-corner_radius_bottom_left = 22
-shadow_color = Color(0, 0, 0, 0.14509805)
-shadow_size = 10
+[sub_resource type="StyleBoxFlat" id="HudPanelStyle"]
+bg_color = Color(0.92549, 0.886275, 0.901961, 0.92)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.537255, 0.435294, 0.568627, 0.92)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
+shadow_color = Color(0.0509804, 0.0313726, 0.0705882, 0.22)
+shadow_size = 8
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_408wd"]
-bg_color = Color(0.58431375, 0.5058824, 0.5529412, 1)
+[sub_resource type="StyleBoxFlat" id="IconStyle"]
+bg_color = Color(0.380392, 0.286275, 0.423529, 0.96)
 corner_radius_top_left = 12
 corner_radius_top_right = 12
 corner_radius_bottom_right = 12
 corner_radius_bottom_left = 12
 
+[sub_resource type="StyleBoxFlat" id="TimerStyle"]
+bg_color = Color(0.286275, 0.203922, 0.329412, 0.9)
+corner_radius_top_left = 11
+corner_radius_top_right = 11
+corner_radius_bottom_right = 11
+corner_radius_bottom_left = 11
+
+[sub_resource type="StyleBoxFlat" id="ProgressBackground"]
+bg_color = Color(0.443137, 0.364706, 0.466667, 0.22)
+corner_radius_top_left = 7
+corner_radius_top_right = 7
+corner_radius_bottom_right = 7
+corner_radius_bottom_left = 7
+
+[sub_resource type="StyleBoxFlat" id="ProgressFill"]
+bg_color = Color(0.392157, 0.286275, 0.458824, 0.95)
+corner_radius_top_left = 7
+corner_radius_top_right = 7
+corner_radius_bottom_right = 7
+corner_radius_bottom_left = 7
+
 [node name="MissionHud" type="CanvasLayer" unique_id=1740890340]
+layer = 15
 script = ExtResource("1_408wd")
 
-[node name="SettingsMargin" type="MarginContainer" parent="." unique_id=1335907783]
-offset_right = 40.0
-offset_bottom = 40.0
+[node name="HudAnchor" type="MarginContainer" parent="."]
+offset_left = 18.0
+offset_top = 16.0
+offset_right = 500.0
+offset_bottom = 134.0
 
-[node name="SettingsButton" type="Button" parent="SettingsMargin" unique_id=689274812]
+[node name="HudPanel" type="PanelContainer" parent="HudAnchor"]
+custom_minimum_size = Vector2(482, 112)
 layout_mode = 2
+theme_override_styles/panel = SubResource("HudPanelStyle")
 
-[node name="TopCenter" type="CenterContainer" parent="." unique_id=523220172]
-anchors_preset = 10
-anchor_right = 1.0
-offset_top = 12.0
-offset_bottom = 170.0
-grow_horizontal = 2
-
-[node name="HudPanel" type="PanelContainer" parent="TopCenter" unique_id=1719833082]
-custom_minimum_size = Vector2(620, 130)
+[node name="HudMargin" type="MarginContainer" parent="HudAnchor/HudPanel"]
 layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_ye642")
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 10
 
-[node name="HudMargin" type="MarginContainer" parent="TopCenter/HudPanel" unique_id=1039725562]
-layout_mode = 2
-theme_override_constants/margin_left = 18
-theme_override_constants/margin_top = 12
-theme_override_constants/margin_right = 18
-theme_override_constants/margin_bottom = 12
-
-[node name="HudContent" type="VBoxContainer" parent="TopCenter/HudPanel/HudMargin" unique_id=812868767]
+[node name="HudContent" type="VBoxContainer" parent="HudAnchor/HudPanel/HudMargin"]
 layout_mode = 2
 theme_override_constants/separation = 5
 
-[node name="Header" type="HBoxContainer" parent="TopCenter/HudPanel/HudMargin/HudContent" unique_id=1406209112]
+[node name="Header" type="HBoxContainer" parent="HudAnchor/HudPanel/HudMargin/HudContent"]
 layout_mode = 2
+theme_override_constants/separation = 9
 
-[node name="CategoryIconPanel" type="PanelContainer" parent="TopCenter/HudPanel/HudMargin/HudContent/Header" unique_id=1642496167]
-custom_minimum_size = Vector2(56, 52)
+[node name="CategoryIconPanel" type="PanelContainer" parent="HudAnchor/HudPanel/HudMargin/HudContent/Header"]
+custom_minimum_size = Vector2(38, 38)
 layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_408wd")
+theme_override_styles/panel = SubResource("IconStyle")
 
-[node name="CategoryIconLabel" type="Label" parent="TopCenter/HudPanel/HudMargin/HudContent/Header/CategoryIconPanel" unique_id=1608566190]
+[node name="CategoryIconLabel" type="Label" parent="HudAnchor/HudPanel/HudMargin/HudContent/Header/CategoryIconPanel"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 25
+theme_override_colors/font_color = Color(0.972549, 0.945098, 0.980392, 1)
+theme_override_font_sizes/font_size = 18
 text = "◆"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="MissionInfo" type="VBoxContainer" parent="TopCenter/HudPanel/HudMargin/HudContent/Header" unique_id=1515128418]
+[node name="MissionInfo" type="VBoxContainer" parent="HudAnchor/HudPanel/HudMargin/HudContent/Header"]
 layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 0
 
-[node name="MissionTitleLabel" type="Label" parent="TopCenter/HudPanel/HudMargin/HudContent/Header/MissionInfo" unique_id=985889216]
+[node name="MissionTitleLabel" type="Label" parent="HudAnchor/HudPanel/HudMargin/HudContent/Header/MissionInfo"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 21
+theme_override_colors/font_color = Color(0.211765, 0.14902, 0.235294, 1)
+theme_override_font_sizes/font_size = 17
 text = "Encontrar Objetos"
+text_overrun_behavior = 3
 
-[node name="MissionCategoryLabel" type="Label" parent="TopCenter/HudPanel/HudMargin/HudContent/Header/MissionInfo" unique_id=1569090137]
+[node name="MissionCategoryLabel" type="Label" parent="HudAnchor/HudPanel/HudMargin/HudContent/Header/MissionInfo"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.482353, 0.392157, 0.505882, 1)
+theme_override_font_sizes/font_size = 11
 text = "Exploração"
 
-[node name="ObjectiveLabel" type="Label" parent="TopCenter/HudPanel/HudMargin/HudContent" unique_id=1747835985]
+[node name="TimerPanel" type="PanelContainer" parent="HudAnchor/HudPanel/HudMargin/HudContent/Header"]
+custom_minimum_size = Vector2(82, 34)
+layout_mode = 2
+theme_override_styles/panel = SubResource("TimerStyle")
+
+[node name="TimerLabel" type="Label" parent="HudAnchor/HudPanel/HudMargin/HudContent/Header/TimerPanel"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.976471, 0.94902, 0.984314, 1)
+theme_override_font_sizes/font_size = 12
+text = "00:00"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ObjectiveLabel" type="Label" parent="HudAnchor/HudPanel/HudMargin/HudContent"]
 custom_minimum_size = Vector2(0, 18)
 layout_mode = 2
-theme_override_font_sizes/font_size = 13
-text = "Objetivo: Encontre e colete 3 objetos."
-autowrap_mode = 3
+theme_override_colors/font_color = Color(0.317647, 0.247059, 0.337255, 1)
+theme_override_font_sizes/font_size = 12
+text = "Encontre e colete 3 objetos."
+text_overrun_behavior = 3
 
-[node name="ProgressArea" type="Control" parent="TopCenter/HudPanel/HudMargin/HudContent" unique_id=2009966059]
-custom_minimum_size = Vector2(0, 26)
+[node name="ProgressRow" type="HBoxContainer" parent="HudAnchor/HudPanel/HudMargin/HudContent"]
 layout_mode = 2
+theme_override_constants/separation = 8
 
-[node name="ProgressBar" type="ProgressBar" parent="TopCenter/HudPanel/HudMargin/HudContent/ProgressArea" unique_id=524792313]
+[node name="ProgressArea" type="Control" parent="HudAnchor/HudPanel/HudMargin/HudContent/ProgressRow"]
+custom_minimum_size = Vector2(250, 16)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ProgressBar" type="ProgressBar" parent="HudAnchor/HudPanel/HudMargin/HudContent/ProgressRow/ProgressArea"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_styles/background = SubResource("ProgressBackground")
+theme_override_styles/fill = SubResource("ProgressFill")
 show_percentage = false
 
-[node name="ProgressValueLabel" type="Label" parent="TopCenter/HudPanel/HudMargin/HudContent/ProgressArea" unique_id=458312933]
+[node name="ProgressValueLabel" type="Label" parent="HudAnchor/HudPanel/HudMargin/HudContent/ProgressRow/ProgressArea"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_colors/font_color = Color(0.9490196, 0.9098039, 0.92156863, 1)
-theme_override_colors/font_outline_color = Color(0.23529412, 0.18431373, 0.22745098, 1)
-theme_override_constants/outline_size = 3
-theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.972549, 0.94902, 0.984314, 1)
+theme_override_colors/font_outline_color = Color(0.180392, 0.121569, 0.2, 0.9)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 10
 text = "0/3"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Footer" type="HBoxContainer" parent="TopCenter/HudPanel/HudMargin/HudContent" unique_id=1269651268]
+[node name="Footer" type="HBoxContainer" parent="HudAnchor/HudPanel/HudMargin/HudContent/ProgressRow"]
 layout_mode = 2
+theme_override_constants/separation = 7
 
-[node name="ProgressLabel" type="Label" parent="TopCenter/HudPanel/HudMargin/HudContent/Footer" unique_id=1342614608]
+[node name="ProgressLabel" type="Label" parent="HudAnchor/HudPanel/HudMargin/HudContent/ProgressRow/Footer"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.431373, 0.352941, 0.454902, 1)
+theme_override_font_sizes/font_size = 10
+text = "Progresso: 0/3"
+vertical_alignment = 1
 
-[node name="FooterSpacer" type="Control" parent="TopCenter/HudPanel/HudMargin/HudContent/Footer" unique_id=263888639]
+[node name="FooterSpacer" type="Control" parent="HudAnchor/HudPanel/HudMargin/HudContent/ProgressRow/Footer"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="AttemptsLabel" type="Label" parent="TopCenter/HudPanel/HudMargin/HudContent/Footer" unique_id=1657230014]
-custom_minimum_size = Vector2(120, 0)
+[node name="AttemptsLabel" type="Label" parent="HudAnchor/HudPanel/HudMargin/HudContent/ProgressRow/Footer"]
+custom_minimum_size = Vector2(92, 0)
 layout_mode = 2
-theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.431373, 0.352941, 0.454902, 1)
+theme_override_font_sizes/font_size = 10
 text = "Tentativas: 3/3"
-horizontal_alignment = 1
-
-[node name="TimerLabel" type="Label" parent="TopCenter/HudPanel/HudMargin/HudContent/Footer" unique_id=1576524781]
-layout_mode = 2
-theme_override_font_sizes/font_size = 12
+horizontal_alignment = 2
+vertical_alignment = 1
