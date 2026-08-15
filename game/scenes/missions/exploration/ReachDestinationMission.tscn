@@ -1,0 +1,171 @@
+[gd_scene format=3 uid="uid://c54lhnxt4328y"]
+
+[ext_resource type="PackedScene" uid="uid://dqetu3bq4c1ws" path="res://scenes/player/Player.tscn" id="1_n676m"]
+[ext_resource type="PackedScene" uid="uid://bw7sc5nogylfp" path="res://scenes/components/MissionHud.tscn" id="2_mbcot"]
+[ext_resource type="PackedScene" uid="uid://c8uypusmn28mx" path="res://scenes/components/MissionResultPopup.tscn" id="3_oh4m1"]
+[ext_resource type="Script" uid="uid://dixrg5g20ioer" path="res://scripts/missions/exploration/ReachDestinationMissionController.cs" id="4_mbcot"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ciwed"]
+size = Vector2(1152, 40)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_fwk4p"]
+size = Vector2(1152, 40)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_pu7ru"]
+size = Vector2(40, 648)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_n676m"]
+size = Vector2(40, 648)
+
+
+[sub_resource type="StyleBoxFlat" id="outer_field_frame"]
+bg_color = Color(0.258824, 0.188235, 0.305882, 1)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.647059, 0.521569, 0.72549, 1)
+corner_radius_top_left = 24
+corner_radius_top_right = 24
+corner_radius_bottom_right = 24
+corner_radius_bottom_left = 24
+shadow_color = Color(0.0431373, 0.027451, 0.0627451, 0.24)
+shadow_size = 10
+
+[sub_resource type="StyleBoxFlat" id="outer_field_fill"]
+bg_color = Color(0.203922, 0.156863, 0.231373, 1)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
+
+[node name="ReachDestinationMission" type="Node2D" unique_id=541483567]
+
+[node name="Environment" type="Node2D" parent="." unique_id=700271478]
+
+
+[node name="ViewportBackdrop" type="Polygon2D" parent="Environment"]
+color = Color(0.0862745, 0.054902, 0.113725, 1)
+polygon = PackedVector2Array(-140, -100, 1292, -100, 1292, 760, -140, 760)
+
+[node name="FieldFrameShadow" type="Panel" parent="Environment"]
+offset_left = -18.0
+offset_top = -18.0
+offset_right = 1170.0
+offset_bottom = 666.0
+theme_override_styles/panel = SubResource("outer_field_frame")
+mouse_filter = 2
+
+[node name="FieldFrameFill" type="Panel" parent="Environment"]
+offset_left = 6.0
+offset_top = 6.0
+offset_right = 1146.0
+offset_bottom = 642.0
+theme_override_styles/panel = SubResource("outer_field_fill")
+mouse_filter = 2
+
+[node name="Background" type="Polygon2D" parent="Environment" unique_id=416582888]
+color = Color(0.44705883, 0.37254903, 0.4117647, 1)
+polygon = PackedVector2Array(0, 0, 1152, 0, 1152, 648, 0, 648)
+
+[node name="Walls" type="Node2D" parent="Environment" unique_id=702505055]
+
+[node name="WallTop" type="StaticBody2D" parent="Environment/Walls" unique_id=262654723]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Walls/WallTop" unique_id=1404020073]
+position = Vector2(576, 20)
+shape = SubResource("RectangleShape2D_ciwed")
+
+[node name="WallBottom" type="StaticBody2D" parent="Environment/Walls" unique_id=1768932737]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Walls/WallBottom" unique_id=1417904625]
+position = Vector2(576, 628)
+shape = SubResource("RectangleShape2D_fwk4p")
+
+[node name="WallLeft" type="StaticBody2D" parent="Environment/Walls" unique_id=2016263297]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Walls/WallLeft" unique_id=1214833795]
+position = Vector2(20, 324)
+shape = SubResource("RectangleShape2D_pu7ru")
+
+[node name="WallRight" type="StaticBody2D" parent="Environment/Walls" unique_id=687498316]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Walls/WallRight" unique_id=695548823]
+position = Vector2(1132, 324)
+shape = SubResource("RectangleShape2D_n676m")
+
+[node name="Obstacles" type="Node2D" parent="Environment" unique_id=1572458164]
+
+[node name="SpawnPoints" type="Node2D" parent="." unique_id=344920471]
+
+[node name="PlayerSpawn" type="Marker2D" parent="SpawnPoints" unique_id=1127254742]
+position = Vector2(150, 520)
+
+[node name="DestinationSpawn" type="Marker2D" parent="SpawnPoints" unique_id=1619111035]
+position = Vector2(1000, 120)
+
+[node name="CheckpointSpawns" type="Node2D" parent="SpawnPoints" unique_id=1728512769]
+
+[node name="Point01" type="Marker2D" parent="SpawnPoints/CheckpointSpawns" unique_id=214023567]
+position = Vector2(300, 500)
+
+[node name="Point02" type="Marker2D" parent="SpawnPoints/CheckpointSpawns" unique_id=1212467115]
+position = Vector2(450, 420)
+
+[node name="Point03" type="Marker2D" parent="SpawnPoints/CheckpointSpawns" unique_id=1926693336]
+position = Vector2(600, 330)
+
+[node name="Point04" type="Marker2D" parent="SpawnPoints/CheckpointSpawns"]
+position = Vector2(760, 245)
+
+[node name="Point05" type="Marker2D" parent="SpawnPoints/CheckpointSpawns"]
+position = Vector2(900, 170)
+
+[node name="HazardSpawns" type="Node2D" parent="SpawnPoints" unique_id=1364334849]
+
+[node name="Point01" type="Marker2D" parent="SpawnPoints/HazardSpawns" unique_id=1355597875]
+position = Vector2(430, 400)
+
+[node name="Point02" type="Marker2D" parent="SpawnPoints/HazardSpawns" unique_id=1863001165]
+position = Vector2(680, 420)
+
+[node name="Point03" type="Marker2D" parent="SpawnPoints/HazardSpawns" unique_id=1436997654]
+position = Vector2(760, 270)
+
+[node name="Point04" type="Marker2D" parent="SpawnPoints/HazardSpawns" unique_id=1799242031]
+position = Vector2(887, 373)
+
+[node name="Point05" type="Marker2D" parent="SpawnPoints/HazardSpawns" unique_id=803588437]
+position = Vector2(534, 213)
+
+[node name="Point06" type="Marker2D" parent="SpawnPoints/HazardSpawns" unique_id=36726703]
+position = Vector2(731, 132)
+
+[node name="Point07" type="Marker2D" parent="SpawnPoints/HazardSpawns" unique_id=1494447010]
+position = Vector2(996, 236)
+
+[node name="Point08" type="Marker2D" parent="SpawnPoints/HazardSpawns" unique_id=1440352508]
+position = Vector2(703, 539)
+
+[node name="Point09" type="Marker2D" parent="SpawnPoints/HazardSpawns" unique_id=1909995951]
+position = Vector2(293, 347)
+
+[node name="Point10" type="Marker2D" parent="SpawnPoints/HazardSpawns" unique_id=131494446]
+position = Vector2(275, 194)
+
+[node name="DynamicObjects" type="Node2D" parent="." unique_id=1091248426]
+
+[node name="MissionCamera" type="Camera2D" parent="."]
+position = Vector2(576, 324)
+enabled = true
+
+[node name="Player" parent="." unique_id=632016709 instance=ExtResource("1_n676m")]
+follow_camera = false
+position = Vector2(150, 520)
+
+[node name="MissionHud" parent="." unique_id=1740890340 instance=ExtResource("2_mbcot")]
+
+[node name="MissionResultPopup" parent="." unique_id=1311010905 instance=ExtResource("3_oh4m1")]
+
+[node name="ReachDestinationMissionController" type="Node" parent="." unique_id=167115933]
+script = ExtResource("4_mbcot")

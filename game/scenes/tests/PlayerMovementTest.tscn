@@ -1,0 +1,56 @@
+[gd_scene format=3 uid="uid://d00fywivfhmb4"]
+
+[ext_resource type="PackedScene" uid="uid://dqetu3bq4c1ws" path="res://scenes/player/Player.tscn" id="1_ngy5b"]
+[ext_resource type="PackedScene" uid="uid://b4f23cre4v66w" path="res://scenes/tests/TestInteractable.tscn" id="2_erlo5"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_x1cdp"]
+size = Vector2(562, 20)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_euaam"]
+size = Vector2(20, 470)
+
+[node name="PlayerMovementTest" type="Node2D" unique_id=75993074]
+
+[node name="Background" type="ColorRect" parent="." unique_id=968473703]
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Walls" type="Node2D" parent="." unique_id=1489398635]
+
+[node name="WallTop" type="StaticBody2D" parent="Walls" unique_id=2028696937]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/WallTop" unique_id=1963288350]
+position = Vector2(2, -277)
+shape = SubResource("RectangleShape2D_x1cdp")
+
+[node name="WallBottom" type="StaticBody2D" parent="Walls" unique_id=50337621]
+
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="Walls/WallBottom" unique_id=2137944070]
+position = Vector2(2, 194)
+shape = SubResource("RectangleShape2D_x1cdp")
+
+[node name="WallLeft" type="StaticBody2D" parent="Walls" unique_id=1356815941]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/WallLeft" unique_id=679951778]
+position = Vector2(-276, -42)
+shape = SubResource("RectangleShape2D_euaam")
+
+[node name="WallRight" type="StaticBody2D" parent="Walls" unique_id=840134131]
+
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="Walls/WallRight" unique_id=1764097385]
+position = Vector2(287, -41)
+shape = SubResource("RectangleShape2D_euaam")
+
+[node name="Player" parent="." unique_id=632016709 instance=ExtResource("1_ngy5b")]
+
+[node name="TestInteractable" parent="." unique_id=646415353 instance=ExtResource("2_erlo5")]
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=101852585]
+
+[node name="InstructionsLabel" type="Label" parent="CanvasLayer" unique_id=956111503]
+offset_left = 247.0
+offset_top = 88.0
+offset_right = 423.0
+offset_bottom = 137.0
+text = "WASD / Setas — Mover
+E / Enter — Interagir"

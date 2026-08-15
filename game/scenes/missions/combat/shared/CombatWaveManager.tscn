@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/missions/combat/shared/CombatWaveManager.cs" id="1_manager"]
+[ext_resource type="PackedScene" path="res://scenes/missions/combat/shared/CombatEnemy.tscn" id="2_enemy"]
+
+[node name="CombatWaveManager" type="Node"]
+script = ExtResource("1_manager")
+enemy_scene = ExtResource("2_enemy")
+spawn_interval_seconds = 0.25
+interval_between_waves_seconds = 1.4
+wave_start_delay_seconds = 2.0

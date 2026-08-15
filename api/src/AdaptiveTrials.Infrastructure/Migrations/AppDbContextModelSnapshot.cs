@@ -126,28 +126,28 @@ namespace AdaptiveTrials.Infrastructure.Migrations
                         new
                         {
                             Id = 1,
-                            Description = "Derrotar pequenos inimigos.",
+                            Description = "Derrotar uma pequena quantidade de inimigos.",
                             Difficulty = 1,
                             Name = "Caça Simples",
-                            ParametersJson = "{\"enemies\":3}",
+                            ParametersJson = "{\"enemies\":3,\"boss\":false}",
                             Template = "Eliminar Alvo",
                             Type = 1
                         },
                         new
                         {
                             Id = 2,
-                            Description = "Derrotar uma quantidade maior de inimigos.",
+                            Description = "Derrotar uma quantidade intermediária de inimigos.",
                             Difficulty = 2,
                             Name = "Caça Média",
-                            ParametersJson = "{\"enemies\":6}",
+                            ParametersJson = "{\"enemies\":6,\"boss\":false}",
                             Template = "Eliminar Alvo",
                             Type = 1
                         },
                         new
                         {
                             Id = 3,
-                            Description = "Derrotar um inimigo forte.",
-                            Difficulty = 4,
+                            Description = "Derrotar um inimigo de elite.",
+                            Difficulty = 3,
                             Name = "Caça Elite",
                             ParametersJson = "{\"enemies\":1,\"boss\":true}",
                             Template = "Eliminar Alvo",
@@ -156,38 +156,38 @@ namespace AdaptiveTrials.Infrastructure.Migrations
                         new
                         {
                             Id = 4,
-                            Description = "Resistir por um curto período de tempo.",
-                            Difficulty = 2,
-                            Name = "Sobrevivência Curta",
-                            ParametersJson = "{\"timeSeconds\":30}",
+                            Description = "Sobreviver e eliminar três ondas de inimigos.",
+                            Difficulty = 1,
+                            Name = "Sobrevivência Inicial",
+                            ParametersJson = "{\"waves\":3}",
                             Template = "Sobreviver",
                             Type = 1
                         },
                         new
                         {
                             Id = 5,
-                            Description = "Resistir por um período médio de tempo.",
-                            Difficulty = 3,
-                            Name = "Sobrevivência Média",
-                            ParametersJson = "{\"timeSeconds\":60}",
+                            Description = "Sobreviver e eliminar cinco ondas de dificuldade progressiva.",
+                            Difficulty = 2,
+                            Name = "Sobrevivência Intermediária",
+                            ParametersJson = "{\"waves\":5}",
                             Template = "Sobreviver",
                             Type = 1
                         },
                         new
                         {
                             Id = 6,
-                            Description = "Resistir sob alta pressão.",
-                            Difficulty = 5,
+                            Description = "Sobreviver e eliminar sete ondas de inimigos sob alta pressão.",
+                            Difficulty = 3,
                             Name = "Sobrevivência Extrema",
-                            ParametersJson = "{\"timeSeconds\":120}",
+                            ParametersJson = "{\"waves\":7}",
                             Template = "Sobreviver",
                             Type = 1
                         },
                         new
                         {
                             Id = 7,
-                            Description = "Defender um objeto simples.",
-                            Difficulty = 2,
+                            Description = "Defender um objeto durante poucas ondas.",
+                            Difficulty = 1,
                             Name = "Defesa Básica",
                             ParametersJson = "{\"waves\":2}",
                             Template = "Defender Objeto",
@@ -195,9 +195,19 @@ namespace AdaptiveTrials.Infrastructure.Migrations
                         },
                         new
                         {
+                            Id = 23,
+                            Description = "Defender um objeto durante uma quantidade intermediária de ondas.",
+                            Difficulty = 2,
+                            Name = "Defesa Intermediária",
+                            ParametersJson = "{\"waves\":3}",
+                            Template = "Defender Objeto",
+                            Type = 1
+                        },
+                        new
+                        {
                             Id = 8,
-                            Description = "Defender um objeto contra muitas ondas.",
-                            Difficulty = 4,
+                            Description = "Defender um objeto contra várias ondas.",
+                            Difficulty = 3,
                             Name = "Defesa Avançada",
                             ParametersJson = "{\"waves\":5}",
                             Template = "Defender Objeto",
@@ -216,8 +226,8 @@ namespace AdaptiveTrials.Infrastructure.Migrations
                         new
                         {
                             Id = 10,
-                            Description = "Buscar uma quantidade maior de itens.",
-                            Difficulty = 3,
+                            Description = "Buscar uma quantidade intermediária de itens.",
+                            Difficulty = 2,
                             Name = "Exploração Média",
                             ParametersJson = "{\"items\":6}",
                             Template = "Encontrar Objetos",
@@ -227,7 +237,7 @@ namespace AdaptiveTrials.Infrastructure.Migrations
                         {
                             Id = 11,
                             Description = "Buscar muitos itens em uma missão de alta complexidade.",
-                            Difficulty = 5,
+                            Difficulty = 3,
                             Name = "Exploração Difícil",
                             ParametersJson = "{\"items\":10}",
                             Template = "Encontrar Objetos",
@@ -236,20 +246,30 @@ namespace AdaptiveTrials.Infrastructure.Migrations
                         new
                         {
                             Id = 12,
-                            Description = "Chegar a um destino por um caminho simples.",
+                            Description = "Chegar ao destino por uma rota curta e pouco perigosa.",
                             Difficulty = 1,
                             Name = "Navegação Simples",
-                            ParametersJson = "{\"distance\":\"short\"}",
+                            ParametersJson = "{\"distance\":\"short\",\"checkpoints\":2,\"hazards\":2,\"maxFailures\":4}",
+                            Template = "Chegar ao Destino",
+                            Type = 2
+                        },
+                        new
+                        {
+                            Id = 24,
+                            Description = "Chegar ao destino por uma rota de complexidade intermediária.",
+                            Difficulty = 2,
+                            Name = "Navegação Intermediária",
+                            ParametersJson = "{\"distance\":\"medium\",\"checkpoints\":3,\"hazards\":4,\"maxFailures\":3}",
                             Template = "Chegar ao Destino",
                             Type = 2
                         },
                         new
                         {
                             Id = 13,
-                            Description = "Chegar a um destino em um mapa mais complexo.",
-                            Difficulty = 4,
+                            Description = "Chegar ao destino por uma rota longa e perigosa.",
+                            Difficulty = 3,
                             Name = "Navegação Complexa",
-                            ParametersJson = "{\"distance\":\"long\"}",
+                            ParametersJson = "{\"distance\":\"long\",\"checkpoints\":5,\"hazards\":6,\"maxFailures\":2}",
                             Template = "Chegar ao Destino",
                             Type = 2
                         },
@@ -257,19 +277,29 @@ namespace AdaptiveTrials.Infrastructure.Migrations
                         {
                             Id = 14,
                             Description = "Evitar poucos inimigos durante o percurso.",
+                            Difficulty = 1,
+                            Name = "Furtividade Básica",
+                            ParametersJson = "{\"enemies\":2,\"enemySpeed\":65,\"detectionRadius\":70,\"maxFailures\":4}",
+                            Template = "Evitar Inimigos",
+                            Type = 2
+                        },
+                        new
+                        {
+                            Id = 25,
+                            Description = "Evitar patrulhas de velocidade e alcance intermediários.",
                             Difficulty = 2,
-                            Name = "Stealth Básico",
-                            ParametersJson = "{\"enemies\":2}",
+                            Name = "Furtividade Intermediária",
+                            ParametersJson = "{\"enemies\":4,\"enemySpeed\":85,\"detectionRadius\":90,\"maxFailures\":3}",
                             Template = "Evitar Inimigos",
                             Type = 2
                         },
                         new
                         {
                             Id = 15,
-                            Description = "Evitar vários inimigos em uma missão de alta dificuldade.",
-                            Difficulty = 5,
-                            Name = "Stealth Avançado",
-                            ParametersJson = "{\"enemies\":6}",
+                            Description = "Evitar várias patrulhas em uma missão de alta dificuldade.",
+                            Difficulty = 3,
+                            Name = "Furtividade Avançada",
+                            ParametersJson = "{\"enemies\":6,\"enemySpeed\":110,\"detectionRadius\":115,\"maxFailures\":2}",
                             Template = "Evitar Inimigos",
                             Type = 2
                         },
@@ -286,8 +316,8 @@ namespace AdaptiveTrials.Infrastructure.Migrations
                         new
                         {
                             Id = 17,
-                            Description = "Repetir uma sequência maior.",
-                            Difficulty = 3,
+                            Description = "Repetir uma sequência de tamanho intermediário.",
+                            Difficulty = 2,
                             Name = "Sequência Média",
                             ParametersJson = "{\"sequenceSize\":5}",
                             Template = "Repetir Sequência",
@@ -297,7 +327,7 @@ namespace AdaptiveTrials.Infrastructure.Migrations
                         {
                             Id = 18,
                             Description = "Repetir uma sequência de alta exigência de memória.",
-                            Difficulty = 5,
+                            Difficulty = 3,
                             Name = "Sequência Difícil",
                             ParametersJson = "{\"sequenceSize\":8}",
                             Template = "Repetir Sequência",
@@ -307,7 +337,7 @@ namespace AdaptiveTrials.Infrastructure.Migrations
                         {
                             Id = 19,
                             Description = "Resolver uma conexão simples entre pontos.",
-                            Difficulty = 2,
+                            Difficulty = 1,
                             Name = "Conexão Básica",
                             ParametersJson = "{\"pieces\":4}",
                             Template = "Conectar Pontos",
@@ -315,9 +345,19 @@ namespace AdaptiveTrials.Infrastructure.Migrations
                         },
                         new
                         {
+                            Id = 26,
+                            Description = "Resolver uma conexão de complexidade intermediária.",
+                            Difficulty = 2,
+                            Name = "Conexão Intermediária",
+                            ParametersJson = "{\"pieces\":6}",
+                            Template = "Conectar Pontos",
+                            Type = 3
+                        },
+                        new
+                        {
                             Id = 20,
-                            Description = "Resolver uma conexão mais complexa entre pontos.",
-                            Difficulty = 4,
+                            Description = "Resolver uma conexão complexa entre vários pontos.",
+                            Difficulty = 3,
                             Name = "Conexão Avançada",
                             ParametersJson = "{\"pieces\":8}",
                             Template = "Conectar Pontos",
@@ -327,7 +367,7 @@ namespace AdaptiveTrials.Infrastructure.Migrations
                         {
                             Id = 21,
                             Description = "Decifrar um código com várias pistas disponíveis.",
-                            Difficulty = 2,
+                            Difficulty = 1,
                             Name = "Código Simples",
                             ParametersJson = "{\"clues\":3}",
                             Template = "Decifrar Código",
@@ -335,9 +375,19 @@ namespace AdaptiveTrials.Infrastructure.Migrations
                         },
                         new
                         {
+                            Id = 27,
+                            Description = "Decifrar um código com uma quantidade intermediária de pistas.",
+                            Difficulty = 2,
+                            Name = "Código Intermediário",
+                            ParametersJson = "{\"clues\":2}",
+                            Template = "Decifrar Código",
+                            Type = 3
+                        },
+                        new
+                        {
                             Id = 22,
-                            Description = "Decifrar um código com poucas pistas.",
-                            Difficulty = 5,
+                            Description = "Decifrar um código com poucas pistas disponíveis.",
+                            Difficulty = 3,
                             Name = "Código Difícil",
                             ParametersJson = "{\"clues\":1}",
                             Template = "Decifrar Código",

@@ -1,0 +1,175 @@
+[gd_scene load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://scripts/missions/puzzle/RepeatSequenceMissionController.cs" id="1_controller"]
+[ext_resource type="PackedScene" path="res://scenes/missions/puzzle/shared/PuzzleRuneButton.tscn" id="2_rune"]
+[ext_resource type="PackedScene" path="res://scenes/components/MissionHud.tscn" id="3_hud"]
+[ext_resource type="PackedScene" path="res://scenes/components/MissionResultPopup.tscn" id="4_popup"]
+
+[sub_resource type="StyleBoxFlat" id="Style_board"]
+bg_color = Color(0.8901961, 0.8509804, 0.9019608, 0.98)
+border_width_left = 5
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 5
+border_color = Color(0.44705883, 0.33333334, 0.5254902, 1)
+corner_radius_top_left = 28
+corner_radius_top_right = 28
+corner_radius_bottom_right = 28
+corner_radius_bottom_left = 28
+shadow_color = Color(0, 0, 0, 0.28)
+shadow_size = 14
+shadow_offset = Vector2(0, 8)
+
+[sub_resource type="StyleBoxFlat" id="Style_inner"]
+bg_color = Color(0.96862745, 0.9411765, 0.96862745, 0.92)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.6901961, 0.59607846, 0.7372549, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[sub_resource type="StyleBoxFlat" id="Style_background"]
+bg_color = Color(0.13725491, 0.09019608, 0.17254902, 1)
+
+[sub_resource type="Gradient" id="Gradient_bg"]
+colors = PackedColorArray(0.137255, 0.0901961, 0.172549, 1, 0.270588, 0.176471, 0.337255, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture_bg"]
+gradient = SubResource("Gradient_bg")
+width = 1280
+height = 720
+fill_from = Vector2(0.1, 0)
+fill_to = Vector2(0.9, 1)
+
+[node name="RepeatSequenceMissionTest" type="Node2D"]
+
+[node name="Background" type="Sprite2D" parent="."]
+position = Vector2(640, 360)
+texture = SubResource("GradientTexture_bg")
+
+[node name="Decorations" type="Node2D" parent="."]
+
+[node name="CircleLeft" type="Polygon2D" parent="Decorations"]
+position = Vector2(110, 570)
+polygon = PackedVector2Array(-70, 0, -49, -49, 0, -70, 49, -49, 70, 0, 49, 49, 0, 70, -49, 49)
+color = Color(0.5137255, 0.37254903, 0.61960787, 0.18)
+
+[node name="CircleRight" type="Polygon2D" parent="Decorations"]
+position = Vector2(1160, 220)
+polygon = PackedVector2Array(-95, 0, -67, -67, 0, -95, 67, -67, 95, 0, 67, 67, 0, 95, -67, 67)
+color = Color(0.69411767, 0.4745098, 0.6039216, 0.14)
+
+[node name="PuzzleInterface" type="CanvasLayer" parent="."]
+layer = 0
+
+[node name="BoardCenter" type="CenterContainer" parent="PuzzleInterface"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 125.0
+offset_bottom = 45.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="BoardPanel" type="PanelContainer" parent="PuzzleInterface/BoardCenter"]
+custom_minimum_size = Vector2(720, 430)
+layout_mode = 2
+theme_override_styles/panel = SubResource("Style_board")
+
+[node name="BoardMargin" type="MarginContainer" parent="PuzzleInterface/BoardCenter/BoardPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 34
+theme_override_constants/margin_top = 28
+theme_override_constants/margin_right = 34
+theme_override_constants/margin_bottom = 28
+
+[node name="BoardContent" type="VBoxContainer" parent="PuzzleInterface/BoardCenter/BoardPanel/BoardMargin"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="PhaseLabel" type="Label" parent="PuzzleInterface/BoardCenter/BoardPanel/BoardMargin/BoardContent"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.29411766, 0.18431373, 0.37254903, 1)
+theme_override_font_sizes/font_size = 30
+text = "MEMORIZE"
+horizontal_alignment = 1
+
+[node name="InstructionPanel" type="PanelContainer" parent="PuzzleInterface/BoardCenter/BoardPanel/BoardMargin/BoardContent"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("Style_inner")
+
+[node name="InstructionLabel" type="Label" parent="PuzzleInterface/BoardCenter/BoardPanel/BoardMargin/BoardContent/InstructionPanel"]
+custom_minimum_size = Vector2(0, 58)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.28627452, 0.22745098, 0.30588236, 1)
+theme_override_font_sizes/font_size = 18
+text = "Observe as runas com atenção."
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="SequenceProgressLabel" type="Label" parent="PuzzleInterface/BoardCenter/BoardPanel/BoardMargin/BoardContent"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.38431373, 0.30588236, 0.4117647, 1)
+theme_override_font_sizes/font_size = 16
+text = "Tamanho da sequência: 3"
+horizontal_alignment = 1
+
+[node name="RuneButtons" type="HBoxContainer" parent="PuzzleInterface/BoardCenter/BoardPanel/BoardMargin/BoardContent"]
+layout_mode = 2
+theme_override_constants/separation = 22
+alignment = 1
+
+[node name="Rune01" parent="PuzzleInterface/BoardCenter/BoardPanel/BoardMargin/BoardContent/RuneButtons" instance=ExtResource("2_rune")]
+layout_mode = 2
+rune_index = 0
+rune_symbol = "◆"
+
+[node name="Rune02" parent="PuzzleInterface/BoardCenter/BoardPanel/BoardMargin/BoardContent/RuneButtons" instance=ExtResource("2_rune")]
+layout_mode = 2
+rune_index = 1
+rune_symbol = "●"
+
+[node name="Rune03" parent="PuzzleInterface/BoardCenter/BoardPanel/BoardMargin/BoardContent/RuneButtons" instance=ExtResource("2_rune")]
+layout_mode = 2
+rune_index = 2
+rune_symbol = "▲"
+
+[node name="Rune04" parent="PuzzleInterface/BoardCenter/BoardPanel/BoardMargin/BoardContent/RuneButtons" instance=ExtResource("2_rune")]
+layout_mode = 2
+rune_index = 3
+rune_symbol = "✦"
+
+[node name="FeedbackLabel" type="Label" parent="PuzzleInterface/BoardCenter/BoardPanel/BoardMargin/BoardContent"]
+custom_minimum_size = Vector2(0, 34)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = ""
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ControlsLabel" type="Label" parent="PuzzleInterface/BoardCenter/BoardPanel/BoardMargin/BoardContent"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.42352942, 0.3529412, 0.44705883, 1)
+theme_override_font_sizes/font_size = 13
+text = "Clique nas runas ou use as teclas 1, 2, 3 e 4."
+horizontal_alignment = 1
+
+[node name="MissionHud" parent="." instance=ExtResource("3_hud")]
+
+[node name="MissionResultPopup" parent="." instance=ExtResource("4_popup")]
+
+[node name="TestInstructions" type="Label" parent="."]
+position = Vector2(18, 680)
+theme_override_colors/font_color = Color(0.92, 0.88, 0.96, 1)
+theme_override_font_sizes/font_size = 14
+text = "TESTE ISOLADO • 1–4 ou clique: responder • R: reiniciar • dificuldade configurável no Inspector"
+
+[node name="RepeatSequenceMissionController" type="Node" parent="."]
+script = ExtResource("1_controller")
+test_mode = true
+test_difficulty = 2

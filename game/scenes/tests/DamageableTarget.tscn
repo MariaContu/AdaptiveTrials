@@ -1,0 +1,32 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/tests/DamageableTarget.cs" id="1_target"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_target"]
+radius = 38.0
+
+[node name="DamageableTarget" type="Area2D"]
+collision_layer = 8
+collision_mask = 0
+script = ExtResource("1_target")
+
+[node name="Outer" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(42, 0, 36.3731, 21, 21, 36.3731, 0, 42, -21, 36.3731, -36.3731, 21, -42, 0, -36.3731, -21, -21, -36.3731, 0, -42, 21, -36.3731, 36.3731, -21)
+color = Color(0.286275, 0.145098, 0.45098, 1)
+
+[node name="Inner" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(29, 0, 25.1147, 14.5, 14.5, 25.1147, 0, 29, -14.5, 25.1147, -25.1147, 14.5, -29, 0, -25.1147, -14.5, -14.5, -25.1147, 0, -29, 14.5, -25.1147, 25.1147, -14.5)
+color = Color(0.737255, 0.580392, 1, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_target")
+
+[node name="HealthLabel" type="Label" parent="."]
+offset_left = -90.0
+offset_top = 52.0
+offset_right = 90.0
+offset_bottom = 96.0
+theme_override_colors/font_color = Color(0.14902, 0.0862745, 0.223529, 1)
+theme_override_font_sizes/font_size = 18
+text = "ALVO DE TESTE\nVIDA: 3/3"
+horizontal_alignment = 1

@@ -1,0 +1,17 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/missions/puzzle/shared/ConnectPointButton.cs" id="1_script"]
+
+[node name="ConnectPointButton" type="Button"]
+custom_minimum_size = Vector2(72, 72)
+focus_mode = 0
+mouse_default_cursor_shape = 2
+theme_override_colors/font_color = Color(0.968627, 0.941176, 1, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_colors/font_pressed_color = Color(1, 1, 1, 1)
+theme_override_colors/font_disabled_color = Color(0.92549, 0.901961, 0.945098, 1)
+theme_override_colors/font_outline_color = Color(0.176471, 0.137255, 0.211765, 0.8)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 28
+text = "◆"
+script = ExtResource("1_script")

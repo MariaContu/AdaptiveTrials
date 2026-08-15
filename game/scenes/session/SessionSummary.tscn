@@ -1,0 +1,564 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/menu/WaveBackground.cs" id="1_wave"]
+[ext_resource type="Script" path="res://scripts/session/SessionSummaryController.cs" id="2_controller"]
+
+[sub_resource type="StyleBoxFlat" id="PanelMain"]
+bg_color = Color(0.74509805, 0.65882355, 0.6039216, 1)
+border_width_left = 7
+border_width_top = 7
+border_width_right = 7
+border_width_bottom = 7
+border_color = Color(0.5568628, 0.49019608, 0.5137255, 1)
+corner_radius_top_left = 28
+corner_radius_top_right = 28
+corner_radius_bottom_right = 28
+corner_radius_bottom_left = 28
+shadow_color = Color(0, 0, 0, 0.22)
+shadow_size = 14
+
+[sub_resource type="StyleBoxFlat" id="BadgeCompleted"]
+bg_color = Color(0.68235296, 0.59607846, 0.5921569, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.5568628, 0.49019608, 0.5137255, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[sub_resource type="StyleBoxFlat" id="Separator"]
+bg_color = Color(0.33333334, 0.2627451, 0.31764707, 0.62)
+
+[sub_resource type="StyleBoxFlat" id="SectionPanel"]
+bg_color = Color(0.68235296, 0.59607846, 0.5921569, 0.72)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.60784316, 0.5294118, 0.53333336, 1)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+
+[sub_resource type="StyleBoxFlat" id="MetricNeutral"]
+bg_color = Color(0.80784315, 0.7372549, 0.7058824, 1)
+border_width_left = 5
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.49803922, 0.48235294, 0.5568628, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+shadow_color = Color(0, 0, 0, 0.08)
+shadow_size = 4
+
+[sub_resource type="StyleBoxFlat" id="MetricSuccess"]
+bg_color = Color(0.7882353, 0.80784315, 0.7254902, 1)
+border_width_left = 5
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.33333334, 0.49411765, 0.35686275, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+shadow_color = Color(0, 0, 0, 0.08)
+shadow_size = 4
+
+[sub_resource type="StyleBoxFlat" id="MetricFailure"]
+bg_color = Color(0.827451, 0.7019608, 0.69411767, 1)
+border_width_left = 5
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.5529412, 0.2901961, 0.3372549, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+shadow_color = Color(0, 0, 0, 0.08)
+shadow_size = 4
+
+[sub_resource type="StyleBoxFlat" id="MetricBest"]
+bg_color = Color(0.7882353, 0.7411765, 0.6901961, 1)
+border_width_left = 5
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.627451, 0.47843137, 0.28235295, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+shadow_color = Color(0, 0, 0, 0.08)
+shadow_size = 4
+
+[sub_resource type="StyleBoxFlat" id="CategoryPanel"]
+bg_color = Color(0.7764706, 0.69411767, 0.6745098, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.60784316, 0.5294118, 0.53333336, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[sub_resource type="StyleBoxFlat" id="ButtonNormal"]
+bg_color = Color(0.56078434, 0.48235294, 0.5254902, 1)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.33333334, 0.2627451, 0.31764707, 1)
+corner_radius_top_left = 24
+corner_radius_top_right = 24
+corner_radius_bottom_right = 24
+corner_radius_bottom_left = 24
+shadow_color = Color(0, 0, 0, 0.14)
+shadow_size = 5
+
+[sub_resource type="StyleBoxFlat" id="ButtonHover"]
+bg_color = Color(0.6392157, 0.5529412, 0.6, 1)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.83137256, 0.74509805, 0.7607843, 1)
+corner_radius_top_left = 24
+corner_radius_top_right = 24
+corner_radius_bottom_right = 24
+corner_radius_bottom_left = 24
+shadow_color = Color(0, 0, 0, 0.14)
+shadow_size = 5
+
+[sub_resource type="StyleBoxFlat" id="ButtonPressed"]
+bg_color = Color(0.4745098, 0.40784314, 0.4509804, 1)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.33333334, 0.2627451, 0.31764707, 1)
+corner_radius_top_left = 24
+corner_radius_top_right = 24
+corner_radius_bottom_right = 24
+corner_radius_bottom_left = 24
+
+[node name="SessionSummary" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="WaveBackground" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_wave")
+ShadowOffset = 0.0
+
+[node name="ScreenMargin" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 24
+
+[node name="SummaryPanel" type="PanelContainer" parent="ScreenMargin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("PanelMain")
+
+[node name="PanelMargin" type="MarginContainer" parent="ScreenMargin/SummaryPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 28
+theme_override_constants/margin_top = 22
+theme_override_constants/margin_right = 28
+theme_override_constants/margin_bottom = 22
+
+[node name="RootContent" type="VBoxContainer" parent="ScreenMargin/SummaryPanel/PanelMargin"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 14
+
+[node name="Header" type="HBoxContainer" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent"]
+custom_minimum_size = Vector2(0, 64)
+layout_mode = 2
+
+[node name="HeaderText" type="VBoxContainer" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 3
+
+[node name="TitleLabel" type="Label" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Header/HeaderText"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.20784314, 0.16078432, 0.21176471, 1)
+theme_override_font_sizes/font_size = 32
+text = "RESUMO DA SESSÃO"
+
+[node name="SubtitleLabel" type="Label" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Header/HeaderText"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.33333334, 0.2627451, 0.31764707, 1)
+theme_override_font_sizes/font_size = 14
+text = "Modo Controle • 6 missões registradas"
+
+[node name="CompletedBadge" type="PanelContainer" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Header"]
+custom_minimum_size = Vector2(168, 44)
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_styles/panel = SubResource("BadgeCompleted")
+
+[node name="CompletedBadgeLabel" type="Label" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Header/CompletedBadge"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.20784314, 0.16078432, 0.21176471, 1)
+theme_override_font_sizes/font_size = 13
+text = "0/6 CONCLUÍDAS"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HeaderSeparator" type="HSeparator" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent"]
+layout_mode = 2
+theme_override_styles/separator = SubResource("Separator")
+
+[node name="Body" type="HBoxContainer" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 18
+
+[node name="MissionsSection" type="PanelContainer" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+size_flags_stretch_ratio = 1.55
+theme_override_styles/panel = SubResource("SectionPanel")
+
+[node name="SectionMargin" type="MarginContainer" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/MissionsSection"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 14
+
+[node name="MissionsContent" type="VBoxContainer" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/MissionsSection/SectionMargin"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+
+[node name="MissionsTitle" type="Label" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/MissionsSection/SectionMargin/MissionsContent"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.20784314, 0.16078432, 0.21176471, 1)
+theme_override_font_sizes/font_size = 18
+text = "MISSÕES REALIZADAS"
+
+[node name="MissionsHint" type="Label" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/MissionsSection/SectionMargin/MissionsContent"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3882353, 0.31764707, 0.36862746, 1)
+theme_override_font_sizes/font_size = 12
+text = "Resultado individual das atividades desta sessão"
+
+[node name="MissionsScroll" type="ScrollContainer" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/MissionsSection/SectionMargin/MissionsContent"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 1
+
+[node name="MissionList" type="VBoxContainer" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/MissionsSection/SectionMargin/MissionsContent/MissionsScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 7
+
+[node name="StatsSection" type="VBoxContainer" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body"]
+custom_minimum_size = Vector2(390, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+size_flags_stretch_ratio = 1.0
+theme_override_constants/separation = 9
+
+[node name="StatsTitle" type="Label" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/StatsSection"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.20784314, 0.16078432, 0.21176471, 1)
+theme_override_font_sizes/font_size = 18
+text = "VISÃO GERAL"
+
+[node name="StatsHint" type="Label" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/StatsSection"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3882353, 0.31764707, 0.36862746, 1)
+theme_override_font_sizes/font_size = 12
+text = "Principais indicadores de desempenho"
+
+[node name="MetricsGrid" type="GridContainer" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/StatsSection"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/h_separation = 9
+theme_override_constants/v_separation = 9
+columns = 2
+
+[node name="AverageTimeCard" type="PanelContainer" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/StatsSection/MetricsGrid"]
+custom_minimum_size = Vector2(0, 96)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("MetricNeutral")
+
+[node name="Margin" type="MarginContainer" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/StatsSection/MetricsGrid/AverageTimeCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 13
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 13
+theme_override_constants/margin_bottom = 10
+
+[node name="Content" type="VBoxContainer" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/StatsSection/MetricsGrid/AverageTimeCard/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 1
+
+[node name="Title" type="Label" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/StatsSection/MetricsGrid/AverageTimeCard/Margin/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3882353, 0.31764707, 0.36862746, 1)
+theme_override_font_sizes/font_size = 11
+text = "TEMPO MÉDIO"
+
+[node name="Value" type="Label" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/StatsSection/MetricsGrid/AverageTimeCard/Margin/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.20784314, 0.16078432, 0.21176471, 1)
+theme_override_font_sizes/font_size = 25
+text = "00:00"
+
+[node name="Detail" type="Label" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/StatsSection/MetricsGrid/AverageTimeCard/Margin/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3882353, 0.31764707, 0.36862746, 1)
+theme_override_font_sizes/font_size = 10
+text = "Total: 00:00"
+
+[node name="SuccessRateCard" type="PanelContainer" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/StatsSection/MetricsGrid"]
+custom_minimum_size = Vector2(0, 96)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("MetricSuccess")
+
+[node name="Margin" type="MarginContainer" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/StatsSection/MetricsGrid/SuccessRateCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 13
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 13
+theme_override_constants/margin_bottom = 10
+
+[node name="Content" type="VBoxContainer" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/StatsSection/MetricsGrid/SuccessRateCard/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 1
+
+[node name="Title" type="Label" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/StatsSection/MetricsGrid/SuccessRateCard/Margin/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.25490198, 0.38039216, 0.27450982, 1)
+theme_override_font_sizes/font_size = 11
+text = "TAXA DE SUCESSO"
+
+[node name="Value" type="Label" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/StatsSection/MetricsGrid/SuccessRateCard/Margin/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.18039216, 0.3254902, 0.20392157, 1)
+theme_override_font_sizes/font_size = 25
+text = "0%"
+
+[node name="Detail" type="Label" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/StatsSection/MetricsGrid/SuccessRateCard/Margin/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.25490198, 0.38039216, 0.27450982, 1)
+theme_override_font_sizes/font_size = 10
+text = "0 de 6 concluídas"
+
+[node name="FailedCard" type="PanelContainer" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/StatsSection/MetricsGrid"]
+custom_minimum_size = Vector2(0, 96)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("MetricFailure")
+
+[node name="Margin" type="MarginContainer" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/StatsSection/MetricsGrid/FailedCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 13
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 13
+theme_override_constants/margin_bottom = 10
+
+[node name="Content" type="VBoxContainer" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/StatsSection/MetricsGrid/FailedCard/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 1
+
+[node name="Title" type="Label" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/StatsSection/MetricsGrid/FailedCard/Margin/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.45490196, 0.2509804, 0.29411766, 1)
+theme_override_font_sizes/font_size = 11
+text = "NÃO CONCLUÍDAS"
+
+[node name="Value" type="Label" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/StatsSection/MetricsGrid/FailedCard/Margin/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.49019608, 0.19607843, 0.25882354, 1)
+theme_override_font_sizes/font_size = 25
+text = "0"
+
+[node name="Detail" type="Label" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/StatsSection/MetricsGrid/FailedCard/Margin/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.45490196, 0.2509804, 0.29411766, 1)
+theme_override_font_sizes/font_size = 10
+text = "0 erros durante as missões"
+
+[node name="BestCategoryCard" type="PanelContainer" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/StatsSection/MetricsGrid"]
+custom_minimum_size = Vector2(0, 96)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("MetricBest")
+
+[node name="Margin" type="MarginContainer" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/StatsSection/MetricsGrid/BestCategoryCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 13
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 13
+theme_override_constants/margin_bottom = 10
+
+[node name="Content" type="VBoxContainer" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/StatsSection/MetricsGrid/BestCategoryCard/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 1
+
+[node name="Title" type="Label" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/StatsSection/MetricsGrid/BestCategoryCard/Margin/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.44313726, 0.33333334, 0.2, 1)
+theme_override_font_sizes/font_size = 11
+text = "MELHOR CATEGORIA"
+
+[node name="Value" type="Label" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/StatsSection/MetricsGrid/BestCategoryCard/Margin/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.35686275, 0.25882354, 0.16078432, 1)
+theme_override_font_sizes/font_size = 20
+text = "-"
+text_overrun_behavior = 3
+
+[node name="Detail" type="Label" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/StatsSection/MetricsGrid/BestCategoryCard/Margin/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.44313726, 0.33333334, 0.2, 1)
+theme_override_font_sizes/font_size = 10
+text = "Sem dados"
+text_overrun_behavior = 3
+
+[node name="CategoryPanel" type="PanelContainer" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/StatsSection"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("CategoryPanel")
+
+[node name="Margin" type="MarginContainer" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/StatsSection/CategoryPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 11
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 11
+
+[node name="Content" type="VBoxContainer" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/StatsSection/CategoryPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 7
+
+[node name="Title" type="Label" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/StatsSection/CategoryPanel/Margin/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.20784314, 0.16078432, 0.21176471, 1)
+theme_override_font_sizes/font_size = 13
+text = "DESEMPENHO POR CATEGORIA"
+
+[node name="CombatRow" type="HBoxContainer" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/StatsSection/CategoryPanel/Margin/Content"]
+layout_mode = 2
+
+[node name="Name" type="Label" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/StatsSection/CategoryPanel/Margin/Content/CombatRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.33333334, 0.2627451, 0.31764707, 1)
+theme_override_font_sizes/font_size = 12
+text = "Combate"
+
+[node name="Value" type="Label" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/StatsSection/CategoryPanel/Margin/Content/CombatRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.20784314, 0.16078432, 0.21176471, 1)
+theme_override_font_sizes/font_size = 12
+text = "Sem dados"
+horizontal_alignment = 2
+
+[node name="ExplorationRow" type="HBoxContainer" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/StatsSection/CategoryPanel/Margin/Content"]
+layout_mode = 2
+
+[node name="Name" type="Label" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/StatsSection/CategoryPanel/Margin/Content/ExplorationRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.33333334, 0.2627451, 0.31764707, 1)
+theme_override_font_sizes/font_size = 12
+text = "Exploração"
+
+[node name="Value" type="Label" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/StatsSection/CategoryPanel/Margin/Content/ExplorationRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.20784314, 0.16078432, 0.21176471, 1)
+theme_override_font_sizes/font_size = 12
+text = "Sem dados"
+horizontal_alignment = 2
+
+[node name="PuzzleRow" type="HBoxContainer" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/StatsSection/CategoryPanel/Margin/Content"]
+layout_mode = 2
+
+[node name="Name" type="Label" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/StatsSection/CategoryPanel/Margin/Content/PuzzleRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.33333334, 0.2627451, 0.31764707, 1)
+theme_override_font_sizes/font_size = 12
+text = "Quebra-cabeça"
+
+[node name="Value" type="Label" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/StatsSection/CategoryPanel/Margin/Content/PuzzleRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.20784314, 0.16078432, 0.21176471, 1)
+theme_override_font_sizes/font_size = 12
+text = "Sem dados"
+horizontal_alignment = 2
+
+[node name="FooterSeparator" type="HSeparator" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent"]
+layout_mode = 2
+theme_override_styles/separator = SubResource("Separator")
+
+[node name="Footer" type="HBoxContainer" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent"]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+
+[node name="StatusLabel" type="Label" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Footer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.33333334, 0.2627451, 0.31764707, 1)
+theme_override_font_sizes/font_size = 12
+text = "Sessão finalizada. Você já pode voltar ao menu."
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="ReturnButton" type="Button" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Footer"]
+custom_minimum_size = Vector2(210, 48)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9490196, 0.87058824, 0.8156863, 1)
+theme_override_colors/font_hover_color = Color(1, 0.9490196, 0.91764706, 1)
+theme_override_colors/font_pressed_color = Color(0.9490196, 0.87058824, 0.8156863, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("ButtonNormal")
+theme_override_styles/hover = SubResource("ButtonHover")
+theme_override_styles/pressed = SubResource("ButtonPressed")
+text = "VOLTAR AO MENU"
+
+[node name="SessionSummaryController" type="Node" parent="."]
+script = ExtResource("2_controller")

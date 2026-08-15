@@ -1,0 +1,12 @@
+joblib
+matplotlib
+numpy
+pandas
+python-dotenv
+requests
+scikit-learn
+
+pytest
+ruff
+fastapi
+uvicorn

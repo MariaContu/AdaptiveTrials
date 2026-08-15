@@ -1,0 +1,32 @@
+[gd_scene format=3 uid="uid://3kefoiinmnv2"]
+
+[ext_resource type="Script" uid="uid://b853667kh2dhk" path="res://scripts/bootstrap/ApiDiagnosticController.cs" id="1_3d0jh"]
+
+[node name="ApiDiagnostic" type="Control" unique_id=2137620507]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_3d0jh")
+
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=1645348023]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer" unique_id=2104338536]
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/VBoxContainer" unique_id=199126925]
+layout_mode = 2
+text = "Adaptive Trials — Diagnóstico da API"
+
+[node name="StatusLabel" type="Label" parent="CenterContainer/VBoxContainer" unique_id=1317877200]
+layout_mode = 2
+text = "Verificando conexão..."
+
+[node name="RetryButton" type="Button" parent="CenterContainer/VBoxContainer" unique_id=1722845062]
+layout_mode = 2
+text = "Tentar novamente"

@@ -1,0 +1,39 @@
+# Ambiente virtual
+.venv/
+venv/
+
+# Variáveis de ambiente
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+
+# IDE
+.vscode/
+.idea/
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+
+# Dados coletados
+data/raw/*
+data/interim/*
+data/processed/*
+
+# Preserva as pastas
+!data/raw/.gitkeep
+!data/interim/.gitkeep
+!data/processed/.gitkeep
+
+# Modelos e resultados gerados
+models/*
+reports/figures/*
+reports/metrics/*
+
+!models/.gitkeep
+!reports/figures/.gitkeep
+!reports/metrics/.gitkeep
