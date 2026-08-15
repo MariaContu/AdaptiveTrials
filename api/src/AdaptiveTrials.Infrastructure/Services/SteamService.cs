@@ -1,3 +1,6 @@
+using System.Net;
+using System.Net.Http.Json;
+using System.Text.Json.Serialization;
 using AdaptiveTrials.Application.DTOs.Steam;
 using AdaptiveTrials.Application.Interfaces;
 using AdaptiveTrials.Domain.Entities;
@@ -9,13 +12,18 @@ namespace AdaptiveTrials.Infrastructure.Services;
 public class SteamService : ISteamService
 {
     private readonly AppDbContext _context;
+    private readonly HttpClient _httpClient;
 
-    public SteamService(AppDbContext context)
+    public SteamService(
+        AppDbContext context,
+        HttpClient httpClient
+    )
     {
         _context = context;
+        _httpClient = httpClient;
     }
 
-    public async Task<SteamImportResponse?> ImportMockSteamProfileAsync(
+    public async Task<SteamImportResponse?> ImportSteamProfileAsync(
         SteamImportRequest request
     )
     {
@@ -33,7 +41,7 @@ public class SteamService : ISteamService
             throw new InvalidOperationException("SteamId is required.");
         }
 
-        var mockProfile = BuildMockSteamProfile(request.SteamId);
+        var prediction = await PredictSteamProfileAsync(request.SteamId);
 
         player.SteamId = request.SteamId;
 
@@ -41,50 +49,76 @@ public class SteamService : ISteamService
         {
             player.NormalizedProfile = new NormalizedProfile
             {
-                PlayerId = player.Id,
-                Source = "steam_mock",
-                CreatedAt = DateTime.UtcNow
+                PlayerId = player.Id
             };
 
             _context.NormalizedProfiles.Add(player.NormalizedProfile);
         }
 
-        player.NormalizedProfile.Source = "steam_mock";
-        player.NormalizedProfile.Combat = mockProfile.Combat;
-        player.NormalizedProfile.Exploration = mockProfile.Exploration;
-        player.NormalizedProfile.Puzzle = mockProfile.Puzzle;
-        player.NormalizedProfile.TotalPlaytime = mockProfile.TotalPlaytime;
-        player.NormalizedProfile.NumGames = mockProfile.NumGames;
-        player.NormalizedProfile.GamesCombat = mockProfile.GamesCombat;
-        player.NormalizedProfile.GamesExploration = mockProfile.GamesExploration;
-        player.NormalizedProfile.GamesPuzzle = mockProfile.GamesPuzzle;
-        player.NormalizedProfile.HoursCombat = mockProfile.HoursCombat;
-        player.NormalizedProfile.HoursExploration = mockProfile.HoursExploration;
-        player.NormalizedProfile.HoursPuzzle = mockProfile.HoursPuzzle;
-        player.NormalizedProfile.AvgPlaytimePerGame = mockProfile.TotalPlaytime / mockProfile.NumGames;
-        player.NormalizedProfile.Diversity = CalculateDiversity(
-            mockProfile.Combat,
-            mockProfile.Exploration,
-            mockProfile.Puzzle
+        var profile = player.NormalizedProfile;
+
+        profile.Source = "steam_ai_random_forest";
+
+        // The AI model uses the academic macro category
+        // `strategic_reasoning`. The game/backend still uses `Puzzle`
+        // as the corresponding mission category.
+        profile.Combat = prediction.Probabilities.Combat;
+        profile.Exploration = prediction.Probabilities.Exploration;
+        profile.Puzzle = prediction.Probabilities.StrategicReasoning;
+
+        profile.TotalPlaytime =
+            prediction.LibrarySummary.TotalPlaytimeHours;
+        profile.NumGames =
+            prediction.LibrarySummary.NumGames;
+
+        profile.GamesCombat =
+            prediction.LibrarySummary.GamesCombat;
+        profile.GamesExploration =
+            prediction.LibrarySummary.GamesExploration;
+        profile.GamesPuzzle =
+            prediction.LibrarySummary.GamesStrategicReasoning;
+
+        profile.HoursCombat =
+            prediction.LibrarySummary.HoursCombat;
+        profile.HoursExploration =
+            prediction.LibrarySummary.HoursExploration;
+        profile.HoursPuzzle =
+            prediction.LibrarySummary.HoursStrategicReasoning;
+
+        profile.AvgPlaytimePerGame =
+            profile.NumGames > 0
+                ? profile.TotalPlaytime / profile.NumGames
+                : 0;
+
+        profile.Diversity = CalculateDiversity(
+            profile.Combat,
+            profile.Exploration,
+            profile.Puzzle
         );
-        player.NormalizedProfile.Entropy = CalculateEntropy(
-            mockProfile.Combat,
-            mockProfile.Exploration,
-            mockProfile.Puzzle
+
+        profile.Entropy = CalculateEntropy(
+            profile.Combat,
+            profile.Exploration,
+            profile.Puzzle
         );
-        player.NormalizedProfile.Dominance = CalculateDominance(
-            mockProfile.Combat,
-            mockProfile.Exploration,
-            mockProfile.Puzzle
+
+        profile.Dominance = CalculateDominance(
+            profile.Combat,
+            profile.Exploration,
+            profile.Puzzle
         );
-        player.NormalizedProfile.SecondMax = CalculateSecondMax(
-            mockProfile.Combat,
-            mockProfile.Exploration,
-            mockProfile.Puzzle
+
+        profile.SecondMax = CalculateSecondMax(
+            profile.Combat,
+            profile.Exploration,
+            profile.Puzzle
         );
-        player.NormalizedProfile.Gap =
-            player.NormalizedProfile.Dominance.Value -
-            player.NormalizedProfile.SecondMax.Value;
+
+        profile.Gap =
+            profile.Dominance.Value -
+            profile.SecondMax.Value;
+
+        profile.CreatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync();
 
@@ -92,75 +126,84 @@ public class SteamService : ISteamService
         {
             PlayerId = player.Id,
             SteamId = player.SteamId,
-            Source = player.NormalizedProfile.Source,
-            Combat = player.NormalizedProfile.Combat,
-            Exploration = player.NormalizedProfile.Exploration,
-            Puzzle = player.NormalizedProfile.Puzzle,
-            TotalPlaytime = player.NormalizedProfile.TotalPlaytime,
-            NumGames = player.NormalizedProfile.NumGames,
-            GamesCombat = player.NormalizedProfile.GamesCombat,
-            GamesExploration = player.NormalizedProfile.GamesExploration,
-            GamesPuzzle = player.NormalizedProfile.GamesPuzzle,
-            HoursCombat = player.NormalizedProfile.HoursCombat,
-            HoursExploration = player.NormalizedProfile.HoursExploration,
-            HoursPuzzle = player.NormalizedProfile.HoursPuzzle,
-            CreatedAt = player.NormalizedProfile.CreatedAt
+            Source = profile.Source,
+            Combat = profile.Combat,
+            Exploration = profile.Exploration,
+            Puzzle = profile.Puzzle,
+            TotalPlaytime = profile.TotalPlaytime,
+            NumGames = profile.NumGames,
+            GamesCombat = profile.GamesCombat,
+            GamesExploration = profile.GamesExploration,
+            GamesPuzzle = profile.GamesPuzzle,
+            HoursCombat = profile.HoursCombat,
+            HoursExploration = profile.HoursExploration,
+            HoursPuzzle = profile.HoursPuzzle,
+            CreatedAt = profile.CreatedAt
         };
     }
 
-    private static MockSteamProfile BuildMockSteamProfile(string steamId)
+    private async Task<AiPredictionResponse> PredictSteamProfileAsync(
+        string steamId
+    )
     {
-        // Mock determinístico: o mesmo SteamId sempre gera o mesmo perfil.
-        var seed = Math.Abs(steamId.GetHashCode());
-        var profileType = seed % 3;
+        HttpResponseMessage response;
 
-        return profileType switch
+        try
         {
-            0 => new MockSteamProfile
-            {
-                Combat = 0.60,
-                Exploration = 0.25,
-                Puzzle = 0.15,
-                TotalPlaytime = 420,
-                NumGames = 18,
-                GamesCombat = 10,
-                GamesExploration = 5,
-                GamesPuzzle = 3,
-                HoursCombat = 260,
-                HoursExploration = 110,
-                HoursPuzzle = 50
-            },
+            response = await _httpClient.PostAsJsonAsync(
+                "predict",
+                new AiPredictionRequest
+                {
+                    SteamId = steamId
+                }
+            );
+        }
+        catch (HttpRequestException exception)
+        {
+            throw new InvalidOperationException(
+                "AI inference service is unavailable.",
+                exception
+            );
+        }
+        catch (TaskCanceledException exception)
+        {
+            throw new InvalidOperationException(
+                "AI inference service timed out.",
+                exception
+            );
+        }
 
-            1 => new MockSteamProfile
-            {
-                Combat = 0.20,
-                Exploration = 0.60,
-                Puzzle = 0.20,
-                TotalPlaytime = 360,
-                NumGames = 16,
-                GamesCombat = 4,
-                GamesExploration = 9,
-                GamesPuzzle = 3,
-                HoursCombat = 80,
-                HoursExploration = 220,
-                HoursPuzzle = 60
-            },
+        if (response.StatusCode == HttpStatusCode.UnprocessableEntity)
+        {
+            var body = await response.Content.ReadAsStringAsync();
 
-            _ => new MockSteamProfile
-            {
-                Combat = 0.20,
-                Exploration = 0.25,
-                Puzzle = 0.55,
-                TotalPlaytime = 300,
-                NumGames = 14,
-                GamesCombat = 3,
-                GamesExploration = 4,
-                GamesPuzzle = 7,
-                HoursCombat = 60,
-                HoursExploration = 75,
-                HoursPuzzle = 165
-            }
-        };
+            throw new InvalidOperationException(
+                "Steam profile could not be classified because its "
+                + $"mapped playtime coverage is insufficient. Details: {body}"
+            );
+        }
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var body = await response.Content.ReadAsStringAsync();
+
+            throw new InvalidOperationException(
+                "AI inference failed with HTTP "
+                + $"{(int)response.StatusCode}. Details: {body}"
+            );
+        }
+
+        var prediction =
+            await response.Content.ReadFromJsonAsync<AiPredictionResponse>();
+
+        if (prediction is null)
+        {
+            throw new InvalidOperationException(
+                "AI inference service returned an empty response."
+            );
+        }
+
+        return prediction;
     }
 
     private static int CalculateDiversity(params double[] values)
@@ -188,28 +231,79 @@ public class SteamService : ISteamService
             .First();
     }
 
-    private class MockSteamProfile
+    private sealed class AiPredictionRequest
+    {
+        public string SteamId { get; set; } = string.Empty;
+    }
+
+    private sealed class AiPredictionResponse
+    {
+        public string Status { get; set; } = string.Empty;
+
+        [JsonPropertyName("steamId")]
+        public string SteamId { get; set; } = string.Empty;
+
+        [JsonPropertyName("predicted_category")]
+        public string PredictedCategory { get; set; } = string.Empty;
+
+        public AiProbabilities Probabilities { get; set; } = new();
+
+        [JsonPropertyName("profile_quality")]
+        public AiProfileQuality ProfileQuality { get; set; } = new();
+
+        [JsonPropertyName("library_summary")]
+        public AiLibrarySummary LibrarySummary { get; set; } = new();
+
+        [JsonPropertyName("feature_count")]
+        public int FeatureCount { get; set; }
+
+        [JsonPropertyName("feature_set")]
+        public string FeatureSet { get; set; } = string.Empty;
+    }
+
+    private sealed class AiProbabilities
     {
         public double Combat { get; set; }
 
         public double Exploration { get; set; }
 
-        public double Puzzle { get; set; }
+        [JsonPropertyName("strategic_reasoning")]
+        public double StrategicReasoning { get; set; }
+    }
 
-        public double TotalPlaytime { get; set; }
+    private sealed class AiProfileQuality
+    {
+        [JsonPropertyName("category_game_coverage")]
+        public double CategoryGameCoverage { get; set; }
 
+        [JsonPropertyName("category_playtime_coverage")]
+        public double CategoryPlaytimeCoverage { get; set; }
+    }
+
+    private sealed class AiLibrarySummary
+    {
+        [JsonPropertyName("total_playtime_hours")]
+        public double TotalPlaytimeHours { get; set; }
+
+        [JsonPropertyName("num_games")]
         public int NumGames { get; set; }
 
+        [JsonPropertyName("games_combat")]
         public int GamesCombat { get; set; }
 
+        [JsonPropertyName("games_exploration")]
         public int GamesExploration { get; set; }
 
-        public int GamesPuzzle { get; set; }
+        [JsonPropertyName("games_strategic_reasoning")]
+        public int GamesStrategicReasoning { get; set; }
 
+        [JsonPropertyName("hours_combat")]
         public double HoursCombat { get; set; }
 
+        [JsonPropertyName("hours_exploration")]
         public double HoursExploration { get; set; }
 
-        public double HoursPuzzle { get; set; }
+        [JsonPropertyName("hours_strategic_reasoning")]
+        public double HoursStrategicReasoning { get; set; }
     }
 }

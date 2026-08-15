@@ -22,24 +22,18 @@ public class SteamController : ControllerBase
     {
         try
         {
-            var response = await _steamService.ImportMockSteamProfileAsync(request);
+            var response = await _steamService.ImportSteamProfileAsync(request);
 
             if (response is null)
             {
-                return NotFound(new
-                {
-                    message = "Player not found."
-                });
+                return NotFound(new { message = "Player not found." });
             }
 
             return Ok(response);
         }
         catch (InvalidOperationException exception)
         {
-            return BadRequest(new
-            {
-                message = exception.Message
-            });
+            return BadRequest(new { message = exception.Message });
         }
     }
 }
