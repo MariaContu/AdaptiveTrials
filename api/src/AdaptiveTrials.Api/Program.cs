@@ -16,8 +16,20 @@ builder.Services.AddScoped<IMissionService, MissionService>();
 builder.Services.AddScoped<IBehaviorEventService, BehaviorEventService>();
 builder.Services.AddScoped<IPlayerService, PlayerService>();
 builder.Services.AddScoped<IRecommendationService, RecommendationService>();
-builder.Services.AddScoped<ISteamService, SteamService>();
 builder.Services.AddScoped<IExportService, ExportService>();
+
+builder.Services.AddHttpClient<ISteamService, SteamService>(
+    (serviceProvider, client) =>
+    {
+        var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+
+        var baseUrl = configuration["AiInference:BaseUrl"] ?? "http://127.0.0.1:8001/";
+
+        client.BaseAddress = new Uri(baseUrl.EndsWith("/") ? baseUrl : baseUrl + "/");
+
+        client.Timeout = TimeSpan.FromSeconds(45);
+    }
+);
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
