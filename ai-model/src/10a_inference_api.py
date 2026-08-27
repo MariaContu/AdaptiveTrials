@@ -1,346 +1,395 @@
-"""HTTP inference service for Adaptive Trials.
+"""10a - FastAPI inference service for final recency V2 model.
 
-Exposes the final optimized macro model to the .NET backend.
+Endpoints
+---------
+GET /health
+POST /predict
 
-Endpoints:
-- GET /health
-- POST /predict
+POST /predict input:
+{
+  "steamId": "7656119..."
+}
 
-The prediction response contains:
-- model probabilities;
-- mapping coverage;
-- real library summary used only for persistence/diagnostics.
+or:
+{
+  "steamId": "customVanityName"
+}
 
-The extra library summary does NOT change the 40 model features or the trained
-model. It is descriptive metadata derived from the same visible Steam library.
+The API keeps the previous backend-facing fields and adds recency metadata.
+
+Run
+---
+uvicorn --app-dir src "10a_inference_api:app" --host 127.0.0.1 --port 8001
 """
 
 from __future__ import annotations
 
 import importlib.util
-import json
+import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any
 
-import joblib
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
-ROOT = Path(__file__).resolve().parents[1]
-LIVE_SCRIPT = ROOT / "src/08d_predict_live_steamid.py"
-MODEL_PATH = ROOT / "models/final/macro_model_optimized.joblib"
-METADATA_PATH = ROOT / "models/final/macro_model_optimized_metadata.json"
-MAPPING_PATH = ROOT / "data/interim/final_game_category_scores_v2.csv"
 
-MINIMUM_PLAYTIME_COVERAGE = 0.70
+ROOT = Path(__file__).resolve().parents[1]
+
+LIVE_SCRIPT = (
+    ROOT / "src/09l_predict_live_steamid_recency_v2.py"
+)
+
+MODEL_PATH = (
+    ROOT / "models/final/macro_model_recency_v2.joblib"
+)
+
+MAPPING_PATH = (
+    ROOT / "data/interim/final_game_category_scores_v2.csv"
+)
+
+MIN_COVERAGE = 0.70
+REQUEST_TIMEOUT = 30.0
 
 
 def load_live_module():
+    if not LIVE_SCRIPT.exists():
+        raise FileNotFoundError(
+            f"Live inference script not found: {LIVE_SCRIPT}"
+        )
+
     spec = importlib.util.spec_from_file_location(
-        "adaptive_trials_live_inference",
+        "recency_v2_live_inference",
         LIVE_SCRIPT,
     )
-    if spec is None or spec.loader is None:
-        raise RuntimeError(f"Unable to load inference module: {LIVE_SCRIPT}")
 
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(
+            "Could not create import specification "
+            "for live V2 inference module."
+        )
+
+    module = importlib.util.module_from_spec(
+        spec
+    )
+
+    spec.loader.exec_module(
+        module
+    )
+
     return module
 
 
-live = load_live_module()
-
-
-class PredictionRequest(BaseModel):
-    steamId: str = Field(min_length=1)
-
-
-class ProbabilitiesResponse(BaseModel):
-    combat: float
-    exploration: float
-    strategic_reasoning: float
-
-
-class ProfileQualityResponse(BaseModel):
-    total_library_games: int
-    total_played_games: int
-    categorized_games: int
-    categorized_played_games: int
-    category_game_coverage: float
-    category_playtime_coverage: float
-    minimum_playtime_coverage: float
-
-
-class LibrarySummaryResponse(BaseModel):
-    total_playtime_hours: float
-    num_games: int
-    games_combat: int
-    games_exploration: int
-    games_strategic_reasoning: int
-    hours_combat: float
-    hours_exploration: float
-    hours_strategic_reasoning: float
-
-
-class PredictionResponse(BaseModel):
-    status: str
-    steamId: str
-    predicted_category: str
-    probabilities: ProbabilitiesResponse
-    profile_quality: ProfileQualityResponse
-    library_summary: LibrarySummaryResponse
-    feature_count: int
-    feature_set: str
-
-
-def build_library_summary(
-    games: list[dict[str, int]],
-    mapping: dict[int, dict[str, str]],
-) -> dict[str, Any]:
-    playtime_by_category = {
-        "combat": 0,
-        "exploration": 0,
-        "strategic_reasoning": 0,
-    }
-    games_by_category = {
-        "combat": 0,
-        "exploration": 0,
-        "strategic_reasoning": 0,
-    }
-
-    total_playtime_minutes = 0
-
-    for game in games:
-        appid = int(game["appid"])
-        playtime = int(game["playtime_forever_minutes"])
-        total_playtime_minutes += playtime
-
-        mapped = mapping.get(appid)
-        if mapped is None:
-            continue
-
-        category = str(mapped.get("assigned_category", "")).strip()
-
-        if category not in games_by_category:
-            continue
-
-        games_by_category[category] += 1
-        playtime_by_category[category] += playtime
-
-    return {
-        "total_playtime_hours": round(
-            total_playtime_minutes / 60.0,
-            6,
+class PredictRequest(BaseModel):
+    steamId: str = Field(
+        ...,
+        min_length=1,
+        description=(
+            "SteamID64, Steam vanity name, "
+            "or Steam Community profile URL."
         ),
-        "num_games": len(games),
-        "games_combat": games_by_category["combat"],
-        "games_exploration": games_by_category["exploration"],
-        "games_strategic_reasoning": games_by_category[
-            "strategic_reasoning"
-        ],
-        "hours_combat": round(
-            playtime_by_category["combat"] / 60.0,
-            6,
-        ),
-        "hours_exploration": round(
-            playtime_by_category["exploration"] / 60.0,
-            6,
-        ),
-        "hours_strategic_reasoning": round(
-            playtime_by_category["strategic_reasoning"] / 60.0,
-            6,
-        ),
-    }
+    )
+
+
+class AppState:
+    live: Any = None
+    model_bundle: dict[str, Any] | None = None
+    mapping: Any = None
+    steam_api_key: str | None = None
+
+
+state = AppState()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    if not MODEL_PATH.exists():
-        raise RuntimeError(f"Model not found: {MODEL_PATH}")
-    if not MAPPING_PATH.exists():
-        raise RuntimeError(f"Mapping not found: {MAPPING_PATH}")
+    load_dotenv(
+        ROOT / ".env"
+    )
 
-    api_key = live.load_api_key()
-    session = live.create_http_session()
-    mapping = live.read_mapping(MAPPING_PATH)
-    bundle = joblib.load(MODEL_PATH)
+    api_key = (
+        os.getenv(
+            "STEAM_API_KEY"
+        )
+        or os.getenv(
+            "STEAM_WEB_API_KEY"
+        )
+    )
 
-    if not isinstance(bundle, dict):
-        raise RuntimeError("Unexpected final model artifact format.")
+    if not api_key:
+        raise RuntimeError(
+            "Steam API key not found. "
+            "Set STEAM_API_KEY in ai-model/.env."
+        )
 
-    pipeline = bundle.get("pipeline")
-    features = bundle.get("features")
+    live = load_live_module()
 
-    if pipeline is None or not isinstance(features, list):
-        raise RuntimeError("Final model bundle is incomplete.")
+    model_bundle = live.load_model_bundle(
+        MODEL_PATH
+    )
 
-    metadata: dict[str, Any] = {}
-    if METADATA_PATH.exists():
-        with METADATA_PATH.open("r", encoding="utf-8") as file:
-            metadata = json.load(file)
+    mapping = live.load_mapping(
+        MAPPING_PATH
+    )
 
-    app.state.api_key = api_key
-    app.state.session = session
-    app.state.mapping = mapping
-    app.state.bundle = bundle
-    app.state.pipeline = pipeline
-    app.state.features = features
-    app.state.metadata = metadata
+    state.live = live
+    state.model_bundle = model_bundle
+    state.mapping = mapping
+    state.steam_api_key = api_key
 
     yield
 
-    session.close()
+    state.live = None
+    state.model_bundle = None
+    state.mapping = None
+    state.steam_api_key = None
 
 
 app = FastAPI(
-    title="Adaptive Trials AI Inference",
-    version="1.1.0",
+    title="Adaptive Trials AI Inference API",
+    version="2.0.0",
+    description=(
+        "Serves the final recency-aware macro recommendation "
+        "model for Adaptive Trials."
+    ),
     lifespan=lifespan,
 )
 
 
 @app.get("/health")
 def health() -> dict[str, Any]:
+    if (
+        state.live is None
+        or state.model_bundle is None
+        or state.mapping is None
+        or state.steam_api_key is None
+    ):
+        raise HTTPException(
+            status_code=503,
+            detail="Inference service is not ready.",
+        )
+
+    bundle = state.model_bundle
+
     return {
         "status": "ok",
-        "model": "macro_model_optimized",
-        "featureCount": len(app.state.features),
-        "featureSet": app.state.bundle.get("feature_set"),
-        "trainingProfiles": app.state.metadata.get("training_profiles"),
+        "model": "macro_model_recency_v2",
+        "modelVersion": bundle.get(
+            "version",
+            "recency_v2",
+        ),
+        "featureCount": len(
+            bundle["features"]
+        ),
+        "featureSet": bundle.get(
+            "feature_set"
+        ),
+        "trainingProfiles": bundle.get(
+            "training_profiles",
+            686,
+        ),
+        "strategy": bundle.get(
+            "strategy",
+            "class_weight",
+        ),
+        "supportsVanityIdentifiers": True,
+        "supportsRecentActivity": True,
     }
 
 
-@app.post("/predict", response_model=PredictionResponse)
-def predict(request: PredictionRequest) -> PredictionResponse:
-    steam_id = request.steamId.strip()
-
-    if not steam_id.isdigit():
+@app.post("/predict")
+def predict(
+    request: PredictRequest,
+) -> dict[str, Any]:
+    if (
+        state.live is None
+        or state.model_bundle is None
+        or state.mapping is None
+        or state.steam_api_key is None
+    ):
         raise HTTPException(
-            status_code=400,
-            detail="steamId must contain only digits.",
+            status_code=503,
+            detail="Inference service is not ready.",
         )
+
+    live = state.live
+    bundle = state.model_bundle
+
+    supplied_identifier = (
+        request.steamId.strip()
+    )
 
     try:
-        raw_games = live.fetch_owned_games(
-            app.state.session,
-            app.state.api_key,
+        (
             steam_id,
-            30.0,
-        )
-        games = live.normalize_games(raw_games)
-
-        features = live.build_features(
-            games,
-            app.state.mapping,
+            identifier_type,
+        ) = live.resolve_steam_identifier(
+            identifier=supplied_identifier,
+            api_key=state.steam_api_key,
+            timeout=REQUEST_TIMEOUT,
         )
 
-        library_summary = build_library_summary(
-            games,
-            app.state.mapping,
+        games = live.fetch_owned_games(
+            steam_id=steam_id,
+            api_key=state.steam_api_key,
+            timeout=REQUEST_TIMEOUT,
         )
 
-        playtime_coverage = float(
-            features["category_playtime_coverage"]
+        (
+            vector,
+            library_summary,
+            recent_summary,
+        ) = live.build_feature_vector(
+            games=games,
+            mapping=state.mapping,
         )
 
-        quality = {
-            "total_library_games": int(
-                features["total_library_games"]
-            ),
-            "total_played_games": int(
-                features["total_played_games"]
-            ),
-            "categorized_games": int(
-                features["categorized_games"]
-            ),
-            "categorized_played_games": int(
-                features["categorized_played_games"]
-            ),
-            "category_game_coverage": round(
-                float(features["category_game_coverage"]),
-                6,
-            ),
-            "category_playtime_coverage": round(
-                playtime_coverage,
-                6,
-            ),
-            "minimum_playtime_coverage": (
-                MINIMUM_PLAYTIME_COVERAGE
-            ),
-        }
+        historical_coverage = float(
+            vector[
+                "category_playtime_coverage"
+            ]
+        )
 
-        if playtime_coverage < MINIMUM_PLAYTIME_COVERAGE:
+        if (
+            historical_coverage
+            < MIN_COVERAGE
+        ):
             raise HTTPException(
                 status_code=422,
                 detail={
-                    "code": "insufficient_mapping_coverage",
-                    "message": (
-                        "Categorized playtime coverage is below "
-                        "the minimum threshold."
+                    "code": (
+                        "INSUFFICIENT_PROFILE_COVERAGE"
                     ),
-                    "profileQuality": quality,
+                    "message": (
+                        "Steam profile does not have "
+                        "enough categorized historical "
+                        "playtime for model inference."
+                    ),
+                    "categoryPlaytimeCoverage": (
+                        historical_coverage
+                    ),
+                    "minimumRequiredCoverage": (
+                        MIN_COVERAGE
+                    ),
                 },
             )
 
-        X = live.vectorize(
+        features = [
+            str(feature)
+            for feature in bundle[
+                "features"
+            ]
+        ]
+
+        X = live.vector_to_frame(
+            vector,
             features,
-            app.state.features,
         )
 
-        pipeline = app.state.pipeline
+        model = bundle[
+            "pipeline"
+        ]
+
         predicted_category = str(
-            pipeline.predict(X)[0]
+            model.predict(
+                X
+            )[0]
         )
-        raw_probabilities = pipeline.predict_proba(X)[0]
-        classes = live.get_classes(pipeline)
+
+        raw_probabilities = (
+            model.predict_proba(
+                X
+            )[0]
+        )
+
+        model_classes = [
+            str(value)
+            for value in model.classes_
+        ]
 
         probabilities = {
-            label: round(float(probability), 8)
-            for label, probability in zip(
-                classes,
+            label: float(
+                probability
+            )
+            for (
+                label,
+                probability,
+            ) in zip(
+                model_classes,
                 raw_probabilities,
-                strict=True,
             )
         }
 
-        return PredictionResponse(
-            status="ok",
-            steamId=steam_id,
-            predicted_category=predicted_category,
-            probabilities=ProbabilitiesResponse(
-                combat=probabilities["combat"],
-                exploration=probabilities["exploration"],
-                strategic_reasoning=probabilities[
-                    "strategic_reasoning"
-                ],
+        return {
+            "status": "ok",
+
+            # Keep original backend-facing SteamID field.
+            "steamId": steam_id,
+
+            # Additional identifier metadata.
+            "steamIdentifierInput": (
+                supplied_identifier
             ),
-            profile_quality=ProfileQualityResponse(
-                **quality
+            "steamIdentifierType": (
+                identifier_type
             ),
-            library_summary=LibrarySummaryResponse(
-                **library_summary
+
+            "predicted_category": (
+                predicted_category
             ),
-            feature_count=len(app.state.features),
-            feature_set=str(
-                app.state.bundle.get("feature_set")
+            "probabilities": (
+                probabilities
             ),
-        )
+
+            "profile_quality": {
+                "minimum_required_playtime_coverage": (
+                    MIN_COVERAGE
+                ),
+                "category_game_coverage": float(
+                    vector[
+                        "category_game_coverage"
+                    ]
+                ),
+                "category_playtime_coverage": (
+                    historical_coverage
+                ),
+            },
+
+            "library_summary": (
+                library_summary
+            ),
+
+            "recent_summary": (
+                recent_summary
+            ),
+
+            "feature_count": len(
+                features
+            ),
+            "feature_set": bundle.get(
+                "feature_set"
+            ),
+            "model_version": bundle.get(
+                "version",
+                "recency_v2",
+            ),
+        }
 
     except HTTPException:
         raise
-    except PermissionError as error:
+
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=400,
+            detail=str(exc),
+        ) from exc
+
+    except Exception as exc:
         raise HTTPException(
             status_code=502,
-            detail=str(error),
-        ) from error
-    except ValueError as error:
-        raise HTTPException(
-            status_code=422,
-            detail=str(error),
-        ) from error
-    except Exception as error:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Inference failed: {error}",
-        ) from error
+            detail=(
+                "Steam/model inference failed: "
+                f"{exc}"
+            ),
+        ) from exc
