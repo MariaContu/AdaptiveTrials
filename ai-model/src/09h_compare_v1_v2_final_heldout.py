@@ -138,7 +138,7 @@ def numeric_matrix(
     X = df[features].apply(
         pd.to_numeric,
         errors="coerce",
-    )
+    ).astype(float)
 
     if X.isna().any().any():
         bad = X.columns[
