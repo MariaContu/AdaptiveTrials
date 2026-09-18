@@ -120,6 +120,26 @@ shape = SubResource("wall_vertical")
 [node name="PlayerSpawn" type="Marker2D" parent="SpawnPoints"]
 position = Vector2(640, 515)
 
+[node name="ObjectRelocationPoints" type="Node2D" parent="SpawnPoints"]
+
+[node name="Relocation01" type="Marker2D" parent="SpawnPoints/ObjectRelocationPoints"]
+position = Vector2(270, 230)
+
+[node name="Relocation02" type="Marker2D" parent="SpawnPoints/ObjectRelocationPoints"]
+position = Vector2(640, 220)
+
+[node name="Relocation03" type="Marker2D" parent="SpawnPoints/ObjectRelocationPoints"]
+position = Vector2(1010, 230)
+
+[node name="Relocation04" type="Marker2D" parent="SpawnPoints/ObjectRelocationPoints"]
+position = Vector2(285, 505)
+
+[node name="Relocation05" type="Marker2D" parent="SpawnPoints/ObjectRelocationPoints"]
+position = Vector2(640, 515)
+
+[node name="Relocation06" type="Marker2D" parent="SpawnPoints/ObjectRelocationPoints"]
+position = Vector2(995, 505)
+
 [node name="EnemySpawns" type="Node2D" parent="SpawnPoints"]
 
 [node name="Spawn01" type="Marker2D" parent="SpawnPoints/EnemySpawns"]
