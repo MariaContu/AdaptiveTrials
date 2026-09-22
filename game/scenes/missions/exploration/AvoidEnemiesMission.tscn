@@ -39,6 +39,12 @@ corner_radius_top_right = 18
 corner_radius_bottom_right = 18
 corner_radius_bottom_left = 18
 
+[sub_resource type="RectangleShape2D" id="stealth_cover_vertical"]
+size = Vector2(58, 210)
+
+[sub_resource type="RectangleShape2D" id="stealth_cover_horizontal"]
+size = Vector2(220, 50)
+
 [node name="AvoidEnemiesMission" type="Node2D" unique_id=1569948151]
 
 [node name="Environment" type="Node2D" parent="." unique_id=953295074]
@@ -96,6 +102,67 @@ shape = SubResource("RectangleShape2D_m3b0t")
 
 [node name="Obstacles" type="Node2D" parent="Environment" unique_id=711186219]
 
+[node name="Cover01" type="StaticBody2D" parent="Environment/Obstacles"]
+position = Vector2(420, 345)
+collision_layer = 1
+collision_mask = 0
+
+[node name="Visual" type="Polygon2D" parent="Environment/Obstacles/Cover01"]
+color = Color(0.286, 0.207, 0.322, 1)
+polygon = PackedVector2Array(-29, -105, 29, -105, 29, 105, -29, 105)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Obstacles/Cover01"]
+shape = SubResource("stealth_cover_vertical")
+
+[node name="Cover02" type="StaticBody2D" parent="Environment/Obstacles"]
+position = Vector2(610, 535)
+collision_layer = 1
+collision_mask = 0
+
+[node name="Visual" type="Polygon2D" parent="Environment/Obstacles/Cover02"]
+color = Color(0.286, 0.207, 0.322, 1)
+polygon = PackedVector2Array(-110, -25, 110, -25, 110, 25, -110, 25)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Obstacles/Cover02"]
+shape = SubResource("stealth_cover_horizontal")
+
+[node name="Cover03" type="StaticBody2D" parent="Environment/Obstacles"]
+position = Vector2(600, 310)
+collision_layer = 1
+collision_mask = 0
+
+[node name="Visual" type="Polygon2D" parent="Environment/Obstacles/Cover03"]
+color = Color(0.286, 0.207, 0.322, 1)
+polygon = PackedVector2Array(-29, -105, 29, -105, 29, 105, -29, 105)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Obstacles/Cover03"]
+shape = SubResource("stealth_cover_vertical")
+
+[node name="Cover04" type="StaticBody2D" parent="Environment/Obstacles"]
+position = Vector2(760, 235)
+collision_layer = 1
+collision_mask = 0
+
+[node name="Visual" type="Polygon2D" parent="Environment/Obstacles/Cover04"]
+color = Color(0.286, 0.207, 0.322, 1)
+polygon = PackedVector2Array(-110, -25, 110, -25, 110, 25, -110, 25)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Obstacles/Cover04"]
+shape = SubResource("stealth_cover_horizontal")
+
+[node name="Cover05" type="StaticBody2D" parent="Environment/Obstacles"]
+position = Vector2(930, 410)
+collision_layer = 1
+collision_mask = 0
+
+[node name="Visual" type="Polygon2D" parent="Environment/Obstacles/Cover05"]
+color = Color(0.286, 0.207, 0.322, 1)
+polygon = PackedVector2Array(-29, -105, 29, -105, 29, 105, -29, 105)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Obstacles/Cover05"]
+shape = SubResource("stealth_cover_vertical")
+
+
 [node name="SpawnPoints" type="Node2D" parent="." unique_id=105214870]
 
 [node name="PlayerSpawn" type="Marker2D" parent="SpawnPoints" unique_id=2027319150]
@@ -103,6 +170,17 @@ position = Vector2(100, 520)
 
 [node name="DestinationSpawn" type="Marker2D" parent="SpawnPoints" unique_id=1471350142]
 position = Vector2(1030, 110)
+
+[node name="SafePointSpawns" type="Node2D" parent="SpawnPoints"]
+
+[node name="SafePoint01" type="Marker2D" parent="SpawnPoints/SafePointSpawns"]
+position = Vector2(355, 455)
+
+[node name="SafePoint02" type="Marker2D" parent="SpawnPoints/SafePointSpawns"]
+position = Vector2(650, 325)
+
+[node name="SafePoint03" type="Marker2D" parent="SpawnPoints/SafePointSpawns"]
+position = Vector2(900, 180)
 
 [node name="EnemyPatrols" type="Node2D" parent="SpawnPoints" unique_id=1715770299]
 
@@ -141,10 +219,10 @@ position = Vector2(920, 300)
 [node name="Patrol05" type="Node2D" parent="SpawnPoints/EnemyPatrols" unique_id=1866628476]
 
 [node name="Start" type="Marker2D" parent="SpawnPoints/EnemyPatrols/Patrol05" unique_id=827648867]
-position = Vector2(820, 560)
+position = Vector2(1030, 545)
 
 [node name="End" type="Marker2D" parent="SpawnPoints/EnemyPatrols/Patrol05" unique_id=1676957657]
-position = Vector2(820, 180)
+position = Vector2(1030, 250)
 
 [node name="Patrol06" type="Node2D" parent="SpawnPoints/EnemyPatrols" unique_id=1882112056]
 

@@ -21,8 +21,10 @@ public partial class CheckpointArea : Area2D
 	private Label _symbolLabel = null!;
 
 	private int _checkpointIndex;
+	private bool _enabled = true;
 
 	public bool WasReached { get; private set; }
+	public int CheckpointIndex => _checkpointIndex;
 
 	public override void _Ready()
 	{
@@ -61,15 +63,34 @@ public partial class CheckpointArea : Area2D
 	public void ResetCheckpoint()
 	{
 		WasReached = false;
-		Monitoring = true;
+		SetEnabledState(true);
+	}
 
-		ApplyPendingStyle();
+	public void SetEnabledState(bool enabled)
+	{
+		_enabled = enabled;
+		Monitoring = enabled && !WasReached;
+
+		if (WasReached)
+		{
+			ApplyCompletedStyle();
+			return;
+		}
+
+		if (_enabled)
+		{
+			ApplyPendingStyle();
+			return;
+		}
+
+		ApplyLockedStyle();
 	}
 
 	private void OnAreaEntered(
 		Area2D area)
 	{
-		if (WasReached)
+		if (WasReached ||
+			!_enabled)
 		{
 			return;
 		}
@@ -107,6 +128,28 @@ public partial class CheckpointArea : Area2D
 
 		Scale =
 			Vector2.One;
+	}
+
+	private void ApplyLockedStyle()
+	{
+		_visual.Color =
+			new Color("#8f8492");
+
+		_outline.DefaultColor =
+			new Color("#625a64");
+
+		_symbolLabel.Text =
+			_checkpointIndex > 0
+				? _checkpointIndex.ToString()
+				: "◆";
+
+		_symbolLabel.Modulate =
+			new Color("#d3cad5");
+
+		Scale =
+			new Vector2(
+				0.92f,
+				0.92f);
 	}
 
 	private void ApplyCompletedStyle()

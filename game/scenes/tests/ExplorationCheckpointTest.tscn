@@ -1,0 +1,43 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="1_player"]
+[ext_resource type="PackedScene" path="res://scenes/missions/shared/CheckpointArea.tscn" id="2_checkpoint"]
+[ext_resource type="Script" path="res://scripts/tests/ExplorationCheckpointTestController.cs" id="3_controller"]
+
+[node name="ExplorationCheckpointTest" type="Node2D"]
+
+[node name="Background" type="Polygon2D" parent="."]
+color = Color(0.176471, 0.129412, 0.203922, 1)
+polygon = PackedVector2Array(0, 0, 1280, 0, 1280, 720, 0, 720)
+
+[node name="Player" parent="." instance=ExtResource("1_player")]
+position = Vector2(180, 520)
+follow_camera = false
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(640, 360)
+enabled = true
+
+[node name="Checkpoint01" parent="." instance=ExtResource("2_checkpoint")]
+position = Vector2(390, 500)
+
+[node name="Checkpoint02" parent="." instance=ExtResource("2_checkpoint")]
+position = Vector2(650, 350)
+
+[node name="Checkpoint03" parent="." instance=ExtResource("2_checkpoint")]
+position = Vector2(920, 190)
+
+[node name="Interface" type="CanvasLayer" parent="."]
+
+[node name="StatusLabel" type="Label" parent="Interface"]
+offset_left = 330.0
+offset_top = 48.0
+offset_right = 950.0
+offset_bottom = 96.0
+theme_override_colors/font_color = Color(0.945098, 0.901961, 0.960784, 1)
+theme_override_font_sizes/font_size = 18
+text = "Alcance o ponto 1."
+horizontal_alignment = 1
+
+[node name="ExplorationCheckpointTestController" type="Node" parent="."]
+script = ExtResource("3_controller")
