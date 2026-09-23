@@ -49,6 +49,11 @@ public partial class ReachDestinationMissionController : Node
 			"res://scenes/missions/shared/" +
 			"HazardArea.tscn");
 
+	private static readonly PackedScene LaserScene =
+		GD.Load<PackedScene>(
+			"res://scenes/missions/shared/" +
+			"LaserObstacle.tscn");
+
 	private SessionManager _sessionManager = null!;
 	private PlayerController _player = null!;
 	private MissionHud _missionHud = null!;
@@ -59,6 +64,7 @@ public partial class ReachDestinationMissionController : Node
 
 	private Node2D _checkpointSpawns = null!;
 	private Node2D _hazardSpawns = null!;
+	private Node2D _laserSpawns = null!;
 	private Node2D _dynamicObjects = null!;
 
 	private DestinationArea _destination = null!;
@@ -69,14 +75,21 @@ public partial class ReachDestinationMissionController : Node
 	private readonly List<HazardArea>
 		_activeHazards = new();
 
+	private readonly List<LaserObstacle>
+		_activeLasers = new();
+
 	private MissionDto _mission = null!;
 
 	private int _requiredCheckpoints;
 	private int _requiredHazards;
+	private int _requiredLasers;
 	private int _maxFailures;
 
 	private int _reachedCheckpoints;
 	private int _failures;
+	private float _hazardSafeSeconds;
+	private float _hazardWarningSeconds;
+	private float _hazardActiveSeconds;
 
 	private double _elapsedTime;
 
@@ -170,6 +183,10 @@ public partial class ReachDestinationMissionController : Node
 			GetNode<Node2D>(
 				"../SpawnPoints/HazardSpawns");
 
+		_laserSpawns =
+			GetNode<Node2D>(
+				"../SpawnPoints/LaserSpawns");
+
 		_dynamicObjects =
 			GetNode<Node2D>(
 				"../DynamicObjects");
@@ -190,10 +207,11 @@ public partial class ReachDestinationMissionController : Node
 
 		_activeCheckpoints.Clear();
 		_activeHazards.Clear();
+		_activeLasers.Clear();
 
 		_objectiveText =
-			$"Alcance {_requiredCheckpoints} checkpoints " +
-			"e chegue ao destino.";
+			$"Siga {_requiredCheckpoints} checkpoints na ordem e atravesse " +
+			"lasers e áreas energizadas apenas durante as janelas seguras.";
 
 		_player.GlobalPosition =
 			_playerSpawn.GlobalPosition;
@@ -244,6 +262,13 @@ public partial class ReachDestinationMissionController : Node
 			return;
 		}
 
+		SpawnLasers();
+
+		if (_missionFinished)
+		{
+			return;
+		}
+
 		SpawnDestination();
 
 		GD.Print(
@@ -251,6 +276,7 @@ public partial class ReachDestinationMissionController : Node
 			$"MissionId={_mission.Id}, " +
 			$"Checkpoints={_requiredCheckpoints}, " +
 			$"Hazards={_requiredHazards}, " +
+			$"Lasers={_requiredLasers}, " +
 			$"MaxFailures={_maxFailures}, " +
 			$"Difficulty={_mission.Difficulty}");
 	}
@@ -318,6 +344,9 @@ public partial class ReachDestinationMissionController : Node
 			_activeCheckpoints.Add(
 				checkpoint);
 
+			checkpoint.SetEnabledState(
+				index == 0);
+
 			GD.Print(
 				$"{checkpoint.Name} criado em " +
 				$"{checkpoint.GlobalPosition}");
@@ -379,12 +408,66 @@ public partial class ReachDestinationMissionController : Node
 			hazard.GlobalPosition =
 				spawnPoint.GlobalPosition;
 
+			hazard.ConfigureTimed(
+				_hazardSafeSeconds,
+				_hazardWarningSeconds,
+				_hazardActiveSeconds,
+				index * 0.65f);
+
 			_activeHazards.Add(
 				hazard);
 
 			GD.Print(
 				$"{hazard.Name} criado em " +
 				$"{hazard.GlobalPosition}");
+		}
+	}
+
+	private void SpawnLasers()
+	{
+		List<Marker2D> spawnPoints =
+			_laserSpawns
+				.GetChildren()
+				.OfType<Marker2D>()
+				.ToList();
+
+		if (spawnPoints.Count < _requiredLasers)
+		{
+			ShowInitializationError(
+				$"O mapa contém apenas {spawnPoints.Count} posições de laser, " +
+				$"mas a dificuldade exige {_requiredLasers}.");
+
+			return;
+		}
+
+		for (int index = 0;
+			 index < _requiredLasers;
+			 index++)
+		{
+			Marker2D spawnPoint =
+				spawnPoints[index];
+
+			LaserObstacle laser =
+				LaserScene.Instantiate<LaserObstacle>();
+
+			laser.Name =
+				$"Laser{index + 1:00}";
+
+			laser.PlayerHit +=
+				OnPlayerHit;
+
+			_dynamicObjects.AddChild(laser);
+			laser.GlobalPosition = spawnPoint.GlobalPosition;
+			laser.GlobalRotation = spawnPoint.GlobalRotation;
+
+			laser.Configure(
+				GetLaserLength(_mission.Difficulty, index),
+				_hazardSafeSeconds + 0.30f,
+				_hazardWarningSeconds,
+				_hazardActiveSeconds,
+				index * 0.72f);
+
+			_activeLasers.Add(laser);
 		}
 	}
 
@@ -405,6 +488,9 @@ public partial class ReachDestinationMissionController : Node
 
 		_destination.GlobalPosition =
 			_destinationSpawn.GlobalPosition;
+
+		_destination.SetEnabledState(
+			_reachedCheckpoints >= _requiredCheckpoints);
 	}
 
 	private void OnCheckpointReached(
@@ -425,6 +511,19 @@ public partial class ReachDestinationMissionController : Node
 			_reachedCheckpoints,
 			_requiredCheckpoints + 1,
 			"Rota");
+
+		int nextIndex =
+			_reachedCheckpoints;
+
+		if (nextIndex < _activeCheckpoints.Count)
+		{
+			_activeCheckpoints[nextIndex]
+				.SetEnabledState(true);
+		}
+		else if (IsInstanceValid(_destination))
+		{
+			_destination.SetEnabledState(true);
+		}
 
 		GD.Print(
 			$"Checkpoint alcançado: " +
@@ -609,7 +708,7 @@ public partial class ReachDestinationMissionController : Node
 			objective: _objectiveText,
 			completionTime: _elapsedTime,
 			statisticTitle:
-				"Checkpoints Reached",
+				"Checkpoints alcançados",
 			statisticValue:
 				statisticValue,
 			difficulty:
@@ -631,6 +730,15 @@ public partial class ReachDestinationMissionController : Node
 				hazard.SetDeferred(
 					Area2D.PropertyName.Monitoring,
 					false);
+			}
+		}
+
+		foreach (LaserObstacle laser
+				 in _activeLasers)
+		{
+			if (IsInstanceValid(laser))
+			{
+				laser.SetEnabledState(false);
 			}
 		}
 
@@ -733,6 +841,13 @@ public partial class ReachDestinationMissionController : Node
 		_maxFailures =
 			defaults.MaxFailures;
 
+		_requiredLasers =
+			GetRequiredLasersByDifficulty(
+				_mission.Difficulty);
+
+		ConfigureHazardTiming(
+			_mission.Difficulty);
+
 		if (!string.IsNullOrWhiteSpace(
 				_mission.ParametersJson))
 		{
@@ -798,6 +913,7 @@ public partial class ReachDestinationMissionController : Node
 			$"Difficulty={_mission.Difficulty}, " +
 			$"Checkpoints={_requiredCheckpoints}, " +
 			$"Hazards={_requiredHazards}, " +
+			$"Lasers={_requiredLasers}, " +
 			$"MaxFailures={_maxFailures}");
 	}
 
@@ -922,6 +1038,58 @@ public partial class ReachDestinationMissionController : Node
 					DefaultEasyHazards,
 					DefaultEasyMaxFailures)
 		};
+	}
+
+	private static int GetRequiredLasersByDifficulty(
+		int difficulty)
+	{
+		return difficulty switch
+		{
+			1 => 1,
+			2 => 3,
+			3 => 5,
+			_ => 1
+		};
+	}
+
+	private static float GetLaserLength(
+		int difficulty,
+		int index)
+	{
+		float baseLength = difficulty switch
+		{
+			1 => 180.0f,
+			2 => 225.0f,
+			3 => 265.0f,
+			_ => 200.0f
+		};
+
+		return baseLength + (index % 2) * 30.0f;
+	}
+
+	private void ConfigureHazardTiming(
+		int difficulty)
+	{
+		switch (difficulty)
+		{
+			case 1:
+				_hazardSafeSeconds = 2.8f;
+				_hazardWarningSeconds = 1.15f;
+				_hazardActiveSeconds = 1.0f;
+				break;
+
+			case 3:
+				_hazardSafeSeconds = 1.35f;
+				_hazardWarningSeconds = 0.55f;
+				_hazardActiveSeconds = 1.55f;
+				break;
+
+			default:
+				_hazardSafeSeconds = 2.0f;
+				_hazardWarningSeconds = 0.8f;
+				_hazardActiveSeconds = 1.25f;
+				break;
+		}
 	}
 
 	private static string GetDifficultyText(

@@ -38,6 +38,10 @@ public partial class AvoidEnemiesMissionController : Node
 
 	private const int MaximumEnemies = 6;
 
+	private const int DefaultEasySafePoints = 1;
+	private const int DefaultMediumSafePoints = 2;
+	private const int DefaultHardSafePoints = 3;
+
 	private static readonly PackedScene PatrolEnemyScene =
 		GD.Load<PackedScene>(
 			"res://scenes/missions/shared/" +
@@ -48,6 +52,11 @@ public partial class AvoidEnemiesMissionController : Node
 			"res://scenes/missions/shared/" +
 			"DestinationArea.tscn");
 
+	private static readonly PackedScene CheckpointScene =
+		GD.Load<PackedScene>(
+			"res://scenes/missions/shared/" +
+			"CheckpointArea.tscn");
+
 	private SessionManager _sessionManager = null!;
 	private PlayerController _player = null!;
 	private MissionHud _missionHud = null!;
@@ -57,22 +66,31 @@ public partial class AvoidEnemiesMissionController : Node
 	private Marker2D _destinationSpawn = null!;
 
 	private Node2D _enemyPatrols = null!;
+	private Node2D _safePointSpawns = null!;
 	private Node2D _dynamicObjects = null!;
 
 	private readonly List<PatrolEnemy> _activeEnemies =
+		new();
+
+	private readonly List<CheckpointArea> _activeSafePoints =
 		new();
 
 	private DestinationArea _destination = null!;
 	private MissionDto _mission = null!;
 
 	private int _requiredEnemies;
+	private int _requiredSafePoints;
+	private int _reachedSafePoints;
 	private int _maxFailures;
 	private int _failures;
 
 	private float _enemySpeed;
 	private float _detectionRadius;
+	private float _detectionConeAngle;
+	private float _suspicionSeconds;
 
 	private double _elapsedTime;
+	private Vector2 _lastSafePosition;
 
 	private bool _missionFinished;
 	private bool _isFinalizingMission;
@@ -159,6 +177,10 @@ public partial class AvoidEnemiesMissionController : Node
 			GetNode<Node2D>(
 				"../SpawnPoints/EnemyPatrols");
 
+		_safePointSpawns =
+			GetNode<Node2D>(
+				"../SpawnPoints/SafePointSpawns");
+
 		_dynamicObjects =
 			GetNode<Node2D>(
 				"../DynamicObjects");
@@ -167,6 +189,7 @@ public partial class AvoidEnemiesMissionController : Node
 	private void ConfigureMission()
 	{
 		_failures = 0;
+		_reachedSafePoints = 0;
 		_elapsedTime = 0;
 
 		_missionFinished = false;
@@ -177,16 +200,20 @@ public partial class AvoidEnemiesMissionController : Node
 		Result = null;
 
 		_activeEnemies.Clear();
+		_activeSafePoints.Clear();
 
 		_objectiveText =
-			"Evite as patrulhas inimigas e alcance " +
-			"o destino sem ser detectado.";
+			$"Atravesse {_requiredSafePoints} pontos seguros sem permanecer " +
+			"no cone de visão das patrulhas até ser detectado.";
 
 		_player.GlobalPosition =
 			_playerSpawn.GlobalPosition;
 
 		_player.Velocity =
 			Vector2.Zero;
+
+		_lastSafePosition =
+			_playerSpawn.GlobalPosition;
 
 		_player.SetVisualMode(
 			PlayerVisualMode.Normal);
@@ -198,12 +225,12 @@ public partial class AvoidEnemiesMissionController : Node
 			_mission.Name,
 			_mission.Type,
 			_objectiveText,
-			1);
+			_requiredSafePoints + 1);
 
 		_missionHud.SetProgress(
 			0,
-			1,
-			"Escape");
+			_requiredSafePoints + 1,
+			"Furtividade");
 
 		_missionHud.SetAttempts(
 			_maxFailures,
@@ -215,6 +242,13 @@ public partial class AvoidEnemiesMissionController : Node
 		_resultPopup.HidePopup();
 
 		SpawnEnemies();
+
+		if (_missionFinished)
+		{
+			return;
+		}
+
+		SpawnSafePoints();
 
 		if (_missionFinished)
 		{
@@ -294,15 +328,100 @@ public partial class AvoidEnemiesMissionController : Node
 			_dynamicObjects.AddChild(
 				enemy);
 
-			enemy.Configure(
+			enemy.ConfigureStealth(
 				start.GlobalPosition,
 				end.GlobalPosition,
 				_enemySpeed,
-				_detectionRadius);
+				_detectionRadius,
+				_detectionConeAngle,
+				_suspicionSeconds,
+				_player);
 
 			_activeEnemies.Add(
 				enemy);
 		}
+	}
+
+	private void SpawnSafePoints()
+	{
+		List<Marker2D> spawnPoints =
+			_safePointSpawns
+				.GetChildren()
+				.OfType<Marker2D>()
+				.ToList();
+
+		if (spawnPoints.Count < _requiredSafePoints)
+		{
+			ShowInitializationError(
+				$"O mapa contém apenas {spawnPoints.Count} " +
+				$"pontos seguros, mas a missão exige " +
+				$"{_requiredSafePoints}.");
+
+			return;
+		}
+
+		for (int index = 0;
+			 index < _requiredSafePoints;
+			 index++)
+		{
+			CheckpointArea safePoint =
+				CheckpointScene
+					.Instantiate<CheckpointArea>();
+
+			safePoint.Name =
+				$"SafePoint{index + 1:00}";
+
+			safePoint.ConfigureIndex(index + 1);
+			safePoint.CheckpointReached +=
+				OnSafePointReached;
+
+			_dynamicObjects.AddChild(safePoint);
+
+			safePoint.GlobalPosition =
+				spawnPoints[index].GlobalPosition;
+
+			safePoint.SetEnabledState(
+				index == 0);
+
+			_activeSafePoints.Add(safePoint);
+		}
+	}
+
+	private void OnSafePointReached(
+		CheckpointArea safePoint)
+	{
+		if (_missionFinished ||
+			_isFinalizingMission)
+		{
+			return;
+		}
+
+		_reachedSafePoints++;
+		_lastSafePosition =
+			safePoint.GlobalPosition;
+
+		_missionHud.SetProgress(
+			_reachedSafePoints,
+			_requiredSafePoints + 1,
+			"Furtividade");
+
+		int nextIndex =
+			_reachedSafePoints;
+
+		if (nextIndex < _activeSafePoints.Count)
+		{
+			_activeSafePoints[nextIndex]
+				.SetEnabledState(true);
+		}
+		else if (IsInstanceValid(_destination))
+		{
+			_destination.SetEnabledState(true);
+		}
+
+		GD.Print(
+			$"Ponto seguro alcançado: " +
+			$"{_reachedSafePoints}/" +
+			$"{_requiredSafePoints}");
 	}
 
 	private void SpawnDestination()
@@ -322,6 +441,9 @@ public partial class AvoidEnemiesMissionController : Node
 
 		_destination.GlobalPosition =
 			_destinationSpawn.GlobalPosition;
+
+		_destination.SetEnabledState(
+			_reachedSafePoints >= _requiredSafePoints);
 	}
 
 	private void OnPlayerDetected(
@@ -376,7 +498,7 @@ public partial class AvoidEnemiesMissionController : Node
 	private async void RecoverPlayerAfterDetection()
 	{
 		_player.GlobalPosition =
-			_playerSpawn.GlobalPosition;
+			_lastSafePosition;
 
 		_player.Velocity =
 			Vector2.Zero;
@@ -409,10 +531,15 @@ public partial class AvoidEnemiesMissionController : Node
 			return;
 		}
 
+		if (_reachedSafePoints < _requiredSafePoints)
+		{
+			return;
+		}
+
 		_missionHud.SetProgress(
-			1,
-			1,
-			"Escape");
+			_requiredSafePoints + 1,
+			_requiredSafePoints + 1,
+			"Furtividade");
 
 		_ = FinishMissionAsync(
 			success: true);
@@ -557,6 +684,13 @@ public partial class AvoidEnemiesMissionController : Node
 		_maxFailures =
 			defaults.MaxFailures;
 
+		_requiredSafePoints =
+			GetSafePointsByDifficulty(
+				_mission.Difficulty);
+
+		ConfigureStealthDifficulty(
+			_mission.Difficulty);
+
 		if (!string.IsNullOrWhiteSpace(
 				_mission.ParametersJson))
 		{
@@ -625,7 +759,8 @@ public partial class AvoidEnemiesMissionController : Node
 			$"Enemies={_requiredEnemies}, " +
 			$"EnemySpeed={_enemySpeed}, " +
 			$"DetectionRadius={_detectionRadius}, " +
-			$"MaxFailures={_maxFailures}");
+			$"MaxFailures={_maxFailures}, " +
+			$"SafePoints={_requiredSafePoints}");
 	}
 
 	private void ShowInitializationError(
@@ -794,6 +929,40 @@ public partial class AvoidEnemiesMissionController : Node
 					DefaultEasyEnemySpeed,
 					DefaultEasyDetectionRadius,
 					DefaultEasyMaxFailures)
+		};
+	}
+
+	private void ConfigureStealthDifficulty(
+		int difficulty)
+	{
+		switch (difficulty)
+		{
+			case 1:
+				_detectionConeAngle = 52f;
+				_suspicionSeconds = 1.35f;
+				break;
+
+			case 3:
+				_detectionConeAngle = 88f;
+				_suspicionSeconds = 0.55f;
+				break;
+
+			default:
+				_detectionConeAngle = 68f;
+				_suspicionSeconds = 0.90f;
+				break;
+		}
+	}
+
+	private static int GetSafePointsByDifficulty(
+		int difficulty)
+	{
+		return difficulty switch
+		{
+			1 => DefaultEasySafePoints,
+			2 => DefaultMediumSafePoints,
+			3 => DefaultHardSafePoints,
+			_ => DefaultEasySafePoints
 		};
 	}
 

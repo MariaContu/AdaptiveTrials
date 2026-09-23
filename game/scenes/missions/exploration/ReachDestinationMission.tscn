@@ -39,6 +39,12 @@ corner_radius_top_right = 18
 corner_radius_bottom_right = 18
 corner_radius_bottom_left = 18
 
+[sub_resource type="RectangleShape2D" id="exploration_obstacle_vertical"]
+size = Vector2(64, 170)
+
+[sub_resource type="RectangleShape2D" id="exploration_obstacle_horizontal"]
+size = Vector2(190, 54)
+
 [node name="ReachDestinationMission" type="Node2D" unique_id=541483567]
 
 [node name="Environment" type="Node2D" parent="." unique_id=700271478]
@@ -96,6 +102,37 @@ shape = SubResource("RectangleShape2D_n676m")
 
 [node name="Obstacles" type="Node2D" parent="Environment" unique_id=1572458164]
 
+[node name="Obstacle01" type="StaticBody2D" parent="Environment/Obstacles"]
+position = Vector2(380, 260)
+
+[node name="ObstacleVisual01" type="Polygon2D" parent="Environment/Obstacles/Obstacle01"]
+color = Color(0.294118, 0.219608, 0.321569, 1)
+polygon = PackedVector2Array(-32, -85, 32, -85, 32, 85, -32, 85)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Obstacles/Obstacle01"]
+shape = SubResource("exploration_obstacle_vertical")
+
+[node name="Obstacle02" type="StaticBody2D" parent="Environment/Obstacles"]
+position = Vector2(620, 520)
+
+[node name="ObstacleVisual02" type="Polygon2D" parent="Environment/Obstacles/Obstacle02"]
+color = Color(0.294118, 0.219608, 0.321569, 1)
+polygon = PackedVector2Array(-95, -27, 95, -27, 95, 27, -95, 27)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Obstacles/Obstacle02"]
+shape = SubResource("exploration_obstacle_horizontal")
+
+[node name="Obstacle03" type="StaticBody2D" parent="Environment/Obstacles"]
+position = Vector2(840, 450)
+
+[node name="ObstacleVisual03" type="Polygon2D" parent="Environment/Obstacles/Obstacle03"]
+color = Color(0.294118, 0.219608, 0.321569, 1)
+polygon = PackedVector2Array(-32, -85, 32, -85, 32, 85, -32, 85)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Obstacles/Obstacle03"]
+shape = SubResource("exploration_obstacle_vertical")
+
+
 [node name="SpawnPoints" type="Node2D" parent="." unique_id=344920471]
 
 [node name="PlayerSpawn" type="Marker2D" parent="SpawnPoints" unique_id=1127254742]
@@ -120,6 +157,26 @@ position = Vector2(760, 245)
 
 [node name="Point05" type="Marker2D" parent="SpawnPoints/CheckpointSpawns"]
 position = Vector2(900, 170)
+
+[node name="LaserSpawns" type="Node2D" parent="SpawnPoints"]
+
+[node name="Laser01" type="Marker2D" parent="SpawnPoints/LaserSpawns"]
+position = Vector2(390, 455)
+rotation = 1.5708
+
+[node name="Laser02" type="Marker2D" parent="SpawnPoints/LaserSpawns"]
+position = Vector2(545, 385)
+
+[node name="Laser03" type="Marker2D" parent="SpawnPoints/LaserSpawns"]
+position = Vector2(700, 315)
+rotation = 1.5708
+
+[node name="Laser04" type="Marker2D" parent="SpawnPoints/LaserSpawns"]
+position = Vector2(835, 245)
+
+[node name="Laser05" type="Marker2D" parent="SpawnPoints/LaserSpawns"]
+position = Vector2(950, 180)
+rotation = 1.5708
 
 [node name="HazardSpawns" type="Node2D" parent="SpawnPoints" unique_id=1364334849]
 

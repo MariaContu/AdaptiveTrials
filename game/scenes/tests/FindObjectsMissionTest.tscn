@@ -1,0 +1,63 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="1_player"]
+[ext_resource type="Script" path="res://scripts/missions/shared/ExplorationMaze.cs" id="2_maze"]
+[ext_resource type="Script" path="res://scripts/tests/FindObjectsMissionTestController.cs" id="3_controller"]
+
+[node name="FindObjectsMissionTest" type="Node2D"]
+
+[node name="Environment" type="Node2D" parent="."]
+
+[node name="Background" type="Polygon2D" parent="Environment"]
+color = Color(0.447, 0.373, 0.412, 1)
+polygon = PackedVector2Array(0, 0, 1152, 0, 1152, 648, 0, 648)
+
+[node name="ExplorationMaze" type="Node2D" parent="Environment"]
+script = ExtResource("2_maze")
+
+[node name="DynamicObjects" type="Node2D" parent="."]
+
+[node name="Player" parent="." instance=ExtResource("1_player")]
+z_index = 10
+follow_camera = false
+visual_scale_multiplier = 0.72
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(576, 324)
+enabled = true
+
+[node name="Interface" type="CanvasLayer" parent="."]
+
+[node name="TitleLabel" type="Label" parent="Interface"]
+offset_left = 410.0
+offset_top = 18.0
+offset_right = 870.0
+offset_bottom = 50.0
+theme_override_colors/font_color = Color(0.95, 0.91, 0.97, 1)
+theme_override_font_sizes/font_size = 22
+text = "TESTE — LABIRINTO / ENCONTRAR OBJETOS"
+horizontal_alignment = 1
+
+[node name="StatusLabel" type="Label" parent="Interface"]
+offset_left = 300.0
+offset_top = 54.0
+offset_right = 980.0
+offset_bottom = 84.0
+theme_override_colors/font_color = Color(0.86, 0.79, 0.89, 1)
+theme_override_font_sizes/font_size = 16
+text = "DIFICULDADE 2"
+horizontal_alignment = 1
+
+[node name="InstructionLabel" type="Label" parent="Interface"]
+offset_left = 160.0
+offset_top = 684.0
+offset_right = 1120.0
+offset_bottom = 710.0
+theme_override_colors/font_color = Color(0.76, 0.70, 0.79, 1)
+theme_override_font_sizes/font_size = 13
+text = "WASD • explore o labirinto escuro • colete todos os objetos • dificuldade ajustável no Inspector"
+horizontal_alignment = 1
+
+[node name="FindObjectsMissionTestController" type="Node" parent="."]
+script = ExtResource("3_controller")
+test_difficulty = 2

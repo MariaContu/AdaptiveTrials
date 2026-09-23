@@ -32,8 +32,9 @@ public partial class FindObjectsMissionController : Node
 	private MissionResultPopup _resultPopup = null!;
 
 	private Node2D _dynamicObjects = null!;
-	private Node2D _spawnPointsContainer = null!;
-	private Marker2D _playerSpawn = null!;
+	private ExplorationMaze _maze = null!;
+	private CanvasModulate _darkness = null!;
+	private PointLight2D _playerLight = null!;
 
 	private MissionDto _mission = null!;
 
@@ -122,14 +123,9 @@ public partial class FindObjectsMissionController : Node
 			GetNode<Node2D>(
 				"../DynamicObjects");
 
-		_spawnPointsContainer =
-			GetNode<Node2D>(
-				"../SpawnPoints/" +
-				"CollectibleSpawnPoints");
-
-		_playerSpawn =
-			GetNode<Marker2D>(
-				"../SpawnPoints/PlayerSpawn");
+		_maze =
+			GetNode<ExplorationMaze>(
+				"../Environment/ExplorationMaze");
 	}
 
 	private void ConfigureMission()
@@ -145,11 +141,14 @@ public partial class FindObjectsMissionController : Node
 		Result = null;
 
 		_objectiveText =
-			$"Encontre e colete {_requiredItems} objetos " +
-			"espalhados pelo cenário.";
+			$"Explore o labirinto escuro e encontre {_requiredItems} objetos. " +
+			"A complexidade do labirinto e a visibilidade variam com a dificuldade.";
+
+		_maze.Configure(
+			_mission.Difficulty);
 
 		_player.GlobalPosition =
-			_playerSpawn.GlobalPosition;
+			_maze.PlayerStartPosition;
 
 		_player.Velocity =
 			Vector2.Zero;
@@ -179,6 +178,7 @@ public partial class FindObjectsMissionController : Node
 
 		_resultPopup.HidePopup();
 
+		ConfigureLimitedVisibility();
 		SpawnCollectibles();
 
 		GD.Print(
@@ -190,32 +190,24 @@ public partial class FindObjectsMissionController : Node
 
 	private void SpawnCollectibles()
 	{
-		List<Marker2D> spawnPoints =
-			_spawnPointsContainer
-				.GetChildren()
-				.OfType<Marker2D>()
-				.ToList();
+		IReadOnlyList<Vector2> spawnPoints =
+			_maze.CollectiblePositions;
 
 		if (spawnPoints.Count <
 			_requiredItems)
 		{
 			ShowInitializationError(
-				$"O mapa contém apenas {spawnPoints.Count} " +
-				$"pontos de surgimento, mas a missão exige " +
+				$"O labirinto da dificuldade {_mission.Difficulty} contém apenas " +
+				$"{spawnPoints.Count} pontos de coleta, mas a missão exige " +
 				$"{_requiredItems} objetos.");
 
 			return;
 		}
 
-		Shuffle(spawnPoints);
-
 		for (int index = 0;
 			 index < _requiredItems;
 			 index++)
 		{
-			Marker2D spawnPoint =
-				spawnPoints[index];
-
 			CollectibleObject collectible =
 				CollectibleScene
 					.Instantiate<CollectibleObject>();
@@ -230,7 +222,11 @@ public partial class FindObjectsMissionController : Node
 				collectible);
 
 			collectible.GlobalPosition =
-				spawnPoint.GlobalPosition;
+				spawnPoints[index];
+
+			collectible.ConfigureExplorationVisibility(
+				GetCollectibleGlowEnergy(_mission.Difficulty),
+				GetCollectiblePulseSpeed(_mission.Difficulty));
 		}
 	}
 
@@ -260,6 +256,105 @@ public partial class FindObjectsMissionController : Node
 		{
 			_ = CompleteMissionAsync();
 		}
+	}
+
+	private void ConfigureLimitedVisibility()
+	{
+		_darkness =
+			new CanvasModulate
+			{
+				Name = "ExplorationDarkness",
+				Color = GetDarknessColor(
+					_mission.Difficulty)
+			};
+
+		GetParent().AddChild(
+			_darkness);
+
+		Gradient lightGradient =
+			new();
+
+		lightGradient.SetColor(
+			0,
+			Colors.White);
+
+		lightGradient.SetColor(
+			1,
+			new Color(1, 1, 1, 0));
+
+		GradientTexture2D lightTexture =
+			new()
+			{
+				Gradient = lightGradient,
+				Width = 256,
+				Height = 256,
+				Fill = GradientTexture2D.FillEnum.Radial,
+				FillFrom = new Vector2(0.5f, 0.5f),
+				FillTo = new Vector2(1.0f, 0.5f)
+			};
+
+		_playerLight =
+			new PointLight2D
+			{
+				Name = "ExplorationLight",
+				Texture = lightTexture,
+				TextureScale = GetLightScale(
+					_mission.Difficulty),
+				Energy = 1.15f,
+				Color = new Color("#f3ddc5"),
+				ShadowEnabled = false
+			};
+
+		_player.AddChild(
+			_playerLight);
+	}
+
+	private static Color GetDarknessColor(
+		int difficulty)
+	{
+		return difficulty switch
+		{
+			1 => new Color("#61536a"),
+			2 => new Color("#46394f"),
+			3 => new Color("#30263a"),
+			_ => new Color("#46394f")
+		};
+	}
+
+	private static float GetLightScale(
+		int difficulty)
+	{
+		return difficulty switch
+		{
+			1 => 3.0f,
+			2 => 2.35f,
+			3 => 1.8f,
+			_ => 2.35f
+		};
+	}
+
+	private static float GetCollectibleGlowEnergy(
+		int difficulty)
+	{
+		return difficulty switch
+		{
+			1 => 1.15f,
+			2 => 0.85f,
+			3 => 0.60f,
+			_ => 0.85f
+		};
+	}
+
+	private static float GetCollectiblePulseSpeed(
+		int difficulty)
+	{
+		return difficulty switch
+		{
+			1 => 2.6f,
+			2 => 2.1f,
+			3 => 1.7f,
+			_ => 2.1f
+		};
 	}
 
 	private async Task CompleteMissionAsync()
@@ -508,6 +603,65 @@ public partial class FindObjectsMissionController : Node
 			3 => "Difícil",
 			_ => $"Nível {difficulty}"
 		};
+	}
+
+	private static List<Marker2D> SelectDistributedSpawnPoints(
+		IReadOnlyList<Marker2D> candidates,
+		int amount,
+		Vector2 playerStartPosition)
+	{
+		List<Marker2D> remaining =
+			candidates.ToList();
+
+		List<Marker2D> selected =
+			new();
+
+		if (remaining.Count == 0 ||
+			amount <= 0)
+		{
+			return selected;
+		}
+
+		Marker2D first =
+			remaining
+				.OrderByDescending(
+					marker =>
+						marker.GlobalPosition.DistanceTo(
+							playerStartPosition))
+				.First();
+
+		selected.Add(first);
+		remaining.Remove(first);
+
+		while (selected.Count < amount &&
+			remaining.Count > 0)
+		{
+			Marker2D next =
+				remaining
+					.OrderByDescending(
+						candidate =>
+						{
+							float minimumDistance =
+								selected.Min(
+									chosen =>
+										candidate.GlobalPosition.DistanceTo(
+											chosen.GlobalPosition));
+
+							float distanceFromStart =
+								candidate.GlobalPosition.DistanceTo(
+									playerStartPosition);
+
+							return
+								minimumDistance +
+								distanceFromStart * 0.20f;
+						})
+					.First();
+
+			selected.Add(next);
+			remaining.Remove(next);
+		}
+
+		return selected;
 	}
 
 	private static void Shuffle<T>(

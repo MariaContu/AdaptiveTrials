@@ -4,6 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://bw7sc5nogylfp" path="res://scenes/components/MissionHud.tscn" id="2_1gw2u"]
 [ext_resource type="Script" uid="uid://djsc5jpgeonwq" path="res://scripts/missions/exploration/FindObjectsMissionController.cs" id="3_pm5ag"]
 [ext_resource type="PackedScene" uid="uid://c8uypusmn28mx" path="res://scenes/components/MissionResultPopup.tscn" id="3_r4ag7"]
+[ext_resource type="Script" path="res://scripts/missions/shared/ExplorationMaze.cs" id="5_maze"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_qrcb4"]
 size = Vector2(1152, 40)
@@ -38,6 +39,12 @@ corner_radius_top_left = 18
 corner_radius_top_right = 18
 corner_radius_bottom_right = 18
 corner_radius_bottom_left = 18
+
+[sub_resource type="RectangleShape2D" id="exploration_obstacle_vertical"]
+size = Vector2(64, 170)
+
+[sub_resource type="RectangleShape2D" id="exploration_obstacle_horizontal"]
+size = Vector2(190, 54)
 
 [node name="FindObjectsMission" type="Node2D" unique_id=1204971648]
 
@@ -96,6 +103,9 @@ shape = SubResource("RectangleShape2D_57ddn")
 
 [node name="Obstacles" type="Node2D" parent="Environment" unique_id=1770172966]
 
+[node name="ExplorationMaze" type="Node2D" parent="Environment"]
+script = ExtResource("5_maze")
+
 [node name="SpawnPoints" type="Node2D" parent="." unique_id=1900144024]
 
 [node name="PlayerSpawn" type="Marker2D" parent="SpawnPoints" unique_id=771501673]
@@ -140,7 +150,9 @@ position = Vector2(576, 324)
 enabled = true
 
 [node name="Player" parent="." unique_id=632016709 instance=ExtResource("1_h0dl7")]
+z_index = 10
 follow_camera = false
+visual_scale_multiplier = 0.72
 
 [node name="MissionHud" parent="." unique_id=1740890340 instance=ExtResource("2_1gw2u")]
 
