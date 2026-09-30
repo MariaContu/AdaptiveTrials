@@ -39,6 +39,7 @@ public partial class FindObjectsMissionController : Node
 	private MissionDto _mission = null!;
 
 	private int _requiredItems;
+	private float _lightScale;
 	private int _collectedItems;
 	private int _failures;
 
@@ -87,6 +88,11 @@ public partial class FindObjectsMissionController : Node
 		_requiredItems =
 			ReadRequiredItems(
 				_mission.ParametersJson);
+
+		_lightScale =
+			ReadLightScale(
+				_mission.ParametersJson,
+				_mission.Difficulty);
 
 		ConfigureMission();
 	}
@@ -298,8 +304,7 @@ public partial class FindObjectsMissionController : Node
 			{
 				Name = "ExplorationLight",
 				Texture = lightTexture,
-				TextureScale = GetLightScale(
-					_mission.Difficulty),
+				TextureScale = _lightScale,
 				Energy = 1.15f,
 				Color = new Color("#f3ddc5"),
 				ShadowEnabled = false
@@ -307,6 +312,50 @@ public partial class FindObjectsMissionController : Node
 
 		_player.AddChild(
 			_playerLight);
+	}
+
+
+	private static float ReadLightScale(
+		string parametersJson,
+		int difficulty)
+	{
+		float fallback =
+			GetLightScale(
+				difficulty);
+
+		if (string.IsNullOrWhiteSpace(
+				parametersJson))
+		{
+			return fallback;
+		}
+
+		try
+		{
+			using JsonDocument document =
+				JsonDocument.Parse(
+					parametersJson);
+
+			JsonElement root =
+				document.RootElement;
+
+			if (!root.TryGetProperty(
+					"lightScale",
+					out JsonElement value) ||
+				!value.TryGetSingle(
+					out float configuredScale))
+			{
+				return fallback;
+			}
+
+			return Mathf.Clamp(
+				configuredScale,
+				1.0f,
+				4.0f);
+		}
+		catch (JsonException)
+		{
+			return fallback;
+		}
 	}
 
 	private static Color GetDarknessColor(

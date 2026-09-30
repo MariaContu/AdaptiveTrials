@@ -103,9 +103,9 @@ public class AppDbContext : DbContext
                 Template = "Eliminar Alvo",
                 Difficulty = 1,
                 ParametersJson =
-                    "{\"enemies\":3,\"boss\":false}",
+                    "{\"targetHealth\":5,\"guards\":1}",
                 Description =
-                    "Derrotar uma pequena quantidade de inimigos."
+                    "Derrotar o alvo protegido por poucos inimigos."
             },
             new Mission
             {
@@ -115,9 +115,9 @@ public class AppDbContext : DbContext
                 Template = "Eliminar Alvo",
                 Difficulty = 2,
                 ParametersJson =
-                    "{\"enemies\":6,\"boss\":false}",
+                    "{\"targetHealth\":7,\"guards\":2}",
                 Description =
-                    "Derrotar uma quantidade intermediária de inimigos."
+                    "Derrotar um alvo mais resistente protegido por uma quantidade intermediária de inimigos."
             },
             new Mission
             {
@@ -127,9 +127,9 @@ public class AppDbContext : DbContext
                 Template = "Eliminar Alvo",
                 Difficulty = 3,
                 ParametersJson =
-                    "{\"enemies\":1,\"boss\":true}",
+                    "{\"targetHealth\":10,\"guards\":3}",
                 Description =
-                    "Derrotar um inimigo de elite."
+                    "Derrotar um alvo de alta resistência protegido por vários inimigos."
             },
 
             /*
@@ -183,9 +183,9 @@ public class AppDbContext : DbContext
                 Template = "Defender Objeto",
                 Difficulty = 1,
                 ParametersJson =
-                    "{\"waves\":2}",
+                    "{\"waves\":2,\"objectHealth\":14}",
                 Description =
-                    "Defender um objeto durante poucas ondas."
+                    "Defender o cristal durante poucas ondas, adaptando-se aos reposicionamentos após dano."
             },
             new Mission
             {
@@ -195,9 +195,9 @@ public class AppDbContext : DbContext
                 Template = "Defender Objeto",
                 Difficulty = 2,
                 ParametersJson =
-                    "{\"waves\":3}",
+                    "{\"waves\":3,\"objectHealth\":12}",
                 Description =
-                    "Defender um objeto durante uma quantidade intermediária de ondas."
+                    "Defender o cristal durante uma quantidade intermediária de ondas, adaptando-se aos reposicionamentos após dano."
             },
             new Mission
             {
@@ -207,9 +207,9 @@ public class AppDbContext : DbContext
                 Template = "Defender Objeto",
                 Difficulty = 3,
                 ParametersJson =
-                    "{\"waves\":5}",
+                    "{\"waves\":5,\"objectHealth\":10}",
                 Description =
-                    "Defender um objeto contra várias ondas."
+                    "Defender o cristal contra várias ondas, adaptando-se aos reposicionamentos após dano."
             },
 
             /*
@@ -223,9 +223,9 @@ public class AppDbContext : DbContext
                 Template = "Encontrar Objetos",
                 Difficulty = 1,
                 ParametersJson =
-                    "{\"items\":3}",
+                    "{\"items\":3,\"lightScale\":3.0}",
                 Description =
-                    "Buscar poucos itens pelo cenário."
+                    "Explorar um labirinto simples com visibilidade limitada para encontrar poucos objetos."
             },
             new Mission
             {
@@ -235,9 +235,9 @@ public class AppDbContext : DbContext
                 Template = "Encontrar Objetos",
                 Difficulty = 2,
                 ParametersJson =
-                    "{\"items\":6}",
+                    "{\"items\":6,\"lightScale\":2.35}",
                 Description =
-                    "Buscar uma quantidade intermediária de itens."
+                    "Explorar um labirinto intermediário com visibilidade reduzida para encontrar objetos distribuídos pelo cenário."
             },
             new Mission
             {
@@ -247,9 +247,9 @@ public class AppDbContext : DbContext
                 Template = "Encontrar Objetos",
                 Difficulty = 3,
                 ParametersJson =
-                    "{\"items\":10}",
+                    "{\"items\":10,\"lightScale\":1.75}",
                 Description =
-                    "Buscar muitos itens em uma missão de alta complexidade."
+                    "Explorar um labirinto complexo com baixa visibilidade para encontrar todos os objetos."
             },
 
             /*
@@ -263,14 +263,9 @@ public class AppDbContext : DbContext
                 Template = "Chegar ao Destino",
                 Difficulty = 1,
                 ParametersJson =
-                    "{" +
-                    "\"distance\":\"short\"," +
-                    "\"checkpoints\":2," +
-                    "\"hazards\":2," +
-                    "\"maxFailures\":4" +
-                    "}",
+                    "{\"checkpoints\":2,\"hazards\":2,\"lasers\":1,\"maxFailures\":4,\"safeSeconds\":2.8,\"warningSeconds\":1.15,\"activeSeconds\":1.0}",
                 Description =
-                    "Chegar ao destino por uma rota curta e pouco perigosa."
+                    "Percorrer uma rota curta seguindo checkpoints e atravessando poucos obstáculos temporizados."
             },
             new Mission
             {
@@ -280,14 +275,9 @@ public class AppDbContext : DbContext
                 Template = "Chegar ao Destino",
                 Difficulty = 2,
                 ParametersJson =
-                    "{" +
-                    "\"distance\":\"medium\"," +
-                    "\"checkpoints\":3," +
-                    "\"hazards\":4," +
-                    "\"maxFailures\":3" +
-                    "}",
+                    "{\"checkpoints\":3,\"hazards\":4,\"lasers\":3,\"maxFailures\":3,\"safeSeconds\":2.0,\"warningSeconds\":0.8,\"activeSeconds\":1.25}",
                 Description =
-                    "Chegar ao destino por uma rota de complexidade intermediária."
+                    "Percorrer uma rota intermediária seguindo checkpoints e sincronizando a travessia de obstáculos temporizados."
             },
             new Mission
             {
@@ -297,14 +287,9 @@ public class AppDbContext : DbContext
                 Template = "Chegar ao Destino",
                 Difficulty = 3,
                 ParametersJson =
-                    "{" +
-                    "\"distance\":\"long\"," +
-                    "\"checkpoints\":5," +
-                    "\"hazards\":6," +
-                    "\"maxFailures\":2" +
-                    "}",
+                    "{\"checkpoints\":5,\"hazards\":6,\"lasers\":5,\"maxFailures\":2,\"safeSeconds\":1.35,\"warningSeconds\":0.55,\"activeSeconds\":1.55}",
                 Description =
-                    "Chegar ao destino por uma rota longa e perigosa."
+                    "Percorrer uma rota complexa com vários checkpoints, lasers e áreas energizadas de janelas reduzidas."
             },
 
             /*
@@ -318,14 +303,9 @@ public class AppDbContext : DbContext
                 Template = "Evitar Inimigos",
                 Difficulty = 1,
                 ParametersJson =
-                    "{" +
-                    "\"enemies\":2," +
-                    "\"enemySpeed\":65," +
-                    "\"detectionRadius\":70," +
-                    "\"maxFailures\":4" +
-                    "}",
+                    "{\"enemies\":2,\"enemySpeed\":65,\"detectionRadius\":70,\"coneAngle\":52,\"suspicionSeconds\":1.35,\"safePoints\":1,\"maxFailures\":4}",
                 Description =
-                    "Evitar poucos inimigos durante o percurso."
+                    "Atravessar uma rota de furtividade com poucas patrulhas, usando cobertura e pontos seguros."
             },
             new Mission
             {
@@ -335,14 +315,9 @@ public class AppDbContext : DbContext
                 Template = "Evitar Inimigos",
                 Difficulty = 2,
                 ParametersJson =
-                    "{" +
-                    "\"enemies\":4," +
-                    "\"enemySpeed\":85," +
-                    "\"detectionRadius\":90," +
-                    "\"maxFailures\":3" +
-                    "}",
+                    "{\"enemies\":4,\"enemySpeed\":85,\"detectionRadius\":90,\"coneAngle\":68,\"suspicionSeconds\":0.9,\"safePoints\":2,\"maxFailures\":3}",
                 Description =
-                    "Evitar patrulhas de velocidade e alcance intermediários."
+                    "Atravessar uma rota de furtividade intermediária com múltiplas patrulhas, cobertura e pontos seguros."
             },
             new Mission
             {
@@ -352,14 +327,9 @@ public class AppDbContext : DbContext
                 Template = "Evitar Inimigos",
                 Difficulty = 3,
                 ParametersJson =
-                    "{" +
-                    "\"enemies\":6," +
-                    "\"enemySpeed\":110," +
-                    "\"detectionRadius\":115," +
-                    "\"maxFailures\":2" +
-                    "}",
+                    "{\"enemies\":6,\"enemySpeed\":110,\"detectionRadius\":115,\"coneAngle\":88,\"suspicionSeconds\":0.55,\"safePoints\":3,\"maxFailures\":2}",
                 Description =
-                    "Evitar várias patrulhas em uma missão de alta dificuldade."
+                    "Atravessar uma rota de furtividade avançada com várias patrulhas, cones de visão amplos e menor tempo de reação."
             },
 
             /*
@@ -373,9 +343,9 @@ public class AppDbContext : DbContext
                 Template = "Repetir Sequência",
                 Difficulty = 1,
                 ParametersJson =
-                    "{\"sequenceSize\":3}",
+                    "{\"sequenceSize\":3,\"maxFailures\":4}",
                 Description =
-                    "Repetir uma sequência curta."
+                    "Repetir uma sequência curta de símbolos."
             },
             new Mission
             {
@@ -385,7 +355,7 @@ public class AppDbContext : DbContext
                 Template = "Repetir Sequência",
                 Difficulty = 2,
                 ParametersJson =
-                    "{\"sequenceSize\":5}",
+                    "{\"sequenceSize\":5,\"maxFailures\":3}",
                 Description =
                     "Repetir uma sequência de tamanho intermediário."
             },
@@ -397,9 +367,9 @@ public class AppDbContext : DbContext
                 Template = "Repetir Sequência",
                 Difficulty = 3,
                 ParametersJson =
-                    "{\"sequenceSize\":8}",
+                    "{\"sequenceSize\":8,\"maxFailures\":2}",
                 Description =
-                    "Repetir uma sequência de alta exigência de memória."
+                    "Repetir uma sequência longa de alta exigência de memória."
             },
 
             /*
@@ -413,9 +383,9 @@ public class AppDbContext : DbContext
                 Template = "Conectar Pontos",
                 Difficulty = 1,
                 ParametersJson =
-                    "{\"pieces\":4}",
+                    "{\"pieces\":4,\"maxFailures\":5}",
                 Description =
-                    "Resolver uma conexão simples entre pontos."
+                    "Conectar poucos pares de pontos respeitando as regras do tabuleiro."
             },
             new Mission
             {
@@ -425,9 +395,9 @@ public class AppDbContext : DbContext
                 Template = "Conectar Pontos",
                 Difficulty = 2,
                 ParametersJson =
-                    "{\"pieces\":6}",
+                    "{\"pieces\":6,\"maxFailures\":4}",
                 Description =
-                    "Resolver uma conexão de complexidade intermediária."
+                    "Conectar uma quantidade intermediária de pares de pontos respeitando as regras do tabuleiro."
             },
             new Mission
             {
@@ -437,9 +407,9 @@ public class AppDbContext : DbContext
                 Template = "Conectar Pontos",
                 Difficulty = 3,
                 ParametersJson =
-                    "{\"pieces\":8}",
+                    "{\"pieces\":8,\"maxFailures\":3}",
                 Description =
-                    "Resolver uma conexão complexa entre vários pontos."
+                    "Conectar vários pares de pontos em um tabuleiro de maior complexidade."
             },
 
             /*
@@ -453,9 +423,9 @@ public class AppDbContext : DbContext
                 Template = "Decifrar Código",
                 Difficulty = 1,
                 ParametersJson =
-                    "{\"clues\":3}",
+                    "{\"boards\":1,\"attempts\":6}",
                 Description =
-                    "Decifrar um código com várias pistas disponíveis."
+                    "Descobrir uma sequência oculta de cinco símbolos em até seis tentativas."
             },
             new Mission
             {
@@ -465,9 +435,9 @@ public class AppDbContext : DbContext
                 Template = "Decifrar Código",
                 Difficulty = 2,
                 ParametersJson =
-                    "{\"clues\":2}",
+                    "{\"boards\":2,\"attempts\":7}",
                 Description =
-                    "Decifrar um código com uma quantidade intermediária de pistas."
+                    "Descobrir duas sequências ocultas simultaneamente em até sete tentativas."
             },
             new Mission
             {
@@ -477,9 +447,9 @@ public class AppDbContext : DbContext
                 Template = "Decifrar Código",
                 Difficulty = 3,
                 ParametersJson =
-                    "{\"clues\":1}",
+                    "{\"boards\":4,\"attempts\":9}",
                 Description =
-                    "Decifrar um código com poucas pistas disponíveis."
+                    "Descobrir quatro sequências ocultas simultaneamente em até nove tentativas."
             }
         );
     }
