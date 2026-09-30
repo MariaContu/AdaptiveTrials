@@ -721,6 +721,24 @@ public partial class AvoidEnemiesMissionController : Node
 						"detectionRadius",
 						_detectionRadius);
 
+				_detectionConeAngle =
+					ReadPositiveFloat(
+						root,
+						"coneAngle",
+						_detectionConeAngle);
+
+				_suspicionSeconds =
+					ReadPositiveFloat(
+						root,
+						"suspicionSeconds",
+						_suspicionSeconds);
+
+				_requiredSafePoints =
+					ReadPositiveInteger(
+						root,
+						"safePoints",
+						_requiredSafePoints);
+
 				_maxFailures =
 					ReadPositiveInteger(
 						root,
@@ -753,12 +771,32 @@ public partial class AvoidEnemiesMissionController : Node
 				30f,
 				180f);
 
+		_detectionConeAngle =
+			Mathf.Clamp(
+				_detectionConeAngle,
+				30f,
+				120f);
+
+		_suspicionSeconds =
+			Mathf.Clamp(
+				_suspicionSeconds,
+				0.25f,
+				3.0f);
+
+		_requiredSafePoints =
+			Mathf.Clamp(
+				_requiredSafePoints,
+				1,
+				DefaultHardSafePoints);
+
 		GD.Print(
 			$"Configuração da missão carregada: " +
 			$"Difficulty={_mission.Difficulty}, " +
 			$"Enemies={_requiredEnemies}, " +
 			$"EnemySpeed={_enemySpeed}, " +
 			$"DetectionRadius={_detectionRadius}, " +
+			$"ConeAngle={_detectionConeAngle}, " +
+			$"SuspicionSeconds={_suspicionSeconds}, " +
 			$"MaxFailures={_maxFailures}, " +
 			$"SafePoints={_requiredSafePoints}");
 	}

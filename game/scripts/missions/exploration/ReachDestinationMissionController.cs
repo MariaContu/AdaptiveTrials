@@ -882,11 +882,35 @@ public partial class ReachDestinationMissionController : Node
 						_requiredHazards,
 						apiHazards);
 
+				_requiredLasers =
+					ReadPositiveInteger(
+						root,
+						"lasers",
+						_requiredLasers);
+
 				_maxFailures =
 					ReadPositiveInteger(
 						root,
 						"maxFailures",
 						_maxFailures);
+
+				_hazardSafeSeconds =
+					ReadPositiveFloat(
+						root,
+						"safeSeconds",
+						_hazardSafeSeconds);
+
+				_hazardWarningSeconds =
+					ReadPositiveFloat(
+						root,
+						"warningSeconds",
+						_hazardWarningSeconds);
+
+				_hazardActiveSeconds =
+					ReadPositiveFloat(
+						root,
+						"activeSeconds",
+						_hazardActiveSeconds);
 			}
 			catch (JsonException exception)
 			{
@@ -907,6 +931,12 @@ public partial class ReachDestinationMissionController : Node
 				_requiredHazards,
 				1,
 				MaximumHazards);
+
+		_requiredLasers =
+			Mathf.Clamp(
+				_requiredLasers,
+				1,
+				5);
 
 		GD.Print(
 			$"Configuração da missão carregada: " +
@@ -1007,6 +1037,30 @@ public partial class ReachDestinationMissionController : Node
 			? result
 			: fallback;
 	}
+
+	private static float ReadPositiveFloat(
+		JsonElement root,
+		string propertyName,
+		float fallback)
+	{
+		if (!root.TryGetProperty(
+				propertyName,
+				out JsonElement value))
+		{
+			return fallback;
+		}
+
+		if (!value.TryGetSingle(
+				out float result))
+		{
+			return fallback;
+		}
+
+		return result > 0
+			? result
+			: fallback;
+	}
+
 
 	private static MissionConfiguration
 		GetDefaultsByDifficulty(

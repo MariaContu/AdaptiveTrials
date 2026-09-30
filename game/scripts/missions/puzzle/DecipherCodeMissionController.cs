@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Text.Json;
 using System.Threading.Tasks;
 using AdaptiveTrials.Game.Components;
 using AdaptiveTrials.Game.Dto;
@@ -100,6 +101,52 @@ public partial class DecipherCodeMissionController : Node
             3 => 9,
             _ => 6
         };
+
+        if (string.IsNullOrWhiteSpace(_mission.ParametersJson))
+        {
+            return;
+        }
+
+        try
+        {
+            using JsonDocument document =
+                JsonDocument.Parse(_mission.ParametersJson);
+
+            JsonElement root =
+                document.RootElement;
+
+            if (root.TryGetProperty(
+                    "boards",
+                    out JsonElement boardsElement) &&
+                boardsElement.TryGetInt32(
+                    out int configuredBoards))
+            {
+                _boardCount =
+                    Math.Clamp(
+                        configuredBoards,
+                        1,
+                        4);
+            }
+
+            if (root.TryGetProperty(
+                    "attempts",
+                    out JsonElement attemptsElement) &&
+                attemptsElement.TryGetInt32(
+                    out int configuredAttempts))
+            {
+                _maximumAttempts =
+                    Math.Clamp(
+                        configuredAttempts,
+                        1,
+                        12);
+            }
+        }
+        catch (JsonException exception)
+        {
+            GD.PushWarning(
+                $"ParametersJson inválido em Decifrar Código. " +
+                $"Valores padrão serão usados. {exception.Message}");
+        }
     }
 
     private void ConfigureMission()
