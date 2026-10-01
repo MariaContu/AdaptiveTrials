@@ -45,6 +45,13 @@ public class RecommendationService : IRecommendationService
             throw new InvalidOperationException("Cannot generate recommendation for a session that is not started.");
         }
 
+        if (session.Mode != GameMode.Adaptive)
+        {
+            throw new InvalidOperationException(
+                "Recommendations are only available for adaptive sessions."
+            );
+        }
+
         var profileDistribution = GetProfileDistribution(player.NormalizedProfile);
 
         var behaviorDistribution = await GetBehaviorDistributionAsync(session.Id);
