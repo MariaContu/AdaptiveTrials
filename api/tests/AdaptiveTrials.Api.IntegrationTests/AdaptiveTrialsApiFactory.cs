@@ -1,3 +1,5 @@
+using AdaptiveTrials.Application.DTOs.Ai;
+using AdaptiveTrials.Application.Interfaces;
 using AdaptiveTrials.Infrastructure.Data;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -26,6 +28,9 @@ public sealed class AdaptiveTrialsApiFactory : WebApplicationFactory<Program>
         {
             services.RemoveAll<DbContextOptions<AppDbContext>>();
             services.RemoveAll<AppDbContext>();
+            services.RemoveAll<IAiPredictionService>();
+
+            services.AddSingleton<IAiPredictionService, UnavailableAiPredictionService>();
 
             services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlite(_connection)
@@ -61,5 +66,13 @@ public sealed class AdaptiveTrialsApiFactory : WebApplicationFactory<Program>
         {
             _connection.Dispose();
         }
+    }
+}
+
+internal sealed class UnavailableAiPredictionService : IAiPredictionService
+{
+    public Task<AiPredictionResponse?> PredictFromSteamIdAsync(string steamId)
+    {
+        return Task.FromResult<AiPredictionResponse?>(null);
     }
 }

@@ -4,7 +4,6 @@ using AdaptiveTrials.Application.Interfaces;
 using AdaptiveTrials.Domain.Entities;
 using AdaptiveTrials.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 
 namespace AdaptiveTrials.Infrastructure.Services;
 
@@ -12,17 +11,14 @@ public class SteamService : ISteamService
 {
     private readonly AppDbContext _context;
     private readonly IAiPredictionService _aiPredictionService;
-    private readonly IConfiguration _configuration;
 
     public SteamService(
         AppDbContext context,
-        IAiPredictionService aiPredictionService,
-        IConfiguration configuration
+        IAiPredictionService aiPredictionService
     )
     {
         _context = context;
         _aiPredictionService = aiPredictionService;
-        _configuration = configuration;
     }
 
     public async Task<SteamImportResponse?> ImportSteamProfileAsync(SteamImportRequest request)
@@ -54,29 +50,9 @@ public class SteamService : ISteamService
             return BuildSteamImportResponse(player);
         }
 
-        var useFallback = bool.TryParse(
-            _configuration["AiService:UseFallbackWhenUnavailable"],
-            out var parsedFallback
-        )
-            ? parsedFallback
-            : true;
-
-        if (!useFallback)
-        {
-            throw new InvalidOperationException(
-                "AI service is unavailable or returned an invalid profile."
-            );
-        }
-
-        var mockProfile = BuildMockSteamProfile(request.SteamId);
-
-        player.SteamId = request.SteamId;
-
-        CreateOrUpdateProfileFromMock(player, mockProfile);
-
-        await _context.SaveChangesAsync();
-
-        return BuildSteamImportResponse(player);
+        throw new InvalidOperationException(
+            "AI service is unavailable or returned an invalid profile. Use manual preferences instead."
+        );
     }
 
     private static bool IsValidAiProfile(AiPredictionResponse aiProfile)
@@ -167,67 +143,6 @@ public class SteamService : ISteamService
             player.NormalizedProfile.Dominance.Value - player.NormalizedProfile.SecondMax.Value;
     }
 
-    private void CreateOrUpdateProfileFromMock(Player player, MockSteamProfile mockProfile)
-    {
-        if (player.NormalizedProfile is null)
-        {
-            player.NormalizedProfile = new NormalizedProfile
-            {
-                PlayerId = player.Id,
-                CreatedAt = DateTime.UtcNow,
-            };
-
-            _context.NormalizedProfiles.Add(player.NormalizedProfile);
-        }
-
-        player.NormalizedProfile.Source = "steam_mock";
-
-        player.NormalizedProfile.Combat = mockProfile.Combat;
-        player.NormalizedProfile.Exploration = mockProfile.Exploration;
-        player.NormalizedProfile.Puzzle = mockProfile.Puzzle;
-
-        player.NormalizedProfile.TotalPlaytime = mockProfile.TotalPlaytime;
-        player.NormalizedProfile.NumGames = mockProfile.NumGames;
-
-        player.NormalizedProfile.GamesCombat = mockProfile.GamesCombat;
-        player.NormalizedProfile.GamesExploration = mockProfile.GamesExploration;
-        player.NormalizedProfile.GamesPuzzle = mockProfile.GamesPuzzle;
-
-        player.NormalizedProfile.HoursCombat = mockProfile.HoursCombat;
-        player.NormalizedProfile.HoursExploration = mockProfile.HoursExploration;
-        player.NormalizedProfile.HoursPuzzle = mockProfile.HoursPuzzle;
-
-        player.NormalizedProfile.AvgPlaytimePerGame =
-            mockProfile.NumGames > 0 ? mockProfile.TotalPlaytime / mockProfile.NumGames : 0;
-
-        player.NormalizedProfile.Diversity = CalculateDiversity(
-            mockProfile.Combat,
-            mockProfile.Exploration,
-            mockProfile.Puzzle
-        );
-
-        player.NormalizedProfile.Entropy = CalculateEntropy(
-            mockProfile.Combat,
-            mockProfile.Exploration,
-            mockProfile.Puzzle
-        );
-
-        player.NormalizedProfile.Dominance = CalculateDominance(
-            mockProfile.Combat,
-            mockProfile.Exploration,
-            mockProfile.Puzzle
-        );
-
-        player.NormalizedProfile.SecondMax = CalculateSecondMax(
-            mockProfile.Combat,
-            mockProfile.Exploration,
-            mockProfile.Puzzle
-        );
-
-        player.NormalizedProfile.Gap =
-            player.NormalizedProfile.Dominance.Value - player.NormalizedProfile.SecondMax.Value;
-    }
-
     private static SteamImportResponse BuildSteamImportResponse(Player player)
     {
         if (player.NormalizedProfile is null)
@@ -260,60 +175,6 @@ public class SteamService : ISteamService
         };
     }
 
-    private static MockSteamProfile BuildMockSteamProfile(string steamId)
-    {
-        var seed = Math.Abs(steamId.GetHashCode());
-        var profileType = seed % 3;
-
-        return profileType switch
-        {
-            0 => new MockSteamProfile
-            {
-                Combat = 0.60,
-                Exploration = 0.25,
-                Puzzle = 0.15,
-                TotalPlaytime = 420,
-                NumGames = 18,
-                GamesCombat = 10,
-                GamesExploration = 5,
-                GamesPuzzle = 3,
-                HoursCombat = 260,
-                HoursExploration = 110,
-                HoursPuzzle = 50,
-            },
-
-            1 => new MockSteamProfile
-            {
-                Combat = 0.20,
-                Exploration = 0.60,
-                Puzzle = 0.20,
-                TotalPlaytime = 360,
-                NumGames = 16,
-                GamesCombat = 4,
-                GamesExploration = 9,
-                GamesPuzzle = 3,
-                HoursCombat = 80,
-                HoursExploration = 220,
-                HoursPuzzle = 60,
-            },
-
-            _ => new MockSteamProfile
-            {
-                Combat = 0.20,
-                Exploration = 0.25,
-                Puzzle = 0.55,
-                TotalPlaytime = 300,
-                NumGames = 14,
-                GamesCombat = 3,
-                GamesExploration = 4,
-                GamesPuzzle = 7,
-                HoursCombat = 60,
-                HoursExploration = 75,
-                HoursPuzzle = 165,
-            },
-        };
-    }
-
     private static int CalculateDiversity(params double[] values)
     {
         return values.Count(value => value > 0);
@@ -334,28 +195,4 @@ public class SteamService : ISteamService
         return values.OrderByDescending(value => value).Skip(1).First();
     }
 
-    private class MockSteamProfile
-    {
-        public double Combat { get; set; }
-
-        public double Exploration { get; set; }
-
-        public double Puzzle { get; set; }
-
-        public double TotalPlaytime { get; set; }
-
-        public int NumGames { get; set; }
-
-        public int GamesCombat { get; set; }
-
-        public int GamesExploration { get; set; }
-
-        public int GamesPuzzle { get; set; }
-
-        public double HoursCombat { get; set; }
-
-        public double HoursExploration { get; set; }
-
-        public double HoursPuzzle { get; set; }
-    }
 }

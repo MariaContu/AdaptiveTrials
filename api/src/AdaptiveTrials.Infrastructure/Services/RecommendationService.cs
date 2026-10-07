@@ -197,9 +197,9 @@ public class RecommendationService : IRecommendationService
             return 1;
         }
 
-        if (difficulty > 5)
+        if (difficulty > 3)
         {
-            return 5;
+            return 3;
         }
 
         return difficulty;
@@ -351,22 +351,25 @@ public class RecommendationService : IRecommendationService
             return null;
         }
 
-        var bestDistance = availableMissions
+        var notRepeatedMissions = availableMissions
+            .Where(mission => !previouslyRecommendedMissionIds.Contains(mission.Id))
+            .ToList();
+
+        // During a normal six-mission adaptive session there are enough catalog
+        // options to avoid repetition. Only fall back to the full category when
+        // every mission of that category has already been recommended.
+        var missionPool = notRepeatedMissions.Count > 0
+            ? notRepeatedMissions
+            : availableMissions;
+
+        var bestDistance = missionPool
             .Min(mission => Math.Abs(mission.Difficulty - targetDifficulty));
 
-        var closestMissions = availableMissions
+        var candidateMissions = missionPool
             .Where(mission => Math.Abs(mission.Difficulty - targetDifficulty) == bestDistance)
             .OrderBy(mission => mission.Difficulty)
             .ThenBy(mission => mission.Id)
             .ToList();
-
-        var notRepeatedClosestMissions = closestMissions
-            .Where(mission => !previouslyRecommendedMissionIds.Contains(mission.Id))
-            .ToList();
-
-        var candidateMissions = notRepeatedClosestMissions.Count > 0
-            ? notRepeatedClosestMissions
-            : closestMissions;
 
         var selectedIndex = Random.Shared.Next(candidateMissions.Count);
 
