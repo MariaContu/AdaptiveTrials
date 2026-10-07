@@ -35,7 +35,8 @@ public sealed class ControlModeIntegrationTests : IDisposable
     {
         var missions = await _client.GetFromJsonAsync<List<MissionResponse>>(
             "/api/missions",
-            JsonOptions
+            JsonOptions,
+            TestContext.Current.CancellationToken
         );
 
         Assert.NotNull(missions);
@@ -121,7 +122,8 @@ public sealed class ControlModeIntegrationTests : IDisposable
 
         var detailsBeforeEnd = await _client.GetFromJsonAsync<SessionDetailsResponse>(
             $"/api/sessions/{session.SessionId}",
-            JsonOptions
+            JsonOptions,
+            TestContext.Current.CancellationToken
         );
 
         Assert.NotNull(detailsBeforeEnd);
@@ -132,7 +134,8 @@ public sealed class ControlModeIntegrationTests : IDisposable
 
         var events = await _client.GetFromJsonAsync<List<SessionEventResponse>>(
             $"/api/sessions/{session.SessionId}/events",
-            JsonOptions
+            JsonOptions,
+            TestContext.Current.CancellationToken
         );
 
         Assert.NotNull(events);
@@ -145,12 +148,16 @@ public sealed class ControlModeIntegrationTests : IDisposable
 
         var endResponse = await _client.PostAsync(
             $"/api/sessions/{session.SessionId}/end",
-            content: null
+            content: null,
+            cancellationToken: TestContext.Current.CancellationToken
         );
 
         Assert.Equal(HttpStatusCode.OK, endResponse.StatusCode);
 
-        var endedSession = await endResponse.Content.ReadFromJsonAsync<EndSessionResponse>(JsonOptions);
+        var endedSession = await endResponse.Content.ReadFromJsonAsync<EndSessionResponse>(
+            JsonOptions,
+            TestContext.Current.CancellationToken
+        );
 
         Assert.NotNull(endedSession);
         Assert.Equal(SessionStatus.Finished, endedSession.Status);
@@ -158,7 +165,8 @@ public sealed class ControlModeIntegrationTests : IDisposable
 
         var secondEndResponse = await _client.PostAsync(
             $"/api/sessions/{session.SessionId}/end",
-            content: null
+            content: null,
+            cancellationToken: TestContext.Current.CancellationToken
         );
 
         Assert.Equal(HttpStatusCode.OK, secondEndResponse.StatusCode);
@@ -188,14 +196,16 @@ public sealed class ControlModeIntegrationTests : IDisposable
                 Exploration = 0.3,
                 Puzzle = 0.1
             },
-            JsonOptions
+            JsonOptions,
+            TestContext.Current.CancellationToken
         );
 
         preferencesResponse.EnsureSuccessStatusCode();
 
         var profileBefore = await _client.GetFromJsonAsync<PlayerProfileResponse>(
             $"/api/players/{session.PlayerId}/profile",
-            JsonOptions
+            JsonOptions,
+            TestContext.Current.CancellationToken
         );
 
         Assert.NotNull(profileBefore);
@@ -216,7 +226,8 @@ public sealed class ControlModeIntegrationTests : IDisposable
 
         var profileAfter = await _client.GetFromJsonAsync<PlayerProfileResponse>(
             $"/api/players/{session.PlayerId}/profile",
-            JsonOptions
+            JsonOptions,
+            TestContext.Current.CancellationToken
         );
 
         Assert.NotNull(profileAfter);
@@ -228,7 +239,8 @@ public sealed class ControlModeIntegrationTests : IDisposable
 
         var recommendations = await _client.GetFromJsonAsync<List<SessionRecommendationResponse>>(
             $"/api/sessions/{session.SessionId}/recommendations",
-            JsonOptions
+            JsonOptions,
+            TestContext.Current.CancellationToken
         );
 
         Assert.NotNull(recommendations);
@@ -247,17 +259,19 @@ public sealed class ControlModeIntegrationTests : IDisposable
                 PlayerId = session.PlayerId,
                 SessionId = session.SessionId
             },
-            JsonOptions
+            JsonOptions,
+            TestContext.Current.CancellationToken
         );
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
 
-        var errorBody = await response.Content.ReadAsStringAsync();
+        var errorBody = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         Assert.Contains("adaptive", errorBody.ToLowerInvariant());
 
         var recommendations = await _client.GetFromJsonAsync<List<SessionRecommendationResponse>>(
             $"/api/sessions/{session.SessionId}/recommendations",
-            JsonOptions
+            JsonOptions,
+            TestContext.Current.CancellationToken
         );
 
         Assert.NotNull(recommendations);
@@ -289,7 +303,8 @@ public sealed class ControlModeIntegrationTests : IDisposable
 
         var events = await _client.GetFromJsonAsync<List<SessionEventResponse>>(
             $"/api/sessions/{session.SessionId}/events",
-            JsonOptions
+            JsonOptions,
+            TestContext.Current.CancellationToken
         );
 
         Assert.NotNull(events);
@@ -304,12 +319,16 @@ public sealed class ControlModeIntegrationTests : IDisposable
             {
                 Mode = GameMode.Control
             },
-            JsonOptions
+            JsonOptions,
+            TestContext.Current.CancellationToken
         );
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 
-        var session = await response.Content.ReadFromJsonAsync<CreateSessionResponse>(JsonOptions);
+        var session = await response.Content.ReadFromJsonAsync<CreateSessionResponse>(
+            JsonOptions,
+            TestContext.Current.CancellationToken
+        );
 
         Assert.NotNull(session);
         Assert.True(session.SessionId > 0);
@@ -338,7 +357,8 @@ public sealed class ControlModeIntegrationTests : IDisposable
                 Success = success,
                 Persistence = persistence
             },
-            JsonOptions
+            JsonOptions,
+            TestContext.Current.CancellationToken
         );
     }
 }
