@@ -7,6 +7,7 @@ public class SteamImportResponse
     public string SteamId { get; set; } = string.Empty;
 
     public string Source { get; set; } = string.Empty;
+    public string PredictedCategory { get; set; } = string.Empty;
 
     public double Combat { get; set; }
 

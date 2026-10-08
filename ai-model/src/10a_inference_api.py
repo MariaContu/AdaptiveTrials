@@ -3,6 +3,7 @@
 Endpoints
 ---------
 GET /health
+POST /steam/profile
 POST /predict
 
 POST /predict input:
@@ -25,7 +26,11 @@ uvicorn --app-dir src "10a_inference_api:app" --host 127.0.0.1 --port 8001
 from __future__ import annotations
 
 import importlib.util
+import hashlib
+import json
+import logging
 import os
+from datetime import datetime, timezone
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any
@@ -33,6 +38,7 @@ from typing import Any
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
+import requests
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -51,6 +57,85 @@ MAPPING_PATH = (
 
 MIN_COVERAGE = 0.70
 REQUEST_TIMEOUT = 30.0
+
+# Registro técnico opcional para demonstrações do TCC.
+# Nunca incluir chave da Steam, identificador bruto ou lista de jogos.
+TRACE_FILE = ROOT / "logs" / "inference_trace.jsonl"
+LOGGER = logging.getLogger(__name__)
+
+
+def save_inference_trace(
+    steam_id: str,
+    model_version: str,
+    feature_set: str,
+    features: list[str],
+    vector: Any,
+    coverage: float,
+    predicted_category: str,
+    probabilities: dict[str, float],
+    model: Any,
+) -> None:
+    """Registra entradas e saídas observáveis; não representa raciocínio interno."""
+    if os.getenv("AI_TRACE_ENABLED", "0").strip().lower() not in {"1", "true", "yes"}:
+        return
+
+    # Importâncias globais não são explicações locais de uma predição.
+    estimator = getattr(model, "steps", None)
+    if estimator:
+        estimator = model.steps[-1][1]
+    else:
+        estimator = model
+    importances = getattr(estimator, "feature_importances_", None)
+    global_importances = []
+    if importances is not None and len(importances) == len(features):
+        global_importances = [
+            {"caracteristica": name, "importancia_global": round(float(value), 6)}
+            for name, value in sorted(
+                zip(features, importances),
+                key=lambda pair: float(pair[1]), reverse=True
+            )[:10]
+        ]
+
+    feature_values = {}
+    for name in features:
+        value = vector.get(name) if hasattr(vector, "get") else vector[name]
+        try:
+            feature_values[name] = round(float(value), 6)
+        except (TypeError, ValueError):
+            # Não registrar valores textuais potencialmente identificáveis.
+            continue
+
+    record = {
+        "registrado_em_utc": datetime.now(timezone.utc).isoformat(),
+        "steam_id_hash": hashlib.sha256(steam_id.encode("utf-8")).hexdigest()[:16],
+        "modelo_versao": str(model_version),
+        "conjunto_caracteristicas": str(feature_set),
+        "etapas": [
+            "SteamID resolvido e biblioteca consultada",
+            "Jogos convertidos em características numéricas",
+            "Cobertura mínima das categorias validada",
+            "Modelo treinado executou predict e predict_proba",
+            "Categoria prevista e probabilidades registradas",
+        ],
+        "cobertura_horas_categorizadas": round(coverage, 6),
+        "quantidade_caracteristicas": len(features),
+        "caracteristicas_entrada": feature_values,
+        "categoria_prevista": predicted_category,
+        "probabilidades": {k: round(float(v), 6) for k, v in probabilities.items()},
+        "importancias_globais_modelo": global_importances,
+        "aviso": (
+            "Registro de etapas, entradas e saídas observáveis; "
+            "importâncias globais não explicam individualmente esta previsão."
+        ),
+    }
+    try:
+        TRACE_FILE.parent.mkdir(parents=True, exist_ok=True)
+        with TRACE_FILE.open("a", encoding="utf-8") as file:
+            file.write(json.dumps(record, ensure_ascii=False, allow_nan=False) + "\n")
+    except (OSError, ValueError) as exc:
+        # Nunca impedir uma predição válida por falha na gravação do registro.
+        LOGGER.warning("Não foi possível gravar o registro de inferência: %s", exc)
+
 
 
 def load_live_module():
@@ -198,6 +283,74 @@ def health() -> dict[str, Any]:
     }
 
 
+@app.post("/steam/profile")
+def steam_profile(
+    request: PredictRequest,
+) -> dict[str, Any]:
+    if (
+        state.live is None
+        or state.steam_api_key is None
+    ):
+        raise HTTPException(
+            status_code=503,
+            detail="Inference service is not ready.",
+        )
+
+    supplied_identifier = request.steamId.strip()
+
+    try:
+        steam_id, _ = state.live.resolve_steam_identifier(
+            identifier=supplied_identifier,
+            api_key=state.steam_api_key,
+            timeout=REQUEST_TIMEOUT,
+        )
+
+        response = requests.get(
+            "https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/",
+            params={
+                "key": state.steam_api_key,
+                "steamids": steam_id,
+            },
+            timeout=REQUEST_TIMEOUT,
+        )
+        response.raise_for_status()
+
+        players = response.json().get("response", {}).get("players", [])
+
+        if not players:
+            raise HTTPException(
+                status_code=404,
+                detail="Steam profile was not found.",
+            )
+
+        player = players[0]
+
+        return {
+            "status": "ok",
+            "steamId": str(player.get("steamid", steam_id)),
+            "personaName": str(player.get("personaname", "")),
+            "avatarFull": str(player.get("avatarfull", "")),
+            "countryCode": str(player.get("loccountrycode", "")),
+            "profileUrl": str(player.get("profileurl", "")),
+            "communityVisibilityState": int(
+                player.get("communityvisibilitystate", 0)
+            ),
+        }
+
+    except HTTPException:
+        raise
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=400,
+            detail=str(exc),
+        ) from exc
+    except requests.RequestException as exc:
+        raise HTTPException(
+            status_code=502,
+            detail=f"Steam profile lookup failed: {exc}",
+        ) from exc
+
+
 @app.post("/predict")
 def predict(
     request: PredictRequest,
@@ -320,6 +473,18 @@ def predict(
                 raw_probabilities,
             )
         }
+
+        save_inference_trace(
+            steam_id=steam_id,
+            model_version=str(bundle.get("version", "recency_v2")),
+            feature_set=str(bundle.get("feature_set", "não informado")),
+            features=features,
+            vector=vector,
+            coverage=historical_coverage,
+            predicted_category=predicted_category,
+            probabilities=probabilities,
+            model=model,
+        )
 
         return {
             "status": "ok",

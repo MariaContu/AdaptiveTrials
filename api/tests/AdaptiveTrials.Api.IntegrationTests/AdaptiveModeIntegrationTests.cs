@@ -129,6 +129,31 @@ public sealed class AdaptiveModeIntegrationTests : IDisposable
     }
 
     [Fact]
+    public async Task SteamPreview_WhenAiIsUnavailable_ShouldReturnBadRequestWithoutChangingPlayerProfile()
+    {
+        var session = await CreateAdaptiveSessionAsync();
+
+        var response = await _client.PostAsJsonAsync(
+            "/api/steam/preview",
+            new SteamProfilePreviewRequest
+            {
+                SteamId = "76561198000000000"
+            },
+            JsonOptions,
+            TestContext.Current.CancellationToken
+        );
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+
+        var profileResponse = await _client.GetAsync(
+            $"/api/players/{session.PlayerId}/profile",
+            TestContext.Current.CancellationToken
+        );
+
+        Assert.Equal(HttpStatusCode.NotFound, profileResponse.StatusCode);
+    }
+
+    [Fact]
     public async Task SteamImport_WhenAiIsUnavailable_ShouldRequireManualFallbackInsteadOfCreatingMockProfile()
     {
         var session = await CreateAdaptiveSessionAsync();

@@ -75,4 +75,9 @@ internal sealed class UnavailableAiPredictionService : IAiPredictionService
     {
         return Task.FromResult<AiPredictionResponse?>(null);
     }
+
+    public Task<AiSteamProfilePreviewResponse?> GetSteamProfilePreviewAsync(string steamId)
+    {
+        return Task.FromResult<AiSteamProfilePreviewResponse?>(null);
+    }
 }

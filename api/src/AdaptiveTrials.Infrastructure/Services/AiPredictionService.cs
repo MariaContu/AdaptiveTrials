@@ -59,4 +59,44 @@ public class AiPredictionService : IAiPredictionService
             return null;
         }
     }
+    public async Task<AiSteamProfilePreviewResponse?> GetSteamProfilePreviewAsync(string steamId)
+    {
+        if (string.IsNullOrWhiteSpace(steamId))
+        {
+            return null;
+        }
+
+        try
+        {
+            var baseUrl = _configuration["AiService:BaseUrl"];
+
+            if (string.IsNullOrWhiteSpace(baseUrl))
+            {
+                throw new InvalidOperationException("AI service BaseUrl is not configured.");
+            }
+
+            _httpClient.BaseAddress = new Uri(baseUrl);
+
+            var request = new AiPredictionRequest { SteamId = steamId };
+            var response = await _httpClient.PostAsJsonAsync("/steam/profile", request);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogWarning(
+                    "Steam profile preview returned status code {StatusCode}",
+                    response.StatusCode
+                );
+
+                return null;
+            }
+
+            return await response.Content.ReadFromJsonAsync<AiSteamProfilePreviewResponse>();
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Could not get Steam profile preview.");
+            return null;
+        }
+    }
+
 }

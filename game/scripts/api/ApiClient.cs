@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using AdaptiveTrials.Game.Dto;
+using AdaptiveTrials.Game.Dto.Adaptive;
 using AdaptiveTrials.Game.Dto.Sessions;
 using Godot;
 
@@ -37,6 +38,58 @@ public partial class ApiClient : Node
 		return SendAsync<IReadOnlyList<MissionDto>>(
 			HttpClient.Method.Get,
 			"/api/missions");
+	}
+
+	/// <summary>
+	/// Consulta os dados públicos básicos de um perfil Steam antes da confirmação.
+	/// </summary>
+	public Task<ApiResult<SteamProfilePreviewResponse>> GetSteamProfilePreviewAsync(
+		string steamId)
+	{
+		return SendAsync<SteamProfilePreviewResponse>(
+			HttpClient.Method.Post,
+			"/api/steam/preview",
+			new SteamProfilePreviewRequest
+			{
+				SteamId = steamId
+			});
+	}
+
+	/// <summary>
+	/// Gera e persiste o perfil normalizado a partir da Steam e do modelo de IA.
+	/// </summary>
+	public Task<ApiResult<SteamImportResponse>> ImportSteamProfileAsync(
+		int playerId,
+		string steamId)
+	{
+		return SendAsync<SteamImportResponse>(
+			HttpClient.Method.Post,
+			"/api/steam/import",
+			new SteamImportRequest
+			{
+				PlayerId = playerId,
+				SteamId = steamId
+			});
+	}
+
+	/// <summary>
+	/// Registra preferências manuais e retorna o perfil normalizado.
+	/// </summary>
+	public Task<ApiResult<PlayerProfileResponse>> RegisterManualPreferencesAsync(
+		int playerId,
+		double combat,
+		double exploration,
+		double puzzle)
+	{
+		return SendAsync<PlayerProfileResponse>(
+			HttpClient.Method.Post,
+			$"/api/players/{playerId}/preferences",
+			new ManualPreferencesRequest
+			{
+				Combat = combat,
+				Exploration = exploration,
+				Puzzle = puzzle
+			});
 	}
 
 	/// <summary>

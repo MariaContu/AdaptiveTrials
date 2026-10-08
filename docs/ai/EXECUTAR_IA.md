@@ -208,15 +208,13 @@ Aceita:
 Exemplo com SteamID64:
 
 ```bash
-python3 src/09l_predict_live_steamid_recency_v2.py \
-  76561198293759611
+python3 src/09l_predict_live_steamid_recency_v2.py 76561198293759611
 ```
 
 Exemplo com vanity ID:
 
 ```bash
-python3 src/09l_predict_live_steamid_recency_v2.py \
-  gvk0
+python3 src/09l_predict_live_steamid_recency_v2.py gvk0
 ```
 
 Quando necessário, o identificador personalizado é resolvido para SteamID64 antes da consulta da biblioteca.

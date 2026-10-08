@@ -21,6 +21,38 @@ public class SteamService : ISteamService
         _aiPredictionService = aiPredictionService;
     }
 
+    public async Task<SteamProfilePreviewResponse?> GetSteamProfilePreviewAsync(
+        SteamProfilePreviewRequest request
+    )
+    {
+        if (string.IsNullOrWhiteSpace(request.SteamId))
+        {
+            throw new InvalidOperationException("SteamId is required.");
+        }
+
+        var preview = await _aiPredictionService.GetSteamProfilePreviewAsync(request.SteamId);
+
+        if (preview is null
+            || !string.Equals(preview.Status, "ok", StringComparison.OrdinalIgnoreCase)
+            || string.IsNullOrWhiteSpace(preview.SteamId)
+            || string.IsNullOrWhiteSpace(preview.PersonaName))
+        {
+            throw new InvalidOperationException(
+                "Steam profile could not be found or the Steam service is unavailable."
+            );
+        }
+
+        return new SteamProfilePreviewResponse
+        {
+            SteamId = preview.SteamId,
+            PersonaName = preview.PersonaName,
+            AvatarUrl = preview.AvatarFull,
+            CountryCode = preview.CountryCode,
+            ProfileUrl = preview.ProfileUrl,
+            IsCommunityProfilePublic = preview.CommunityVisibilityState == 3
+        };
+    }
+
     public async Task<SteamImportResponse?> ImportSteamProfileAsync(SteamImportRequest request)
     {
         var player = await _context
@@ -41,13 +73,15 @@ public class SteamService : ISteamService
 
         if (aiProfile is not null && IsValidAiProfile(aiProfile))
         {
-            player.SteamId = request.SteamId;
+            player.SteamId = string.IsNullOrWhiteSpace(aiProfile.SteamId)
+                ? request.SteamId
+                : aiProfile.SteamId;
 
             CreateOrUpdateProfileFromAi(player, aiProfile);
 
             await _context.SaveChangesAsync();
 
-            return BuildSteamImportResponse(player);
+            return BuildSteamImportResponse(player, aiProfile.PredictedCategory);
         }
 
         throw new InvalidOperationException(
@@ -143,7 +177,10 @@ public class SteamService : ISteamService
             player.NormalizedProfile.Dominance.Value - player.NormalizedProfile.SecondMax.Value;
     }
 
-    private static SteamImportResponse BuildSteamImportResponse(Player player)
+    private static SteamImportResponse BuildSteamImportResponse(
+        Player player,
+        string predictedCategory
+    )
     {
         if (player.NormalizedProfile is null)
         {
@@ -155,6 +192,7 @@ public class SteamService : ISteamService
             PlayerId = player.Id,
             SteamId = player.SteamId ?? string.Empty,
             Source = player.NormalizedProfile.Source,
+            PredictedCategory = predictedCategory,
 
             Combat = player.NormalizedProfile.Combat,
             Exploration = player.NormalizedProfile.Exploration,
