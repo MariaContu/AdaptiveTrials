@@ -105,6 +105,26 @@ def save_inference_trace(
             # Não registrar valores textuais potencialmente identificáveis.
             continue
 
+    # Árvore representativa: decisões reais de uma árvore da Random Forest.
+    # Gerada apenas em modo de rastreabilidade e sem dados identificáveis no nome.
+    tree_info = None
+    if os.getenv("AI_TREE_ENABLED", "1").strip().lower() in {"1", "true", "yes"}:
+        try:
+            from inference_tree_visualization import (
+                extract_representative_path,
+                render_tree_svg,
+            )
+            sample = [float(feature_values[name]) for name in features]
+            tree_info = extract_representative_path(model, sample, features)
+            timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
+            profile_hash = hashlib.sha256(steam_id.encode("utf-8")).hexdigest()[:16]
+            relative_path = Path("logs") / "trees" / f"arvore_{timestamp}_{profile_hash}.svg"
+            render_tree_svg(tree_info, ROOT / relative_path)
+            tree_info["arquivo_svg"] = relative_path.as_posix()
+        except Exception as exc:
+            # Falha de visualização não invalida a inferência do perfil.
+            LOGGER.warning("Não foi possível gerar a árvore visual: %s", exc)
+
     record = {
         "registrado_em_utc": datetime.now(timezone.utc).isoformat(),
         "steam_id_hash": hashlib.sha256(steam_id.encode("utf-8")).hexdigest()[:16],
@@ -123,6 +143,7 @@ def save_inference_trace(
         "categoria_prevista": predicted_category,
         "probabilidades": {k: round(float(v), 6) for k, v in probabilities.items()},
         "importancias_globais_modelo": global_importances,
+        "arvore_representativa": tree_info,
         "aviso": (
             "Registro de etapas, entradas e saídas observáveis; "
             "importâncias globais não explicam individualmente esta previsão."
