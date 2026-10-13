@@ -37,3 +37,5 @@ reports/metrics/*
 !models/.gitkeep
 !reports/figures/.gitkeep
 !reports/metrics/.gitkeep
+# Registros locais de inferencia; nao versionar
+logs/

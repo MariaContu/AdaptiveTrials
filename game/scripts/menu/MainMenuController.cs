@@ -22,6 +22,9 @@ public partial class MainMenuController : Node
 	private const string MissionTransitionScenePath =
 		"res://scenes/missions/MissionTransition.tscn";
 
+	private const string AdaptiveProfileSetupScenePath =
+		"res://scenes/adaptive/AdaptiveProfileSetup.tscn";
+
 	private Button _settingsButton = null!;
 	private Button _exitButton = null!;
 	private Button _controlModeButton = null!;
@@ -362,23 +365,27 @@ public partial class MainMenuController : Node
 
 	private void StartAdaptiveFlow()
 	{
-		/*
-		 * O fluxo adaptativo será conectado depois:
-		 *
-		 * 1. tela de Steam ID;
-		 * 2. possibilidade de pular a Steam;
-		 * 3. preferências manuais;
-		 * 4. recomendação pela API.
-		 */
+		SetLoadingState(
+			true,
+			"Abrindo configuração do perfil adaptativo...");
 
-		_statusLabel.Text =
-			"A configuração do perfil adaptativo será implementada na próxima etapa.";
+		Error navigationError =
+			GetTree().ChangeSceneToFile(
+				AdaptiveProfileSetupScenePath);
 
-		SetLoadingState(false);
+		if (navigationError == Error.Ok)
+		{
+			return;
+		}
 
-		GD.Print(
-			"Sessão adaptativa criada. " +
-			"Aguardando implementação do fluxo de perfil.");
+		GD.PushError(
+			$"Não foi possível abrir a cena " +
+			$"{AdaptiveProfileSetupScenePath}. " +
+			$"Erro: {navigationError}");
+
+		ShowRequestError(
+			"Não foi possível abrir a configuração do perfil adaptativo.",
+			navigationError.ToString());
 	}
 
 	private void SetLoadingState(

@@ -59,12 +59,7 @@ public partial class ReachDestinationMissionController : Node
 	private MissionHud _missionHud = null!;
 	private MissionResultPopup _resultPopup = null!;
 
-	private Marker2D _playerSpawn = null!;
-	private Marker2D _destinationSpawn = null!;
-
-	private Node2D _checkpointSpawns = null!;
-	private Node2D _hazardSpawns = null!;
-	private Node2D _laserSpawns = null!;
+	private ExplorationMaze _maze = null!;
 	private Node2D _dynamicObjects = null!;
 
 	private DestinationArea _destination = null!;
@@ -167,25 +162,7 @@ public partial class ReachDestinationMissionController : Node
 			GetNode<MissionResultPopup>(
 				"../MissionResultPopup");
 
-		_playerSpawn =
-			GetNode<Marker2D>(
-				"../SpawnPoints/PlayerSpawn");
-
-		_destinationSpawn =
-			GetNode<Marker2D>(
-				"../SpawnPoints/DestinationSpawn");
-
-		_checkpointSpawns =
-			GetNode<Node2D>(
-				"../SpawnPoints/CheckpointSpawns");
-
-		_hazardSpawns =
-			GetNode<Node2D>(
-				"../SpawnPoints/HazardSpawns");
-
-		_laserSpawns =
-			GetNode<Node2D>(
-				"../SpawnPoints/LaserSpawns");
+		_maze = GetNode<ExplorationMaze>("../Environment/ExplorationMaze");
 
 		_dynamicObjects =
 			GetNode<Node2D>(
@@ -210,17 +187,18 @@ public partial class ReachDestinationMissionController : Node
 		_activeLasers.Clear();
 
 		_objectiveText =
-			$"Siga {_requiredCheckpoints} checkpoints na ordem e atravesse " +
-			"lasers e áreas energizadas apenas durante as janelas seguras.";
+			$"Siga {_requiredCheckpoints} marcos pela trilha e atravesse os desfiladeiros quando os portões apagarem.";
 
-		_player.GlobalPosition =
-			_playerSpawn.GlobalPosition;
+		_maze.Configure(_mission.Difficulty, ExplorationMaze.CourseMode.ReachDestination);
+		_player.GlobalPosition = _maze.PlayerStartPosition;
 
 		_player.Velocity =
 			Vector2.Zero;
 
-		_lastSafePosition =
-			_playerSpawn.GlobalPosition;
+		// Apenas o nível difícil tem escuridão total e luz no jogador.
+		ExplorationLighting.Configure(GetParent(), _player, _mission.Difficulty);
+
+		_lastSafePosition = _maze.PlayerStartPosition;
 
 		_player.SetVisualMode(
 			PlayerVisualMode.Normal);
@@ -283,214 +261,51 @@ public partial class ReachDestinationMissionController : Node
 
 	private void SpawnCheckpoints()
 	{
-		List<Marker2D> allSpawnPoints =
-			_checkpointSpawns
-				.GetChildren()
-				.OfType<Marker2D>()
-				.ToList();
-
-		List<Marker2D> spawnPoints =
-			GetUniqueSpawnPoints(
-				allSpawnPoints);
-
-		GD.Print(
-			$"SpawnCheckpoints | " +
-			$"Difficulty={_mission.Difficulty} | " +
-			$"Required={_requiredCheckpoints} | " +
-			$"Markers={allSpawnPoints.Count} | " +
-			$"UniquePositions={spawnPoints.Count}");
-
-		if (spawnPoints.Count <
-			_requiredCheckpoints)
+		for (int index = 0; index < _requiredCheckpoints; index++)
 		{
-			ShowInitializationError(
-				$"O mapa contém apenas " +
-				$"{spawnPoints.Count} posições únicas de checkpoint, " +
-				$"mas a missão exige {_requiredCheckpoints}.");
-
-			return;
-		}
-
-		/*
-		 * Checkpoints não são embaralhados porque sua ordem
-		 * no editor representa a rota planejada do mapa.
-		 */
-		for (int index = 0;
-			 index < _requiredCheckpoints;
-			 index++)
-		{
-			Marker2D spawnPoint =
-				spawnPoints[index];
-
-			CheckpointArea checkpoint =
-				CheckpointScene
-					.Instantiate<CheckpointArea>();
-
-			checkpoint.Name =
-				$"Checkpoint{index + 1:00}";
-
-			checkpoint.CheckpointReached +=
-				OnCheckpointReached;
-
-			_dynamicObjects.AddChild(
-				checkpoint);
-
-			checkpoint.GlobalPosition =
-				spawnPoint.GlobalPosition;
-
-			checkpoint.ConfigureIndex(
-				index + 1);
-
-			_activeCheckpoints.Add(
-				checkpoint);
-
-			checkpoint.SetEnabledState(
-				index == 0);
-
-			GD.Print(
-				$"{checkpoint.Name} criado em " +
-				$"{checkpoint.GlobalPosition}");
+			CheckpointArea checkpoint = CheckpointScene.Instantiate<CheckpointArea>();
+			checkpoint.Name = $"Checkpoint{index + 1:00}";
+			checkpoint.CheckpointReached += OnCheckpointReached;
+			_dynamicObjects.AddChild(checkpoint);
+			checkpoint.GlobalPosition = _maze.CheckpointPositions[index];
+			checkpoint.ConfigureIndex(index + 1);
+			checkpoint.SetEnabledState(index == 0);
+			_activeCheckpoints.Add(checkpoint);
 		}
 	}
 
 	private void SpawnHazards()
 	{
-		List<Marker2D> allSpawnPoints =
-			_hazardSpawns
-				.GetChildren()
-				.OfType<Marker2D>()
-				.ToList();
-
-		List<Marker2D> spawnPoints =
-			GetUniqueSpawnPoints(
-				allSpawnPoints);
-
-		GD.Print(
-			$"SpawnHazards | " +
-			$"Difficulty={_mission.Difficulty} | " +
-			$"Required={_requiredHazards} | " +
-			$"Markers={allSpawnPoints.Count} | " +
-			$"UniquePositions={spawnPoints.Count}");
-
-		if (spawnPoints.Count <
-			_requiredHazards)
-		{
-			ShowInitializationError(
-				$"O mapa contém apenas " +
-				$"{spawnPoints.Count} posições únicas de perigo, " +
-				$"mas a missão exige {_requiredHazards}.");
-
-			return;
-		}
-
-		Shuffle(spawnPoints);
-
-		for (int index = 0;
-			 index < _requiredHazards;
-			 index++)
-		{
-			Marker2D spawnPoint =
-				spawnPoints[index];
-
-			HazardArea hazard =
-				HazardScene
-					.Instantiate<HazardArea>();
-
-			hazard.Name =
-				$"Hazard{index + 1:00}";
-
-			hazard.PlayerHit +=
-				OnPlayerHit;
-
-			_dynamicObjects.AddChild(
-				hazard);
-
-			hazard.GlobalPosition =
-				spawnPoint.GlobalPosition;
-
-			hazard.ConfigureTimed(
-				_hazardSafeSeconds,
-				_hazardWarningSeconds,
-				_hazardActiveSeconds,
-				index * 0.65f);
-
-			_activeHazards.Add(
-				hazard);
-
-			GD.Print(
-				$"{hazard.Name} criado em " +
-				$"{hazard.GlobalPosition}");
-		}
+		// Removidos: a travessia agora possui somente portões temporizados,
+		// sem perigos aleatórios sobrepostos aos objetivos.
 	}
 
 	private void SpawnLasers()
 	{
-		List<Marker2D> spawnPoints =
-			_laserSpawns
-				.GetChildren()
-				.OfType<Marker2D>()
-				.ToList();
-
-		if (spawnPoints.Count < _requiredLasers)
+		for (int index = 0; index < _requiredLasers; index++)
 		{
-			ShowInitializationError(
-				$"O mapa contém apenas {spawnPoints.Count} posições de laser, " +
-				$"mas a dificuldade exige {_requiredLasers}.");
-
-			return;
-		}
-
-		for (int index = 0;
-			 index < _requiredLasers;
-			 index++)
-		{
-			Marker2D spawnPoint =
-				spawnPoints[index];
-
-			LaserObstacle laser =
-				LaserScene.Instantiate<LaserObstacle>();
-
-			laser.Name =
-				$"Laser{index + 1:00}";
-
-			laser.PlayerHit +=
-				OnPlayerHit;
-
+			LaserObstacle laser = LaserScene.Instantiate<LaserObstacle>();
+			laser.Name = $"Portao{index + 1:00}";
+			laser.PlayerHit += OnPlayerHit;
 			_dynamicObjects.AddChild(laser);
-			laser.GlobalPosition = spawnPoint.GlobalPosition;
-			laser.GlobalRotation = spawnPoint.GlobalRotation;
-
-			laser.Configure(
-				GetLaserLength(_mission.Difficulty, index),
-				_hazardSafeSeconds + 0.30f,
-				_hazardWarningSeconds,
-				_hazardActiveSeconds,
-				index * 0.72f);
-
+			laser.GlobalPosition = _maze.GatePositions[index];
+			// Um portão ocupa um único corredor; a travessia é possível
+			// durante toda a janela segura, em qualquer dificuldade.
+			laser.Rotation = Mathf.Pi / 2f;
+			laser.Configure(165f, _hazardSafeSeconds, _hazardWarningSeconds,
+				_hazardActiveSeconds, index * 0.43f);
 			_activeLasers.Add(laser);
 		}
 	}
 
 	private void SpawnDestination()
 	{
-		_destination =
-			DestinationScene
-				.Instantiate<DestinationArea>();
-
-		_destination.Name =
-			"Destination";
-
-		_destination.DestinationReached +=
-			OnDestinationReached;
-
-		_dynamicObjects.AddChild(
-			_destination);
-
-		_destination.GlobalPosition =
-			_destinationSpawn.GlobalPosition;
-
-		_destination.SetEnabledState(
-			_reachedCheckpoints >= _requiredCheckpoints);
+		_destination = DestinationScene.Instantiate<DestinationArea>();
+		_destination.Name = "Destination";
+		_destination.DestinationReached += OnDestinationReached;
+		_dynamicObjects.AddChild(_destination);
+		_destination.GlobalPosition = _maze.DestinationPosition;
+		_destination.SetEnabledState(_reachedCheckpoints >= _requiredCheckpoints);
 	}
 
 	private void OnCheckpointReached(
@@ -920,11 +735,8 @@ public partial class ReachDestinationMissionController : Node
 			}
 		}
 
-		_requiredCheckpoints =
-			Mathf.Clamp(
-				_requiredCheckpoints,
-				1,
-				MaximumCheckpoints);
+		// Número de etapas definido pelo mapa, não por parâmetros antigos da API.
+		_requiredCheckpoints = Mathf.Clamp(_mission.Difficulty, 1, 3);
 
 		_requiredHazards =
 			Mathf.Clamp(
@@ -932,11 +744,18 @@ public partial class ReachDestinationMissionController : Node
 				1,
 				MaximumHazards);
 
-		_requiredLasers =
-			Mathf.Clamp(
-				_requiredLasers,
-				1,
-				5);
+		_requiredLasers = Mathf.Clamp(_mission.Difficulty, 1, 3);
+		_requiredHazards = 0;
+
+		// Balanceamento: janelas seguras menores e fase ativa mais longa.
+		// Usa limites conservadores para não criar travessias impossíveis.
+		float minActive = _mission.Difficulty switch
+		{
+			1 => 1.15f, 2 => 1.40f, _ => 1.65f
+		};
+		_hazardSafeSeconds = Mathf.Clamp(_hazardSafeSeconds, 1.75f, 3.25f);
+		_hazardWarningSeconds = Mathf.Clamp(_hazardWarningSeconds, 0.55f, 1.0f);
+		_hazardActiveSeconds = Mathf.Clamp(_hazardActiveSeconds, minActive, 2.5f);
 
 		GD.Print(
 			$"Configuração da missão carregada: " +

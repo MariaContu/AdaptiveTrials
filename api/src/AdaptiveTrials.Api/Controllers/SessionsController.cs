@@ -3,6 +3,7 @@ using AdaptiveTrials.Application.DTOs.SessionQueries;
 using AdaptiveTrials.Application.DTOs.Sessions;
 using AdaptiveTrials.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using AdaptiveTrials.Application.Exceptions;
 
 namespace AdaptiveTrials.Api.Controllers;
 
@@ -127,11 +128,18 @@ public class SessionsController : ControllerBase
                 });
             }
 
+            if (response.AlreadyRegistered)
+                return Ok(response);
+
             return CreatedAtAction(
                 nameof(RegisterBehaviorEvent),
                 new { sessionId, eventId = response.EventId },
                 response
             );
+        }
+        catch (AdaptiveSessionConflictException exception)
+        {
+            return Conflict(new { message = exception.Message });
         }
         catch (InvalidOperationException exception)
         {

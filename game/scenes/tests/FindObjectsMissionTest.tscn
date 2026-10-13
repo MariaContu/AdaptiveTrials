@@ -1,63 +1,50 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene format=3 uid="uid://6jcgyqqia2fq"]
 
-[ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="1_player"]
-[ext_resource type="Script" path="res://scripts/missions/shared/ExplorationMaze.cs" id="2_maze"]
-[ext_resource type="Script" path="res://scripts/tests/FindObjectsMissionTestController.cs" id="3_controller"]
+[ext_resource type="PackedScene" uid="uid://dqetu3bq4c1ws" path="res://scenes/player/Player.tscn" id="1_player"]
+[ext_resource type="Script" uid="uid://b8pyuofkhs5f5" path="res://scripts/missions/shared/ExplorationMaze.cs" id="2_map"]
+[ext_resource type="Script" uid="uid://4wxl361to35k" path="res://scripts/tests/ExplorationSandboxController.cs" id="3_test"]
 
-[node name="FindObjectsMissionTest" type="Node2D"]
+[node name="FindObjectsMissionTest" type="Node2D" unique_id=1251291460]
 
-[node name="Environment" type="Node2D" parent="."]
+[node name="Environment" type="Node2D" parent="." unique_id=542105629]
 
-[node name="Background" type="Polygon2D" parent="Environment"]
-color = Color(0.447, 0.373, 0.412, 1)
+[node name="Backdrop" type="Polygon2D" parent="Environment" unique_id=1007620445]
+z_index = -10
+color = Color(0.067, 0.051, 0.094, 1)
 polygon = PackedVector2Array(0, 0, 1152, 0, 1152, 648, 0, 648)
 
-[node name="ExplorationMaze" type="Node2D" parent="Environment"]
-script = ExtResource("2_maze")
+[node name="ExplorationMaze" type="Node2D" parent="Environment" unique_id=1446150259]
+script = ExtResource("2_map")
 
-[node name="DynamicObjects" type="Node2D" parent="."]
+[node name="DynamicObjects" type="Node2D" parent="." unique_id=1292477131]
 
-[node name="Player" parent="." instance=ExtResource("1_player")]
-z_index = 10
-follow_camera = false
-visual_scale_multiplier = 0.72
-
-[node name="Camera2D" type="Camera2D" parent="."]
+[node name="Camera2D" type="Camera2D" parent="." unique_id=1525482695]
 position = Vector2(576, 324)
-enabled = true
 
-[node name="Interface" type="CanvasLayer" parent="."]
+[node name="Player" parent="." unique_id=339249658 instance=ExtResource("1_player")]
+z_index = 10
 
-[node name="TitleLabel" type="Label" parent="Interface"]
-offset_left = 410.0
-offset_top = 18.0
-offset_right = 870.0
-offset_bottom = 50.0
-theme_override_colors/font_color = Color(0.95, 0.91, 0.97, 1)
-theme_override_font_sizes/font_size = 22
-text = "TESTE — LABIRINTO / ENCONTRAR OBJETOS"
+[node name="Interface" type="CanvasLayer" parent="." unique_id=1880762204]
+
+[node name="StatusLabel" type="Label" parent="Interface" unique_id=515814502]
+offset_left = 130.0
+offset_top = 8.0
+offset_right = 1050.0
+offset_bottom = 40.0
+theme_override_colors/font_color = Color(0.97, 0.92, 0.99, 1)
+theme_override_font_sizes/font_size = 20
+text = "TESTE: ENCONTRAR OBJETOS"
 horizontal_alignment = 1
 
-[node name="StatusLabel" type="Label" parent="Interface"]
-offset_left = 300.0
-offset_top = 54.0
-offset_right = 980.0
-offset_bottom = 84.0
-theme_override_colors/font_color = Color(0.86, 0.79, 0.89, 1)
-theme_override_font_sizes/font_size = 16
-text = "DIFICULDADE 2"
+[node name="InstructionLabel" type="Label" parent="Interface" unique_id=484506381]
+offset_left = 140.0
+offset_top = 611.0
+offset_right = 1050.0
+offset_bottom = 641.0
+theme_override_colors/font_color = Color(0.81, 0.76, 0.86, 1)
+theme_override_font_sizes/font_size = 14
+text = "Explore o jardim noturno e investigue os pontos de interesse. | WASD | TestDifficulty: 1 a 3"
 horizontal_alignment = 1
 
-[node name="InstructionLabel" type="Label" parent="Interface"]
-offset_left = 160.0
-offset_top = 684.0
-offset_right = 1120.0
-offset_bottom = 710.0
-theme_override_colors/font_color = Color(0.76, 0.70, 0.79, 1)
-theme_override_font_sizes/font_size = 13
-text = "WASD • explore o labirinto escuro • colete todos os objetos • dificuldade ajustável no Inspector"
-horizontal_alignment = 1
-
-[node name="FindObjectsMissionTestController" type="Node" parent="."]
-script = ExtResource("3_controller")
-test_difficulty = 2
+[node name="ExplorationSandboxController" type="Node" parent="." unique_id=249021991]
+script = ExtResource("3_test")

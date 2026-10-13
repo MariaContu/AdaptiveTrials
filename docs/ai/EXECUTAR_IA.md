@@ -208,15 +208,13 @@ Aceita:
 Exemplo com SteamID64:
 
 ```bash
-python3 src/09l_predict_live_steamid_recency_v2.py \
-  76561198293759611
+python3 src/09l_predict_live_steamid_recency_v2.py 76561198293759611
 ```
 
 Exemplo com vanity ID:
 
 ```bash
-python3 src/09l_predict_live_steamid_recency_v2.py \
-  gvk0
+python3 src/09l_predict_live_steamid_recency_v2.py gvk0
 ```
 
 Quando necessário, o identificador personalizado é resolvido para SteamID64 antes da consulta da biblioteca.
@@ -242,9 +240,7 @@ Caso não exista atividade nas últimas duas semanas, as features recentes ficam
 Com o ambiente virtual ativo e dentro de `ai-model/`:
 
 ```bash
-uvicorn --app-dir src "10a_inference_api:app" \
-  --host 127.0.0.1 \
-  --port 8001
+uvicorn --app-dir src "10a_inference_api:app" --host 127.0.0.1 --port 8001
 ```
 
 Serviço:

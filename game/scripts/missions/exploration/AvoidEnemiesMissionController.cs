@@ -62,11 +62,7 @@ public partial class AvoidEnemiesMissionController : Node
 	private MissionHud _missionHud = null!;
 	private MissionResultPopup _resultPopup = null!;
 
-	private Marker2D _playerSpawn = null!;
-	private Marker2D _destinationSpawn = null!;
-
-	private Node2D _enemyPatrols = null!;
-	private Node2D _safePointSpawns = null!;
+	private ExplorationMaze _maze = null!;
 	private Node2D _dynamicObjects = null!;
 
 	private readonly List<PatrolEnemy> _activeEnemies =
@@ -165,21 +161,7 @@ public partial class AvoidEnemiesMissionController : Node
 			GetNode<MissionResultPopup>(
 				"../MissionResultPopup");
 
-		_playerSpawn =
-			GetNode<Marker2D>(
-				"../SpawnPoints/PlayerSpawn");
-
-		_destinationSpawn =
-			GetNode<Marker2D>(
-				"../SpawnPoints/DestinationSpawn");
-
-		_enemyPatrols =
-			GetNode<Node2D>(
-				"../SpawnPoints/EnemyPatrols");
-
-		_safePointSpawns =
-			GetNode<Node2D>(
-				"../SpawnPoints/SafePointSpawns");
+		_maze = GetNode<ExplorationMaze>("../Environment/ExplorationMaze");
 
 		_dynamicObjects =
 			GetNode<Node2D>(
@@ -203,17 +185,19 @@ public partial class AvoidEnemiesMissionController : Node
 		_activeSafePoints.Clear();
 
 		_objectiveText =
-			$"Atravesse {_requiredSafePoints} pontos seguros sem permanecer " +
-			"no cone de visão das patrulhas até ser detectado.";
+			$"Atravesse {_requiredSafePoints} pontos seguros do acampamento e chegue à saída. " +
+			"Observe os guardas e use as estruturas como cobertura.";
 
-		_player.GlobalPosition =
-			_playerSpawn.GlobalPosition;
+		_maze.Configure(_mission.Difficulty, ExplorationMaze.CourseMode.AvoidEnemies);
+		_player.GlobalPosition = _maze.PlayerStartPosition;
 
 		_player.Velocity =
 			Vector2.Zero;
 
-		_lastSafePosition =
-			_playerSpawn.GlobalPosition;
+		// Apenas o nível difícil tem escuridão total e luz no jogador.
+		ExplorationLighting.Configure(GetParent(), _player, _mission.Difficulty);
+
+		_lastSafePosition = _maze.PlayerStartPosition;
 
 		_player.SetVisualMode(
 			PlayerVisualMode.Normal);
@@ -269,120 +253,30 @@ public partial class AvoidEnemiesMissionController : Node
 
 	private void SpawnEnemies()
 	{
-		List<Node2D> patrolDefinitions =
-			_enemyPatrols
-				.GetChildren()
-				.OfType<Node2D>()
-				.ToList();
-
-		if (patrolDefinitions.Count <
-			_requiredEnemies)
+		for (int index = 0; index < _requiredEnemies; index++)
 		{
-			ShowInitializationError(
-				$"O mapa contém " +
-				$"{patrolDefinitions.Count} rotas de patrulha, " +
-				$"mas a missão exige " +
-				$"{_requiredEnemies} inimigos.");
-
-			return;
-		}
-
-		Shuffle(patrolDefinitions);
-
-		for (int index = 0;
-			 index < _requiredEnemies;
-			 index++)
-		{
-			Node2D patrolDefinition =
-				patrolDefinitions[index];
-
-			Marker2D? start =
-				patrolDefinition.GetNodeOrNull<Marker2D>(
-					"Start");
-
-			Marker2D? end =
-				patrolDefinition.GetNodeOrNull<Marker2D>(
-					"End");
-
-			if (start is null ||
-				end is null)
-			{
-				ShowInitializationError(
-					$"A rota de patrulha " +
-					$"{patrolDefinition.Name} não contém " +
-					"os marcadores de início e fim.");
-
-				return;
-			}
-
-			PatrolEnemy enemy =
-				PatrolEnemyScene
-					.Instantiate<PatrolEnemy>();
-
-			enemy.Name =
-				$"PatrolEnemy{index + 1:00}";
-
-			enemy.PlayerDetected +=
-				OnPlayerDetected;
-
-			_dynamicObjects.AddChild(
-				enemy);
-
-			enemy.ConfigureStealth(
-				start.GlobalPosition,
-				end.GlobalPosition,
-				_enemySpeed,
-				_detectionRadius,
-				_detectionConeAngle,
-				_suspicionSeconds,
-				_player);
-
-			_activeEnemies.Add(
-				enemy);
+			var patrol = _maze.PatrolRoutes[index];
+			PatrolEnemy enemy = PatrolEnemyScene.Instantiate<PatrolEnemy>();
+			enemy.Name = $"Patrulha{index + 1:00}";
+			enemy.PlayerDetected += OnPlayerDetected;
+			_dynamicObjects.AddChild(enemy);
+			enemy.ConfigureStealth(patrol.Start, patrol.End, _enemySpeed,
+				_detectionRadius, _detectionConeAngle, _suspicionSeconds, _player);
+			_activeEnemies.Add(enemy);
 		}
 	}
 
 	private void SpawnSafePoints()
 	{
-		List<Marker2D> spawnPoints =
-			_safePointSpawns
-				.GetChildren()
-				.OfType<Marker2D>()
-				.ToList();
-
-		if (spawnPoints.Count < _requiredSafePoints)
+		for (int index = 0; index < _requiredSafePoints; index++)
 		{
-			ShowInitializationError(
-				$"O mapa contém apenas {spawnPoints.Count} " +
-				$"pontos seguros, mas a missão exige " +
-				$"{_requiredSafePoints}.");
-
-			return;
-		}
-
-		for (int index = 0;
-			 index < _requiredSafePoints;
-			 index++)
-		{
-			CheckpointArea safePoint =
-				CheckpointScene
-					.Instantiate<CheckpointArea>();
-
-			safePoint.Name =
-				$"SafePoint{index + 1:00}";
-
-			safePoint.ConfigureIndex(index + 1);
-			safePoint.CheckpointReached +=
-				OnSafePointReached;
-
+			CheckpointArea safePoint = CheckpointScene.Instantiate<CheckpointArea>();
+			safePoint.Name = $"PontoSeguro{index + 1:00}";
+			safePoint.CheckpointReached += OnSafePointReached;
 			_dynamicObjects.AddChild(safePoint);
-
-			safePoint.GlobalPosition =
-				spawnPoints[index].GlobalPosition;
-
-			safePoint.SetEnabledState(
-				index == 0);
-
+			safePoint.GlobalPosition = _maze.CheckpointPositions[index];
+			safePoint.ConfigureIndex(index + 1);
+			safePoint.SetEnabledState(index == 0);
 			_activeSafePoints.Add(safePoint);
 		}
 	}
@@ -439,8 +333,7 @@ public partial class AvoidEnemiesMissionController : Node
 		_dynamicObjects.AddChild(
 			_destination);
 
-		_destination.GlobalPosition =
-			_destinationSpawn.GlobalPosition;
+		_destination.GlobalPosition = _maze.DestinationPosition;
 
 		_destination.SetEnabledState(
 			_reachedSafePoints >= _requiredSafePoints);
@@ -753,11 +646,8 @@ public partial class AvoidEnemiesMissionController : Node
 			}
 		}
 
-		_requiredEnemies =
-			Mathf.Clamp(
-				_requiredEnemies,
-				1,
-				MaximumEnemies);
+		// Um guarda por trecho, sem posicionamento aleatório sobre a saída.
+		_requiredEnemies = Mathf.Clamp(_mission.Difficulty, 1, 3);
 
 		_enemySpeed =
 			Mathf.Clamp(
@@ -783,11 +673,7 @@ public partial class AvoidEnemiesMissionController : Node
 				0.25f,
 				3.0f);
 
-		_requiredSafePoints =
-			Mathf.Clamp(
-				_requiredSafePoints,
-				1,
-				DefaultHardSafePoints);
+		_requiredSafePoints = Mathf.Clamp(_mission.Difficulty, 1, 3);
 
 		GD.Print(
 			$"Configuração da missão carregada: " +

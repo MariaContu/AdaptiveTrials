@@ -1,102 +1,54 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="1_player"]
-[ext_resource type="PackedScene" path="res://scenes/missions/shared/CheckpointArea.tscn" id="2_checkpoint"]
-[ext_resource type="PackedScene" path="res://scenes/missions/shared/PatrolEnemy.tscn" id="3_patrol"]
-[ext_resource type="PackedScene" path="res://scenes/missions/shared/DestinationArea.tscn" id="4_destination"]
-[ext_resource type="Script" path="res://scripts/tests/AvoidEnemiesMissionTestController.cs" id="5_controller"]
-
-[sub_resource type="RectangleShape2D" id="cover_vertical"]
-size = Vector2(60, 220)
-
-[sub_resource type="RectangleShape2D" id="cover_horizontal"]
-size = Vector2(230, 52)
+[ext_resource type="Script" path="res://scripts/missions/shared/ExplorationMaze.cs" id="2_map"]
+[ext_resource type="Script" path="res://scripts/tests/ExplorationSandboxController.cs" id="3_test"]
 
 [node name="AvoidEnemiesMissionTest" type="Node2D"]
 
-[node name="Background" type="Polygon2D" parent="."]
-color = Color(0.12, 0.08, 0.15, 1)
-polygon = PackedVector2Array(0, 0, 1280, 0, 1280, 720, 0, 720)
+[node name="Environment" type="Node2D" parent="."]
 
-[node name="Arena" type="Polygon2D" parent="."]
-color = Color(0.36, 0.29, 0.38, 1)
-polygon = PackedVector2Array(70, 110, 1210, 110, 1210, 670, 70, 670)
+[node name="Backdrop" type="Polygon2D" parent="Environment"]
+color = Color(0.067, 0.051, 0.094, 1)
+polygon = PackedVector2Array(0, 0, 1152, 0, 1152, 648, 0, 648)
+z_index = -10
 
-[node name="Cover01" type="StaticBody2D" parent="."]
-position = Vector2(450, 420)
-collision_layer = 1
-collision_mask = 0
+[node name="ExplorationMaze" type="Node2D" parent="Environment"]
+script = ExtResource("2_map")
 
-[node name="Visual" type="Polygon2D" parent="Cover01"]
-color = Color(0.286, 0.207, 0.322, 1)
-polygon = PackedVector2Array(-30, -110, 30, -110, 30, 110, -30, 110)
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Cover01"]
-shape = SubResource("cover_vertical")
-
-[node name="Cover02" type="StaticBody2D" parent="."]
-position = Vector2(720, 500)
-collision_layer = 1
-collision_mask = 0
-
-[node name="Visual" type="Polygon2D" parent="Cover02"]
-color = Color(0.286, 0.207, 0.322, 1)
-polygon = PackedVector2Array(-115, -26, 115, -26, 115, 26, -115, 26)
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Cover02"]
-shape = SubResource("cover_horizontal")
-
-[node name="Player" parent="." instance=ExtResource("1_player")]
-position = Vector2(145, 575)
-follow_camera = false
+[node name="DynamicObjects" type="Node2D" parent="."]
 
 [node name="Camera2D" type="Camera2D" parent="."]
-position = Vector2(640, 360)
+position = Vector2(576, 324)
 enabled = true
 
-[node name="SafePoint01" parent="." instance=ExtResource("2_checkpoint")]
-position = Vector2(355, 520)
-
-[node name="SafePoint02" parent="." instance=ExtResource("2_checkpoint")]
-position = Vector2(760, 430)
-
-[node name="PatrolEnemy" parent="." instance=ExtResource("3_patrol")]
-position = Vector2(520, 300)
-
-[node name="Destination" parent="." instance=ExtResource("4_destination")]
-position = Vector2(1080, 175)
+[node name="Player" parent="." instance=ExtResource("1_player")]
+z_index = 10
+follow_camera = false
+visual_scale_multiplier = 0.72
 
 [node name="Interface" type="CanvasLayer" parent="."]
 
-[node name="TitleLabel" type="Label" parent="Interface"]
-offset_left = 410.0
-offset_top = 22.0
-offset_right = 870.0
-offset_bottom = 52.0
-theme_override_colors/font_color = Color(0.95, 0.91, 0.97, 1)
-theme_override_font_sizes/font_size = 22
-text = "TESTE — FURTIVIDADE / LINHA DE VISÃO"
-horizontal_alignment = 1
-
 [node name="StatusLabel" type="Label" parent="Interface"]
-offset_left = 170.0
-offset_top = 62.0
-offset_right = 1110.0
-offset_bottom = 90.0
-theme_override_colors/font_color = Color(0.86, 0.79, 0.89, 1)
-theme_override_font_sizes/font_size = 15
-text = "PONTOS SEGUROS 0/2"
+offset_left = 130.0
+offset_top = 8.0
+offset_right = 1050.0
+offset_bottom = 40.0
+theme_override_colors/font_color = Color(0.97, 0.92, 0.99, 1)
+theme_override_font_sizes/font_size = 20
 horizontal_alignment = 1
+text = "TESTE: FURTIVIDADE"
 
 [node name="InstructionLabel" type="Label" parent="Interface"]
-offset_left = 160.0
-offset_top = 680.0
-offset_right = 1120.0
-offset_bottom = 710.0
-theme_override_colors/font_color = Color(0.76, 0.70, 0.79, 1)
-theme_override_font_sizes/font_size = 13
-text = "Entre no cone para gerar ? • esconda-se atrás de uma parede para cancelar a suspeita • permaneça visível para gerar !"
+offset_left = 140.0
+offset_top = 611.0
+offset_right = 1050.0
+offset_bottom = 641.0
+theme_override_colors/font_color = Color(0.81, 0.76, 0.86, 1)
+theme_override_font_sizes/font_size = 14
 horizontal_alignment = 1
+text = "Passe pelos pontos seguros e evite a visao das patrulhas. | WASD | TestDifficulty: 1 a 3"
 
-[node name="AvoidEnemiesMissionTestController" type="Node" parent="."]
-script = ExtResource("5_controller")
+[node name="ExplorationSandboxController" type="Node" parent="."]
+script = ExtResource("3_test")
+test_difficulty = 2

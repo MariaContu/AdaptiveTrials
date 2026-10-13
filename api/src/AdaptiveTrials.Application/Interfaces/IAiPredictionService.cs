@@ -5,4 +5,6 @@ namespace AdaptiveTrials.Application.Interfaces;
 public interface IAiPredictionService
 {
     Task<AiPredictionResponse?> PredictFromSteamIdAsync(string steamId);
+
+    Task<AiSteamProfilePreviewResponse?> GetSteamProfilePreviewAsync(string steamId);
 }
