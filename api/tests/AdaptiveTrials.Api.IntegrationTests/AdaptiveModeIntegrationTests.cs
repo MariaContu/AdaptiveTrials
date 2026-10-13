@@ -9,6 +9,10 @@ using AdaptiveTrials.Application.DTOs.SessionQueries;
 using AdaptiveTrials.Application.DTOs.Sessions;
 using AdaptiveTrials.Application.DTOs.Steam;
 using AdaptiveTrials.Domain.Enums;
+using AdaptiveTrials.Domain.Entities;
+using AdaptiveTrials.Infrastructure.Data;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
 
 namespace AdaptiveTrials.Api.IntegrationTests;
 
@@ -77,16 +81,9 @@ public sealed class AdaptiveModeIntegrationTests : IDisposable
 
         Assert.Equal(HttpStatusCode.OK, preferencesResponse.StatusCode);
 
-        var eventResponse = await RegisterEventAsync(
-            session.SessionId,
-            missionId: 3,
-            completionTime: 45,
-            failures: 0,
-            success: true,
-            persistence: 1.0
-        );
-
-        Assert.Equal(HttpStatusCode.Created, eventResponse.StatusCode);
+        // Historico sintetico via fixture. O endpoint publico exige que
+        // a missao tenha sido recomendada, como no jogo real.
+        await SeedHistoricalEventAsync(session.SessionId, missionId: 3);
 
         var recommendation = await GetNextRecommendationAsync(session);
 
@@ -112,6 +109,15 @@ public sealed class AdaptiveModeIntegrationTests : IDisposable
             Assert.InRange(recommendation.TargetDifficulty, 1, 3);
             Assert.InRange(recommendation.Difficulty, 1, 3);
             missionIds.Add(recommendation.RecommendedMissionId);
+
+            var eventResponse = await RegisterEventAsync(
+                session.SessionId,
+                recommendation.RecommendedMissionId,
+                completionTime: 30,
+                failures: 0,
+                success: true,
+                persistence: 1.0);
+            Assert.Equal(HttpStatusCode.Created, eventResponse.StatusCode);
         }
 
         Assert.Equal(6, missionIds.Distinct().Count());
@@ -182,6 +188,26 @@ public sealed class AdaptiveModeIntegrationTests : IDisposable
         );
 
         Assert.Equal(HttpStatusCode.NotFound, profileResponse.StatusCode);
+    }
+
+    private async Task SeedHistoricalEventAsync(int sessionId, int missionId)
+    {
+        await using var scope = _factory.Services.CreateAsyncScope();
+        var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var mission = await context.Missions.SingleAsync(item => item.Id == missionId);
+        context.Recommendations.Add(new Recommendation
+        {
+            SessionId = sessionId, MissionId = mission.Id,
+            RecommendedType = mission.Type, RecommendedDifficulty = mission.Difficulty
+        });
+        context.BehaviorEvents.Add(new BehaviorEvent
+        {
+            SessionId = sessionId, MissionId = mission.Id,
+            MissionType = mission.Type, Template = mission.Template,
+            Difficulty = mission.Difficulty, CompletionTime = 45,
+            Success = true, Failures = 0, Persistence = 1.0
+        });
+        await context.SaveChangesAsync();
     }
 
     private async Task<CreateSessionResponse> CreateAdaptiveSessionAsync()
