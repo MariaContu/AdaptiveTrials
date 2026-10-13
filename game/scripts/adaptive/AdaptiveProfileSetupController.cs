@@ -17,6 +17,7 @@ namespace AdaptiveTrials.Game.Adaptive;
 public partial class AdaptiveProfileSetupController : Control
 {
     private const string MainMenuScenePath = "res://scenes/menu/MainMenu.tscn";
+    private const string MissionTransitionScenePath = SessionManager.MissionTransitionScenePath;
 
     [Export]
     public bool TestMode { get; set; }
@@ -371,9 +372,44 @@ public partial class AdaptiveProfileSetupController : Control
 
     private void OnContinuePressed()
     {
-        _statusLabel.Text = TestMode
-            ? "FLUXO DE PERFIL APROVADO — Steam, fallback manual e perfil final podem ser testados isoladamente."
-            : "Perfil pronto. A primeira recomendação adaptativa será conectada na próxima etapa.";
+        if (_isBusy || !_readyPanel.Visible)
+        {
+            return;
+        }
+
+        if (TestMode)
+        {
+            _statusLabel.Text =
+                "FLUXO DE PERFIL APROVADO — teste isolado concluído.";
+            return;
+        }
+
+        _ = StartFirstAdaptiveMissionAsync();
+    }
+
+    private async Task StartFirstAdaptiveMissionAsync()
+    {
+        SetBusy(true, "Solicitando a primeira recomendação adaptativa...");
+
+        bool prepared = await _sessionManager!.PrepareNextAdaptiveMissionAsync();
+
+        if (!IsInstanceValid(this))
+        {
+            return;
+        }
+
+        if (!prepared)
+        {
+            SetBusy(false,
+                "Não foi possível preparar a primeira missão. Verifique a API e tente novamente.");
+            return;
+        }
+
+        Error error = GetTree().ChangeSceneToFile(MissionTransitionScenePath);
+        if (error != Error.Ok)
+        {
+            SetBusy(false, "Não foi possível abrir a missão. Erro: " + error);
+        }
     }
 
     private void OnBackPressed()

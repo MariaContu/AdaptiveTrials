@@ -57,6 +57,18 @@ public partial class CollectibleObject : Area2D, IInteractable
 		}
 	}
 
+	/// <summary>
+	/// Desliga a luz própria em cenários com visibilidade limitada,
+	/// para que objetos fora do alcance do jogador não sejam revelados.
+	/// </summary>
+	public void SetGlowEnabled(bool enabled)
+	{
+		if (IsNodeReady())
+		{
+			_glow.Enabled = enabled;
+		}
+	}
+
 	private void EnsureGlowTexture()
 	{
 		if (_glow.Texture is not null)

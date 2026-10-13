@@ -61,7 +61,9 @@ public partial class FindObjectsMissionTestController : Node
             collectible.Collected += OnCollectibleCollected;
             _dynamicObjects.AddChild(collectible);
             collectible.GlobalPosition = _maze.CollectiblePositions[index];
-            collectible.ConfigureExplorationVisibility(0.85f, 2.0f);
+            collectible.ConfigureExplorationVisibility(
+                TestDifficulty switch { 1 => 0.85f, 2 => 0.60f, _ => 0.40f },
+                2.0f);
         }
     }
 
@@ -72,9 +74,9 @@ public partial class FindObjectsMissionTestController : Node
             Name = "TestDarkness",
             Color = TestDifficulty switch
             {
-                1 => new Color("#61536a"),
-                2 => new Color("#46394f"),
-                3 => new Color("#30263a"),
+                1 => new Color("#4d4056"),
+                2 => new Color("#34283e"),
+                3 => new Color("#241c2d"),
                 _ => new Color("#46394f")
             }
         };
@@ -100,9 +102,9 @@ public partial class FindObjectsMissionTestController : Node
             Texture = texture,
             TextureScale = TestDifficulty switch
             {
-                1 => 3.0f,
-                2 => 2.35f,
-                3 => 1.8f,
+                1 => 2.4f,
+                2 => 1.8f,
+                3 => 1.35f,
                 _ => 2.35f
             },
             Energy = 1.15f,

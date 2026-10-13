@@ -53,7 +53,9 @@ public partial class CheckpointArea : Area2D
 				1,
 				index);
 
-		if (!WasReached)
+		// ConfigureIndex também pode ser chamado antes de AddChild/_Ready.
+		// O estilo e o rótulo serão aplicados durante _Ready.
+		if (IsNodeReady() && !WasReached)
 		{
 			_symbolLabel.Text =
 				_checkpointIndex.ToString();

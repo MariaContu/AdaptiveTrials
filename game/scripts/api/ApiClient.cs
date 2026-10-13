@@ -41,6 +41,44 @@ public partial class ApiClient : Node
 	}
 
 	/// <summary>
+	/// Obtém a missão completa, incluindo os parâmetros de execução.
+	/// </summary>
+	public Task<ApiResult<MissionDto>> GetMissionByIdAsync(int missionId)
+	{
+		if (missionId <= 0)
+		{
+			return Task.FromResult(ApiResult<MissionDto>.Failure(
+				"O identificador da missão é inválido."));
+		}
+
+		return SendAsync<MissionDto>(
+			HttpClient.Method.Get,
+			$"/api/missions/{missionId}");
+	}
+
+	/// <summary>
+	/// Solicita a próxima recomendação para uma sessão adaptativa.
+	/// </summary>
+	public Task<ApiResult<NextRecommendationResponse>> GetNextRecommendationAsync(
+		int playerId, int sessionId)
+	{
+		if (playerId <= 0 || sessionId <= 0)
+		{
+			return Task.FromResult(ApiResult<NextRecommendationResponse>.Failure(
+				"Os identificadores do jogador e da sessão são obrigatórios."));
+		}
+
+		return SendAsync<NextRecommendationResponse>(
+			HttpClient.Method.Post,
+			"/api/recommendations/next",
+			new NextRecommendationRequest
+			{
+				PlayerId = playerId,
+				SessionId = sessionId
+			});
+	}
+
+	/// <summary>
 	/// Consulta os dados públicos básicos de um perfil Steam antes da confirmação.
 	/// </summary>
 	public Task<ApiResult<SteamProfilePreviewResponse>> GetSteamProfilePreviewAsync(

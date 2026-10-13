@@ -48,12 +48,12 @@ public partial class ReachDestinationMissionTestController : Node
         }
 
         _hazard.PlayerHit += OnPlayerHitObstacle;
-        _hazard.ConfigureTimed(2.0f, 0.8f, 1.25f, 0.3f);
+        _hazard.ConfigureTimed(1.65f, 0.70f, 1.40f, 0.3f);
 
         for (int index = 0; index < _lasers.Length; index++)
         {
             _lasers[index].PlayerHit += OnPlayerHitObstacle;
-            _lasers[index].Configure(250.0f, 2.2f, 0.75f, 1.25f, index * 0.9f);
+            _lasers[index].Configure(250.0f, 1.95f, 0.70f, 1.40f, index * 0.9f);
         }
 
         _destination.DestinationReached += OnDestinationReached;

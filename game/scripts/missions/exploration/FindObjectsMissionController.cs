@@ -33,8 +33,6 @@ public partial class FindObjectsMissionController : Node
 
 	private Node2D _dynamicObjects = null!;
 	private ExplorationMaze _maze = null!;
-	private CanvasModulate _darkness = null!;
-	private PointLight2D _playerLight = null!;
 
 	private MissionDto _mission = null!;
 
@@ -85,14 +83,17 @@ public partial class FindObjectsMissionController : Node
 			return;
 		}
 
-		_requiredItems =
-			ReadRequiredItems(
-				_mission.ParametersJson);
+		// A progressão deve ser consistente mesmo com parâmetros antigos na API.
+		_requiredItems = _mission.Difficulty switch { 1 => 3, 2 => 6, _ => 10 };
 
+		// Mantém os parâmetros da API, mas aplica o teto de visibilidade
+		// por nível para evitar que valores antigos deixem o mapa fácil.
 		_lightScale =
-			ReadLightScale(
-				_mission.ParametersJson,
-				_mission.Difficulty);
+			Mathf.Min(
+				ReadLightScale(
+					_mission.ParametersJson,
+					_mission.Difficulty),
+				GetLightScale(_mission.Difficulty));
 
 		ConfigureMission();
 	}
@@ -147,8 +148,8 @@ public partial class FindObjectsMissionController : Node
 		Result = null;
 
 		_objectiveText =
-			$"Explore o labirinto escuro e encontre {_requiredItems} objetos. " +
-			"A complexidade do labirinto e a visibilidade variam com a dificuldade.";
+			$"Explore o jardim noturno e encontre {_requiredItems} objetos. " +
+			"Use os pontos de referência e sua luz para investigar cada região.";
 
 		_maze.Configure(
 			_mission.Difficulty);
@@ -203,7 +204,7 @@ public partial class FindObjectsMissionController : Node
 			_requiredItems)
 		{
 			ShowInitializationError(
-				$"O labirinto da dificuldade {_mission.Difficulty} contém apenas " +
+				$"O cenário da dificuldade {_mission.Difficulty} contém apenas " +
 				$"{spawnPoints.Count} pontos de coleta, mas a missão exige " +
 				$"{_requiredItems} objetos.");
 
@@ -233,6 +234,9 @@ public partial class FindObjectsMissionController : Node
 			collectible.ConfigureExplorationVisibility(
 				GetCollectibleGlowEnergy(_mission.Difficulty),
 				GetCollectiblePulseSpeed(_mission.Difficulty));
+
+			// Na dificuldade difícil, itens distantes não podem revelar o mapa.
+			collectible.SetGlowEnabled(_mission.Difficulty < 3);
 		}
 	}
 
@@ -266,52 +270,12 @@ public partial class FindObjectsMissionController : Node
 
 	private void ConfigureLimitedVisibility()
 	{
-		_darkness =
-			new CanvasModulate
-			{
-				Name = "ExplorationDarkness",
-				Color = GetDarknessColor(
-					_mission.Difficulty)
-			};
-
-		GetParent().AddChild(
-			_darkness);
-
-		Gradient lightGradient =
-			new();
-
-		lightGradient.SetColor(
-			0,
-			Colors.White);
-
-		lightGradient.SetColor(
-			1,
-			new Color(1, 1, 1, 0));
-
-		GradientTexture2D lightTexture =
-			new()
-			{
-				Gradient = lightGradient,
-				Width = 256,
-				Height = 256,
-				Fill = GradientTexture2D.FillEnum.Radial,
-				FillFrom = new Vector2(0.5f, 0.5f),
-				FillTo = new Vector2(1.0f, 0.5f)
-			};
-
-		_playerLight =
-			new PointLight2D
-			{
-				Name = "ExplorationLight",
-				Texture = lightTexture,
-				TextureScale = _lightScale,
-				Energy = 1.15f,
-				Color = new Color("#f3ddc5"),
-				ShadowEnabled = false
-			};
-
-		_player.AddChild(
-			_playerLight);
+		ExplorationLighting.Configure(
+			GetParent(),
+			_player,
+			_mission.Difficulty,
+			nightGarden: true,
+			gardenLightScale: _lightScale);
 	}
 
 
@@ -358,27 +322,16 @@ public partial class FindObjectsMissionController : Node
 		}
 	}
 
-	private static Color GetDarknessColor(
-		int difficulty)
-	{
-		return difficulty switch
-		{
-			1 => new Color("#61536a"),
-			2 => new Color("#46394f"),
-			3 => new Color("#30263a"),
-			_ => new Color("#46394f")
-		};
-	}
 
 	private static float GetLightScale(
 		int difficulty)
 	{
 		return difficulty switch
 		{
-			1 => 3.0f,
-			2 => 2.35f,
-			3 => 1.8f,
-			_ => 2.35f
+			1 => 2.1f,
+			2 => 1.65f,
+			3 => 1.25f,
+			_ => 1.65f
 		};
 	}
 
@@ -387,9 +340,9 @@ public partial class FindObjectsMissionController : Node
 	{
 		return difficulty switch
 		{
-			1 => 1.15f,
-			2 => 0.85f,
-			3 => 0.60f,
+			1 => 0.85f,
+			2 => 0.60f,
+			3 => 0.40f,
 			_ => 0.85f
 		};
 	}
