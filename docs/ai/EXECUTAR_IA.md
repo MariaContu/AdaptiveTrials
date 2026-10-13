@@ -240,9 +240,7 @@ Caso não exista atividade nas últimas duas semanas, as features recentes ficam
 Com o ambiente virtual ativo e dentro de `ai-model/`:
 
 ```bash
-uvicorn --app-dir src "10a_inference_api:app" \
-  --host 127.0.0.1 \
-  --port 8001
+uvicorn --app-dir src "10a_inference_api:app" --host 127.0.0.1 --port 8001
 ```
 
 Serviço:
