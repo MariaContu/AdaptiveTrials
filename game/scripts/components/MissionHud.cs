@@ -1,10 +1,12 @@
 using AdaptiveTrials.Game.Enums;
+using AdaptiveTrials.Game.UI;
 using Godot;
 
 namespace AdaptiveTrials.Game.Components;
 
 public partial class MissionHud : CanvasLayer
 {
+	private PanelContainer _categoryIconPanel = null!;
 	private Label _categoryIconLabel = null!;
 	private Label _missionTitleLabel = null!;
 	private Label _missionCategoryLabel = null!;
@@ -18,6 +20,7 @@ public partial class MissionHud : CanvasLayer
 	public override void _Ready()
 	{
 		const string contentPath = "HudAnchor/HudPanel/HudMargin/HudContent/";
+		_categoryIconPanel = GetNode<PanelContainer>(contentPath + "Header/CategoryIconPanel");
 		_categoryIconLabel = GetNode<Label>(contentPath + "Header/CategoryIconPanel/CategoryIconLabel");
 		_missionTitleLabel = GetNode<Label>(contentPath + "Header/MissionInfo/MissionTitleLabel");
 		_missionCategoryLabel = GetNode<Label>(contentPath + "Header/MissionInfo/MissionCategoryLabel");
@@ -34,8 +37,13 @@ public partial class MissionHud : CanvasLayer
 	{
 		int safeMaximum = Mathf.Max(1, maximumProgress);
 		_missionTitleLabel.Text = string.IsNullOrWhiteSpace(missionTitle) ? "Missão" : missionTitle;
-		_missionCategoryLabel.Text = GetCategoryText(missionType);
-		_categoryIconLabel.Text = GetCategoryIcon(missionType);
+		_missionCategoryLabel.Text = MissionPresentation.Name(missionType);
+		_categoryIconLabel.Text = MissionPresentation.Icon(missionType);
+		_categoryIconPanel.AddThemeStyleboxOverride("panel",
+			GameUiStyle.CreateBox(MissionPresentation.Background(missionType),
+				GameUiStyle.Border, 2, 16));
+		_categoryIconLabel.AddThemeColorOverride("font_color",
+			MissionPresentation.Foreground(missionType));
 		_objectiveLabel.Text = string.IsNullOrWhiteSpace(objective) ? "Conclua a missão." : objective;
 		_progressBar.MinValue = 0;
 		_progressBar.MaxValue = safeMaximum;
@@ -72,22 +80,6 @@ public partial class MissionHud : CanvasLayer
 	public void SetAttemptsVisible(bool visible) => _attemptsLabel.Visible = visible;
 	public void SetElapsedTime(double elapsedSeconds) => _timerLabel.Text = FormatTime(elapsedSeconds);
 	public void SetVisibleState(bool visible) => Visible = visible;
-
-	private static string GetCategoryText(MissionType missionType) => missionType switch
-	{
-		MissionType.Combat => "Combate",
-		MissionType.Exploration => "Exploração",
-		MissionType.Puzzle => "Quebra-cabeça",
-		_ => "Desconhecida"
-	};
-
-	private static string GetCategoryIcon(MissionType missionType) => missionType switch
-	{
-		MissionType.Combat => "⚔",
-		MissionType.Exploration => "◆",
-		MissionType.Puzzle => "⌘",
-		_ => "?"
-	};
 
 	private static string FormatTime(double seconds)
 	{

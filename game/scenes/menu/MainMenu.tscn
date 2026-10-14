@@ -154,11 +154,6 @@ alignment = 1
 [node name="TopBar" type="HBoxContainer" parent="InterfaceMargin/InterfaceRoot" unique_id=1937163861]
 layout_mode = 2
 
-[node name="SettingsButton" type="Button" parent="InterfaceMargin/InterfaceRoot/TopBar" unique_id=1762942910]
-custom_minimum_size = Vector2(52, 52)
-layout_mode = 2
-text = "⚙"
-
 [node name="TopSpacer" type="Control" parent="InterfaceMargin/InterfaceRoot/TopBar" unique_id=1532959645]
 layout_mode = 2
 size_flags_horizontal = 3
@@ -178,8 +173,8 @@ layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_outline_color = Color(0.17254902, 0.13725491, 0.1882353, 1)
 theme_override_constants/outline_size = 40
-theme_override_font_sizes/font_size = 72
-text = "AdaptiveTrials"
+theme_override_font_sizes/font_size = 64
+text = "Adaptive Trials"
 horizontal_alignment = 1
 
 [node name="ModeInstruction" type="Label" parent="InterfaceMargin/InterfaceRoot/TitleArea" unique_id=1981323166]
@@ -211,7 +206,7 @@ toggle_mode = true
 keep_pressed_outside = true
 text = "CONTROLE
 
-Experiência casual"
+Sequência fixa de missões"
 text_overrun_behavior = 3
 
 [node name="AdaptiveModeButton" type="Button" parent="InterfaceMargin/InterfaceRoot/ModeCardsCenter/ModeCards" unique_id=129059281]
@@ -225,7 +220,7 @@ toggle_mode = true
 keep_pressed_outside = true
 text = "ADAPTATIVO
 
-Experiência adaptada"
+Missões personalizadas"
 text_overrun_behavior = 3
 
 [node name="StartCenter" type="CenterContainer" parent="InterfaceMargin/InterfaceRoot" unique_id=463384015]
@@ -241,11 +236,12 @@ disabled = true
 text = "INICIAR"
 
 [node name="StatusLabel" type="Label" parent="InterfaceMargin/InterfaceRoot" unique_id=1791670615]
-custom_minimum_size = Vector2(0, 30)
+custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 16
 horizontal_alignment = 1
+autowrap_mode = 3
 
 [node name="BottomSpacer" type="Control" parent="InterfaceMargin/InterfaceRoot" unique_id=68195868]
 layout_mode = 2

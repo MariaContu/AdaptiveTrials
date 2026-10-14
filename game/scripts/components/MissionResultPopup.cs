@@ -1,3 +1,4 @@
+using AdaptiveTrials.Game.UI;
 using Godot;
 
 namespace AdaptiveTrials.Game.Components;
@@ -181,207 +182,39 @@ public partial class MissionResultPopup : CanvasLayer
 
 	private void ApplyResultPalette(bool success)
 	{
-		if (success)
+		// Nunca altera a cor-base do cartão: sucesso e falha são acentos.
+		GameUiStyle.ApplyMainPanel(_resultPanel);
+		GameUiStyle.ApplyPrimaryButton(_continueButton, 18);
+		_overlay.Color = new Color("#1D1820B5");
+
+		Color accent = success ? GameUiStyle.Success : GameUiStyle.Failure;
+		_resultTitleLabel.AddThemeColorOverride("font_color", accent);
+		_missionNameLabel.AddThemeColorOverride("font_color", GameUiStyle.Ink);
+		_objectiveTitleLabel.AddThemeColorOverride("font_color", GameUiStyle.SecondaryInk);
+		_objectiveLabel.AddThemeColorOverride("font_color", GameUiStyle.Ink);
+
+		Label[] titles =
 		{
-			ApplyPalette(
-				panelBackground: new Color("#d7e3de"),
-				panelBorder: new Color("#86b49c"),
-				titleColor: new Color("#07531c"),
-				primaryText: new Color("#24372c"),
-				secondaryText: new Color("#537060"),
-				valueColor: new Color("#07531c"),
-				buttonNormal: new Color("#94baa4"),
-				buttonHover: new Color("#a8ccb7"),
-				buttonPressed: new Color("#7da38d"),
-				buttonBorder: new Color("#6c9c81"),
-				overlayColor: new Color("#171b198f"));
-
-			return;
-		}
-
-		ApplyPalette(
-			panelBackground: new Color("#ead5d8"),
-			panelBorder: new Color("#b86f79"),
-			titleColor: new Color("#7a2632"),
-			primaryText: new Color("#4e2d33"),
-			secondaryText: new Color("#80535b"),
-			valueColor: new Color("#8f2f3d"),
-			buttonNormal: new Color("#c98b94"),
-			buttonHover: new Color("#d9a0a8"),
-			buttonPressed: new Color("#ae707a"),
-			buttonBorder: new Color("#92515c"),
-			overlayColor: new Color("#241719a6"));
-	}
-
-	private void ApplyPalette(
-		Color panelBackground,
-		Color panelBorder,
-		Color titleColor,
-		Color primaryText,
-		Color secondaryText,
-		Color valueColor,
-		Color buttonNormal,
-		Color buttonHover,
-		Color buttonPressed,
-		Color buttonBorder,
-		Color overlayColor)
-	{
-		_overlay.Color = overlayColor;
-
-		StyleBoxFlat panelStyle =
-			GetOrCreateFlatStyle(
-				_resultPanel,
-				"panel");
-
-		panelStyle.BgColor =
-			panelBackground;
-
-		panelStyle.BorderColor =
-			panelBorder;
-
-		panelStyle.SetBorderWidthAll(8);
-		panelStyle.SetCornerRadiusAll(24);
-
-		panelStyle.ShadowColor =
-			new Color(0, 0, 0, 0.3f);
-
-		panelStyle.ShadowSize = 12;
-		panelStyle.ShadowOffset =
-			new Vector2(0, 7);
-
-		_resultPanel.AddThemeStyleboxOverride(
-			"panel",
-			panelStyle);
-
-		_resultTitleLabel.AddThemeColorOverride(
-			"font_color",
-			titleColor);
-
-		_missionNameLabel.AddThemeColorOverride(
-			"font_color",
-			primaryText);
-
-		_objectiveTitleLabel.AddThemeColorOverride(
-			"font_color",
-			secondaryText);
-
-		_objectiveLabel.AddThemeColorOverride(
-			"font_color",
-			primaryText);
-
-		Label[] titleLabels =
-		{
-			_timeTitleLabel,
-			_statisticTitleLabel,
-			_difficultyTitleLabel,
-			_failuresTitleLabel
+			_timeTitleLabel, _statisticTitleLabel,
+			_difficultyTitleLabel, _failuresTitleLabel
 		};
-
-		foreach (Label label in titleLabels)
+		foreach (Label label in titles)
 		{
-			label.AddThemeColorOverride(
-				"font_color",
-				secondaryText);
+			label.AddThemeColorOverride("font_color", GameUiStyle.SecondaryInk);
 		}
 
-		Label[] valueLabels =
+		Label[] values =
 		{
-			_timeValueLabel,
-			_statisticValueLabel,
-			_difficultyValueLabel,
-			_failuresValueLabel
+			_timeValueLabel, _statisticValueLabel,
+			_difficultyValueLabel, _failuresValueLabel
 		};
-
-		foreach (Label label in valueLabels)
+		foreach (Label label in values)
 		{
-			label.AddThemeColorOverride(
-				"font_color",
-				valueColor);
+			label.AddThemeColorOverride("font_color", GameUiStyle.Ink);
 		}
 
-		StyleBoxFlat separatorStyle =
-			new()
-			{
-				BgColor = panelBorder
-			};
-
-		_separator.AddThemeStyleboxOverride(
-			"separator",
-			separatorStyle);
-
-		ConfigureButtonStyle(
-			"normal",
-			buttonNormal,
-			buttonBorder,
-			3);
-
-		ConfigureButtonStyle(
-			"hover",
-			buttonHover,
-			buttonBorder,
-			4);
-
-		ConfigureButtonStyle(
-			"pressed",
-			buttonPressed,
-			buttonBorder,
-			3);
-
-		_continueButton.AddThemeColorOverride(
-			"font_color",
-			primaryText);
-
-		_continueButton.AddThemeColorOverride(
-			"font_hover_color",
-			primaryText);
-
-		_continueButton.AddThemeColorOverride(
-			"font_pressed_color",
-			primaryText);
-	}
-
-	private void ConfigureButtonStyle(
-		string state,
-		Color backgroundColor,
-		Color borderColor,
-		int borderWidth)
-	{
-		StyleBoxFlat style =
-			GetOrCreateFlatStyle(
-				_continueButton,
-				state);
-
-		style.BgColor =
-			backgroundColor;
-
-		style.BorderColor =
-			borderColor;
-
-		style.SetBorderWidthAll(
-			borderWidth);
-
-		style.SetCornerRadiusAll(24);
-
-		_continueButton.AddThemeStyleboxOverride(
-			state,
-			style);
-	}
-
-	private static StyleBoxFlat GetOrCreateFlatStyle(
-		Control control,
-		string styleName)
-	{
-		StyleBox? existingStyle =
-			control.GetThemeStylebox(styleName);
-
-		if (existingStyle is StyleBoxFlat flatStyle)
-		{
-			return
-				flatStyle.Duplicate() as StyleBoxFlat ??
-				new StyleBoxFlat();
-		}
-
-		return new StyleBoxFlat();
+		_separator.AddThemeStyleboxOverride("separator",
+			new StyleBoxFlat { BgColor = accent });
 	}
 
 	private void ConfigureStaticLabels()

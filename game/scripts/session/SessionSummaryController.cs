@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using AdaptiveTrials.Game.Enums;
+using AdaptiveTrials.Game.UI;
 using Godot;
 
 namespace AdaptiveTrials.Game.Session;
@@ -50,6 +51,8 @@ public partial class SessionSummaryController : Node
 			GetNode<SessionManager>("/root/SessionManager");
 
 		_returnButton.Pressed += OnReturnToMenuPressed;
+		GameUiStyle.ApplyMainPanel(GetNode<PanelContainer>("../ScreenMargin/SummaryPanel"));
+		GameUiStyle.ApplyPrimaryButton(_returnButton, 16);
 
 		LoadSessionSummary();
 	}
@@ -201,7 +204,7 @@ public partial class SessionSummaryController : Node
 		else
 		{
 			_bestCategoryValue.Text =
-				GetCategoryText(bestCategory.MissionType);
+				MissionPresentation.Name(bestCategory.MissionType);
 			_bestCategoryDetail.Text =
 				$"{bestCategory.SuccessfulMissions}/" +
 				$"{bestCategory.TotalMissions} • " +
@@ -298,7 +301,7 @@ public partial class SessionSummaryController : Node
 		_puzzlePerformanceValue.Text = "Sem dados";
 
 		_statusLabel.Text = message;
-		_returnButton.Disabled = true;
+		_returnButton.Disabled = false;
 
 		GD.PushError(message);
 	}
@@ -345,17 +348,6 @@ public partial class SessionSummaryController : Node
 			GameMode.Control => "Controle",
 			GameMode.Adaptive => "Adaptativo",
 			_ => "Desconhecido"
-		};
-	}
-
-	private static string GetCategoryText(MissionType missionType)
-	{
-		return missionType switch
-		{
-			MissionType.Combat => "Combate",
-			MissionType.Exploration => "Exploração",
-			MissionType.Puzzle => "Quebra-cabeça",
-			_ => "Desconhecida"
 		};
 	}
 

@@ -2,6 +2,7 @@ using System;
 using AdaptiveTrials.Game.Dto;
 using AdaptiveTrials.Game.Enums;
 using AdaptiveTrials.Game.Session;
+using AdaptiveTrials.Game.UI;
 using Godot;
 
 namespace AdaptiveTrials.Game.Missions;
@@ -19,7 +20,9 @@ public partial class MissionTransitionController : Node
 	private Label _missionDescription = null!;
 	private Label _statusLabel = null!;
 
-	private Button _settingsButton = null!;
+	private Button _returnToMenuButton = null!;
+	private PanelContainer _missionPanel = null!;
+	private PanelContainer _iconPanel = null!;
 	private Button _startMissionButton = null!;
 
 	private SessionManager _sessionManager = null!;
@@ -72,9 +75,11 @@ public partial class MissionTransitionController : Node
 				"PanelMargin/Content/StartCenter/" +
 				"StartMissionButton");
 
-		_settingsButton =
-			GetNode<Button>(
-				"../TopMargin/TopBar/SettingsButton");
+		_returnToMenuButton = GetNode<Button>(
+			"../CenterContainer/MissionPanel/PanelMargin/Content/ReturnCenter/ReturnToMenuButton");
+		_missionPanel = GetNode<PanelContainer>("../CenterContainer/MissionPanel");
+		_iconPanel = GetNode<PanelContainer>(
+			"../CenterContainer/MissionPanel/PanelMargin/Content/MissionCard/CardMargin/CardContent/IconPanel");
 
 		_sessionManager =
 			GetNode<SessionManager>("/root/SessionManager");
@@ -82,8 +87,10 @@ public partial class MissionTransitionController : Node
 		_startMissionButton.Pressed +=
 			OnStartMissionPressed;
 
-		_settingsButton.Pressed +=
-			OnSettingsPressed;
+		_returnToMenuButton.Pressed += OnReturnToMenuPressed;
+		GameUiStyle.ApplyMainPanel(_missionPanel);
+		GameUiStyle.ApplyPrimaryButton(_startMissionButton, 18);
+		GameUiStyle.ApplySecondaryButton(_returnToMenuButton, 16);
 
 		LoadCurrentMission();
 	}
@@ -119,7 +126,7 @@ public partial class MissionTransitionController : Node
 		_missionTitle.Text = mission.Name;
 
 		_missionCategory.Text =
-			GetCategoryText(mission.Type);
+			MissionPresentation.Name(mission.Type);
 
 		_missionDifficulty.Text =
 			$"Dificuldade: " +
@@ -132,9 +139,12 @@ public partial class MissionTransitionController : Node
 				: mission.Description;
 
 		_missionIcon.Text =
-			GetCategoryIcon(mission.Type);
+			MissionPresentation.Icon(mission.Type);
+
+		ApplyCategoryAppearance(mission.Type);
 
 		_statusLabel.Text = string.Empty;
+		_returnToMenuButton.Visible = false;
 
 		GD.Print(
 			$"Tela de transição carregada: " +
@@ -180,7 +190,8 @@ public partial class MissionTransitionController : Node
 	if (scenePath is null)
 	{
 		_statusLabel.Text =
-			"Este tipo de missão ainda não foi implementado.";
+			"Não foi possível abrir esta missão. Retorne ao menu.";
+		_returnToMenuButton.Visible = true;
 
 		_startMissionButton.Disabled = false;
 
@@ -197,7 +208,8 @@ public partial class MissionTransitionController : Node
 	if (navigationError != Error.Ok)
 	{
 		_statusLabel.Text =
-			"Não foi possível abrir a missão.";
+			"Não foi possível abrir a missão. Tente novamente ou retorne ao menu.";
+		_returnToMenuButton.Visible = true;
 
 		_startMissionButton.Disabled = false;
 
@@ -297,53 +309,41 @@ private static string? ResolveMissionScene(
 	};
 }
 
-	private void OnSettingsPressed()
+	private void OnReturnToMenuPressed()
 	{
-		_statusLabel.Text =
-			"Settings will be implemented later.";
+		const string menuPath = "res://scenes/menu/MainMenu.tscn";
+		Error result = GetTree().ChangeSceneToFile(menuPath);
+		if (result == Error.Ok)
+		{
+			_sessionManager.ClearSession();
+			return;
+		}
+
+		_statusLabel.Text = "Não foi possível voltar ao menu. Tente novamente.";
+		GD.PushError($"Falha ao abrir {menuPath}: {result}");
 	}
 
 	private void ShowBlockingError(string message)
 	{
-		_missionCounter.Text =
-			"Missão indisponível";
-
+		_missionCounter.Text = "Missão indisponível";
 		_missionTitle.Text = message;
 		_missionCategory.Text = string.Empty;
 		_missionDifficulty.Text = string.Empty;
 		_missionDescription.Text = string.Empty;
 		_missionIcon.Text = "!";
-
-		_statusLabel.Text =
-			"Retorne ao menu principal e inicie uma nova sessão.";
-
+		_statusLabel.Text = "Retorne ao menu principal e inicie uma nova sessão.";
 		_startMissionButton.Disabled = true;
-
+		_returnToMenuButton.Visible = true;
 		GD.PushError(message);
 	}
 
-	private static string GetCategoryText(
-		MissionType type)
+	private void ApplyCategoryAppearance(MissionType type)
 	{
-		return type switch
-		{
-			MissionType.Combat => "Combate",
-			MissionType.Exploration => "Exploração",
-			MissionType.Puzzle => "Quebra-cabeça",
-			_ => "Desconhecida"
-		};
-	}
-
-	private static string GetCategoryIcon(
-		MissionType type)
-	{
-		return type switch
-		{
-			MissionType.Combat => "⚔",
-			MissionType.Exploration => "⌖",
-			MissionType.Puzzle => "◆",
-			_ => "?"
-		};
+		_iconPanel.AddThemeStyleboxOverride("panel",
+			GameUiStyle.CreateBox(MissionPresentation.Background(type),
+				GameUiStyle.Border, 2, 18));
+		_missionIcon.AddThemeColorOverride("font_color",
+			MissionPresentation.Foreground(type));
 	}
 
 	private static string GetTemplateDescription(

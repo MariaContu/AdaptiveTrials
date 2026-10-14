@@ -6,6 +6,7 @@ using AdaptiveTrials.Game.Api;
 using AdaptiveTrials.Game.Dto.Adaptive;
 using AdaptiveTrials.Game.Enums;
 using AdaptiveTrials.Game.Session;
+using AdaptiveTrials.Game.UI;
 using Godot;
 
 namespace AdaptiveTrials.Game.Adaptive;
@@ -70,6 +71,7 @@ public partial class AdaptiveProfileSetupController : Control
     {
         GetNodes();
         ConnectSignals();
+        ApplyVisualStyle();
 
         if (!TestMode)
         {
@@ -136,6 +138,35 @@ public partial class AdaptiveProfileSetupController : Control
         _readyExplorationLabel = GetNode<Label>("InterfaceMargin/Root/ContentCenter/ReadyPanel/Margin/Content/Distribution/ReadyExplorationLabel");
         _readyPuzzleLabel = GetNode<Label>("InterfaceMargin/Root/ContentCenter/ReadyPanel/Margin/Content/Distribution/ReadyPuzzleLabel");
         _continueButton = GetNode<Button>("InterfaceMargin/Root/ContentCenter/ReadyPanel/Margin/Content/ContinueButton");
+    }
+
+    private void ApplyVisualStyle()
+    {
+        foreach (PanelContainer panel in new[]
+        {
+            _steamEntryPanel, _steamConfirmPanel, _manualPanel, _readyPanel
+        })
+        {
+            GameUiStyle.ApplyMainPanel(panel);
+        }
+
+        foreach (Button button in new[]
+        {
+            _searchSteamButton, _confirmSteamButton,
+            _saveManualButton, _continueButton
+        })
+        {
+            GameUiStyle.ApplyPrimaryButton(button, 16);
+        }
+
+        foreach (Button button in new[]
+        {
+            _backButton, _noSteamButton,
+            _wrongSteamButton, _manualCancelButton
+        })
+        {
+            GameUiStyle.ApplySecondaryButton(button, 15);
+        }
     }
 
     private void ConnectSignals()

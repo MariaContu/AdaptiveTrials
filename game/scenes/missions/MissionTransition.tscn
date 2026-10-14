@@ -101,31 +101,6 @@ grow_vertical = 2
 script = ExtResource("1_sl522")
 ShadowOffset = 0.0
 
-[node name="TopMargin" type="MarginContainer" parent="." unique_id=624547980]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/margin_left = 20
-theme_override_constants/margin_top = 16
-theme_override_constants/margin_right = 20
-theme_override_constants/margin_bottom = 20
-
-[node name="TopBar" type="HBoxContainer" parent="TopMargin" unique_id=1921006458]
-layout_mode = 2
-size_flags_vertical = 0
-
-[node name="SettingsButton" type="Button" parent="TopMargin/TopBar" unique_id=1637987693]
-custom_minimum_size = Vector2(52, 52)
-layout_mode = 2
-text = "⚙"
-
-[node name="TopSpacer" type="Control" parent="TopMargin/TopBar" unique_id=1749197946]
-layout_mode = 2
-size_flags_horizontal = 3
-
 [node name="CenterContainer" type="CenterContainer" parent="." unique_id=1995486031]
 layout_mode = 1
 anchors_preset = 15
@@ -229,9 +204,20 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_e56fx")
 theme_override_styles/hover = SubResource("StyleBoxFlat_hxul1")
 text = "INICIAR MISSÃO"
 
+[node name="ReturnCenter" type="CenterContainer" parent="CenterContainer/MissionPanel/PanelMargin/Content"]
+layout_mode = 2
+
+[node name="ReturnToMenuButton" type="Button" parent="CenterContainer/MissionPanel/PanelMargin/Content/ReturnCenter"]
+visible = false
+custom_minimum_size = Vector2(210, 48)
+layout_mode = 2
+text = "VOLTAR AO MENU"
+
 [node name="StatusLabel" type="Label" parent="CenterContainer/MissionPanel/PanelMargin/Content" unique_id=1281129982]
 layout_mode = 2
+theme_override_font_sizes/font_size = 14
 horizontal_alignment = 1
+autowrap_mode = 3
 
 [node name="MissionTransitionController" type="Node" parent="." unique_id=940499595]
 script = ExtResource("2_pe2db")
