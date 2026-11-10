@@ -10,3 +10,4 @@ pytest
 ruff
 fastapi
 uvicorn
+imbalanced-learn
