@@ -1,0 +1,50 @@
+[gd_scene format=3 uid="uid://40dlqctiw5k8"]
+
+[ext_resource type="PackedScene" uid="uid://dqetu3bq4c1ws" path="res://scenes/player/Player.tscn" id="1_player"]
+[ext_resource type="Script" uid="uid://b8pyuofkhs5f5" path="res://scripts/missions/shared/ExplorationMaze.cs" id="2_map"]
+[ext_resource type="Script" uid="uid://4wxl361to35k" path="res://scripts/tests/ExplorationSandboxController.cs" id="3_test"]
+
+[node name="ReachDestinationMissionTest" type="Node2D" unique_id=1187970320]
+
+[node name="Environment" type="Node2D" parent="." unique_id=1782838582]
+
+[node name="Backdrop" type="Polygon2D" parent="Environment" unique_id=261213404]
+z_index = -10
+color = Color(0.067, 0.051, 0.094, 1)
+polygon = PackedVector2Array(0, 0, 1152, 0, 1152, 648, 0, 648)
+
+[node name="ExplorationMaze" type="Node2D" parent="Environment" unique_id=908651179]
+script = ExtResource("2_map")
+
+[node name="DynamicObjects" type="Node2D" parent="." unique_id=662374077]
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=1388519326]
+position = Vector2(576, 324)
+
+[node name="Player" parent="." unique_id=1434544588 instance=ExtResource("1_player")]
+z_index = 10
+
+[node name="Interface" type="CanvasLayer" parent="." unique_id=2081121961]
+
+[node name="StatusLabel" type="Label" parent="Interface" unique_id=1131791028]
+offset_left = 130.0
+offset_top = 8.0
+offset_right = 1050.0
+offset_bottom = 40.0
+theme_override_colors/font_color = Color(0.97, 0.92, 0.99, 1)
+theme_override_font_sizes/font_size = 20
+text = "TESTE: CHEGAR AO DESTINO"
+horizontal_alignment = 1
+
+[node name="InstructionLabel" type="Label" parent="Interface" unique_id=1583791997]
+offset_left = 140.0
+offset_top = 611.0
+offset_right = 1050.0
+offset_bottom = 641.0
+theme_override_colors/font_color = Color(0.81, 0.76, 0.86, 1)
+theme_override_font_sizes/font_size = 14
+text = "Siga os marcos da trilha e atravesse os portões quando apagarem. | WASD | TestDifficulty: 1 a 3"
+horizontal_alignment = 1
+
+[node name="ExplorationSandboxController" type="Node" parent="." unique_id=1110405442]
+script = ExtResource("3_test")

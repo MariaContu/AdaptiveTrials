@@ -1,6 +1,7 @@
 using AdaptiveTrials.Application.DTOs.Recommendations;
 using AdaptiveTrials.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using AdaptiveTrials.Application.Exceptions;
 
 namespace AdaptiveTrials.Api.Controllers;
 
@@ -33,6 +34,10 @@ public class RecommendationsController : ControllerBase
             }
 
             return Ok(response);
+        }
+        catch (AdaptiveSessionConflictException exception)
+        {
+            return Conflict(new { message = exception.Message });
         }
         catch (InvalidOperationException exception)
         {

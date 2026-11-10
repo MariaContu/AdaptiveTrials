@@ -36,6 +36,16 @@ public partial class DefensibleObject : Area2D, IDamageable
     public float DamagePulseScale { get; set; } = 1.08f;
 
     [Export]
+    public Color RelocationFlashColor { get; set; } =
+        new(0.76f, 0.60f, 1.0f, 1.0f);
+
+    [Export]
+    public float RelocationFeedbackSeconds { get; set; } = 0.18f;
+
+    [Export]
+    public float RelocationStartScale { get; set; } = 0.78f;
+
+    [Export]
     public Color DestroyedModulate { get; set; } =
         new(0.38f, 0.34f, 0.46f, 0.65f);
 
@@ -106,6 +116,54 @@ public partial class DefensibleObject : Area2D, IDamageable
         {
             Monitorable = enabled;
         }
+    }
+
+    /// <summary>
+    /// Reproduz um feedback curto após o objeto ser movido para outra posição.
+    /// Não altera vida, colisão ou estado de dano.
+    /// </summary>
+    public void PlayRelocationFeedback()
+    {
+        if (IsDestroyed)
+        {
+            return;
+        }
+
+        StopDamageFeedback();
+
+        float duration =
+            Mathf.Max(0.08f, RelocationFeedbackSeconds);
+
+        float startScale =
+            Mathf.Clamp(
+                RelocationStartScale,
+                0.55f,
+                1.0f);
+
+        _visualRoot.Modulate =
+            RelocationFlashColor;
+
+        _visualRoot.Scale =
+            _initialScale * startScale;
+
+        _damageTween =
+            CreateTween();
+
+        _damageTween.SetParallel(true);
+
+        _damageTween.TweenProperty(
+            _visualRoot,
+            "modulate",
+            _initialModulate,
+            duration);
+
+        _damageTween.TweenProperty(
+            _visualRoot,
+            "scale",
+            _initialScale,
+            duration)
+            .SetTrans(Tween.TransitionType.Back)
+            .SetEase(Tween.EaseType.Out);
     }
 
     private void OnHealthChanged(int currentHealth, int maximumHealth)

@@ -3,12 +3,12 @@
 [ext_resource type="Script" uid="uid://c8ujbgun0h76h" path="res://scripts/components/MissionResultPopup.cs" id="1_c4lua"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_64xp1"]
-bg_color = Color(0.84313726, 0.8901961, 0.87058824, 1)
+bg_color = Color(0.74509805, 0.65882355, 0.6039216, 1)
 border_width_left = 8
 border_width_top = 8
 border_width_right = 8
 border_width_bottom = 8
-border_color = Color(0.5568628, 0.7254902, 0.62352943, 1)
+border_color = Color(0.5568628, 0.49019608, 0.5137255, 1)
 corner_radius_top_left = 24
 corner_radius_top_right = 24
 corner_radius_bottom_right = 24
@@ -127,14 +127,14 @@ columns = 2
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.12941177, 0.26666668, 0.18039216, 1)
-theme_override_font_sizes/font_size = 0
+theme_override_font_sizes/font_size = 14
 text = "Tempo gasto"
 
 [node name="TimeValueLabel" type="Label" parent="Overlay/CenterContainer/ResultPanel/ResultMargin/ResultContent/StatisticsGrid" unique_id=2118138660]
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.02745098, 0.3254902, 0.10980392, 1)
-theme_override_font_sizes/font_size = 0
+theme_override_font_sizes/font_size = 16
 text = "00:00"
 horizontal_alignment = 2
 
@@ -142,14 +142,14 @@ horizontal_alignment = 2
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.12941177, 0.26666668, 0.18039216, 1)
-theme_override_font_sizes/font_size = 0
+theme_override_font_sizes/font_size = 14
 text = "Estatística"
 
 [node name="StatisticValueLabel" type="Label" parent="Overlay/CenterContainer/ResultPanel/ResultMargin/ResultContent/StatisticsGrid" unique_id=510724909]
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.02745098, 0.3254902, 0.10980392, 1)
-theme_override_font_sizes/font_size = 0
+theme_override_font_sizes/font_size = 16
 text = "0/0"
 horizontal_alignment = 2
 
@@ -157,14 +157,14 @@ horizontal_alignment = 2
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.12941177, 0.26666668, 0.18039216, 1)
-theme_override_font_sizes/font_size = 0
+theme_override_font_sizes/font_size = 14
 text = "Dificuldade"
 
 [node name="DifficultyValueLabel" type="Label" parent="Overlay/CenterContainer/ResultPanel/ResultMargin/ResultContent/StatisticsGrid" unique_id=637717324]
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.02745098, 0.3254902, 0.10980392, 1)
-theme_override_font_sizes/font_size = 0
+theme_override_font_sizes/font_size = 16
 text = "Fácil"
 horizontal_alignment = 2
 
@@ -172,14 +172,14 @@ horizontal_alignment = 2
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.12941177, 0.26666668, 0.18039216, 1)
-theme_override_font_sizes/font_size = 0
+theme_override_font_sizes/font_size = 14
 text = "Erros"
 
 [node name="FailuresValueLabel" type="Label" parent="Overlay/CenterContainer/ResultPanel/ResultMargin/ResultContent/StatisticsGrid" unique_id=2065254861]
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.02745098, 0.3254902, 0.10980392, 1)
-theme_override_font_sizes/font_size = 0
+theme_override_font_sizes/font_size = 16
 text = "0"
 horizontal_alignment = 2
 

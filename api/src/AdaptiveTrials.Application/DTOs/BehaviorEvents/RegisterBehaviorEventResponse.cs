@@ -4,6 +4,9 @@ namespace AdaptiveTrials.Application.DTOs.BehaviorEvents;
 
 public class RegisterBehaviorEventResponse
 {
+    [System.Text.Json.Serialization.JsonIgnore]
+    public bool AlreadyRegistered { get; set; }
+
     public int EventId { get; set; }
 
     public int SessionId { get; set; }

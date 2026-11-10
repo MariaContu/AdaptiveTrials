@@ -81,6 +81,26 @@ shape = SubResource("WallVertical")
 [node name="DefensibleObject" parent="." instance=ExtResource("2_object")]
 position = Vector2(450, 400)
 
+[node name="RelocationPoints" type="Node2D" parent="."]
+
+[node name="Point01" type="Marker2D" parent="RelocationPoints"]
+position = Vector2(300, 250)
+
+[node name="Point02" type="Marker2D" parent="RelocationPoints"]
+position = Vector2(610, 230)
+
+[node name="Point03" type="Marker2D" parent="RelocationPoints"]
+position = Vector2(880, 270)
+
+[node name="Point04" type="Marker2D" parent="RelocationPoints"]
+position = Vector2(330, 520)
+
+[node name="Point05" type="Marker2D" parent="RelocationPoints"]
+position = Vector2(690, 500)
+
+[node name="Point06" type="Marker2D" parent="RelocationPoints"]
+position = Vector2(930, 500)
+
 [node name="EnemyOrbEmitter" type="Marker2D" parent="."]
 position = Vector2(1020, 400)
 
@@ -123,7 +143,7 @@ horizontal_alignment = 1
 
 [node name="StatusLabel" type="Label" parent="Interface/Panel/Margin/Content"]
 theme_override_colors/font_color = Color(1, 0.76, 0.82, 1)
-text = "ORBE INIMIGA SERÁ LANÇADA AUTOMATICAMENTE"
+text = "CADA DANO DEVE MOVER O CRISTAL SEM RESTAURAR SUA VIDA"
 horizontal_alignment = 1
 
 [node name="Instructions" type="Label" parent="Interface"]

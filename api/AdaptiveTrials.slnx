@@ -5,4 +5,7 @@
     <Project Path="src/AdaptiveTrials.Domain/AdaptiveTrials.Domain.csproj" />
     <Project Path="src/AdaptiveTrials.Infrastructure/AdaptiveTrials.Infrastructure.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/AdaptiveTrials.Api.IntegrationTests/AdaptiveTrials.Api.IntegrationTests.csproj" />
+  </Folder>
 </Solution>

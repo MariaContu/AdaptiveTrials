@@ -27,7 +27,6 @@ appsettings.Local.json
 .DS_Store
 Thumbs.db 
 
-*.db
 *.db-shm
 *.db-wal
 

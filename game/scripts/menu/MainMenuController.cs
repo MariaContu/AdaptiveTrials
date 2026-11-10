@@ -9,6 +9,7 @@ using AdaptiveTrials.Game.Dto.Sessions;
 using AdaptiveTrials.Game.Enums;
 using AdaptiveTrials.Game.Missions.Providers;
 using AdaptiveTrials.Game.Session;
+using AdaptiveTrials.Game.UI;
 using Godot;
 
 namespace AdaptiveTrials.Game.Menu;
@@ -22,7 +23,9 @@ public partial class MainMenuController : Node
 	private const string MissionTransitionScenePath =
 		"res://scenes/missions/MissionTransition.tscn";
 
-	private Button _settingsButton = null!;
+	private const string AdaptiveProfileSetupScenePath =
+		"res://scenes/adaptive/AdaptiveProfileSetup.tscn";
+
 	private Button _exitButton = null!;
 	private Button _controlModeButton = null!;
 	private Button _adaptiveModeButton = null!;
@@ -37,15 +40,11 @@ public partial class MainMenuController : Node
 		GetInterfaceNodes();
 		ConnectSignals();
 		ResetInterface();
+		GameUiStyle.ApplyPrimaryButton(_startButton, 20);
 	}
 
 	private void GetInterfaceNodes()
 	{
-		_settingsButton =
-			GetNode<Button>(
-				"../InterfaceMargin/InterfaceRoot/" +
-				"TopBar/SettingsButton");
-
 		_exitButton =
 			GetNode<Button>(
 				"../InterfaceMargin/InterfaceRoot/" +
@@ -76,7 +75,6 @@ public partial class MainMenuController : Node
 
 	private void ConnectSignals()
 	{
-		_settingsButton.Pressed += OnSettingsPressed;
 		_exitButton.Pressed += OnExitPressed;
 
 		_controlModeButton.Pressed +=
@@ -362,23 +360,27 @@ public partial class MainMenuController : Node
 
 	private void StartAdaptiveFlow()
 	{
-		/*
-		 * O fluxo adaptativo será conectado depois:
-		 *
-		 * 1. tela de Steam ID;
-		 * 2. possibilidade de pular a Steam;
-		 * 3. preferências manuais;
-		 * 4. recomendação pela API.
-		 */
+		SetLoadingState(
+			true,
+			"Abrindo configuração do perfil adaptativo...");
 
-		_statusLabel.Text =
-			"A configuração do perfil adaptativo será implementada na próxima etapa.";
+		Error navigationError =
+			GetTree().ChangeSceneToFile(
+				AdaptiveProfileSetupScenePath);
 
-		SetLoadingState(false);
+		if (navigationError == Error.Ok)
+		{
+			return;
+		}
 
-		GD.Print(
-			"Sessão adaptativa criada. " +
-			"Aguardando implementação do fluxo de perfil.");
+		GD.PushError(
+			$"Não foi possível abrir a cena " +
+			$"{AdaptiveProfileSetupScenePath}. " +
+			$"Erro: {navigationError}");
+
+		ShowRequestError(
+			"Não foi possível abrir a configuração do perfil adaptativo.",
+			navigationError.ToString());
 	}
 
 	private void SetLoadingState(
@@ -403,23 +405,14 @@ public partial class MainMenuController : Node
 		string title,
 		string details)
 	{
-		_statusLabel.Text =
-			string.IsNullOrWhiteSpace(details)
-				? title
-				: $"{title}\n{details}";
-
-		SetLoadingState(false);
-	}
-
-	private void OnSettingsPressed()
-	{
-		if (_isCreatingSession)
+		// A interface apresenta uma mensagem curta; os detalhes ficam no console.
+		_statusLabel.Text = title + " Verifique a conexão com a API e tente novamente.";
+		if (!string.IsNullOrWhiteSpace(details))
 		{
-			return;
+			GD.PushWarning($"{title} Detalhes: {details}");
 		}
 
-		_statusLabel.Text =
-			"As configurações serão implementadas posteriormente.";
+		SetLoadingState(false);
 	}
 
 	private void OnExitPressed()

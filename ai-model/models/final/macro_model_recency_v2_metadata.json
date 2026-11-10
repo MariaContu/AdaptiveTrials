@@ -1,0 +1,99 @@
+{
+  "model_name": "macro_model_recency_v2",
+  "version": "recency_v2",
+  "purpose": "deployment_refit",
+  "performance_metrics_recomputed": false,
+  "reason_no_new_metrics": "The final model was refit on all resolved profiles only after the configuration had been selected and evaluated in stages 09f, 09g and 09h. Recomputing performance on these same profiles would not provide an unbiased estimate.",
+  "training": {
+    "total_profile_rows": 1000,
+    "resolved_profiles_used": 686,
+    "unresolved_profiles_excluded": 314,
+    "class_counts": {
+      "combat": 392,
+      "exploration": 222,
+      "strategic_reasoning": 72
+    },
+    "target_column": "macro_target"
+  },
+  "features": {
+    "feature_count": 49,
+    "feature_set": "recency_counts_49",
+    "feature_names": [
+      "total_library_games",
+      "total_played_games",
+      "total_playtime_minutes",
+      "categorized_games",
+      "categorized_played_games",
+      "category_game_coverage",
+      "category_playtime_coverage",
+      "avg_playtime_per_played_game_minutes",
+      "games_combat",
+      "played_games_combat",
+      "games_exploration",
+      "played_games_exploration",
+      "games_strategic_reasoning",
+      "played_games_strategic_reasoning",
+      "games_shooter",
+      "played_games_shooter",
+      "games_melee",
+      "played_games_melee",
+      "games_action_other",
+      "played_games_action_other",
+      "games_open_world",
+      "played_games_open_world",
+      "games_narrative_exploration",
+      "played_games_narrative_exploration",
+      "games_investigation",
+      "played_games_investigation",
+      "games_logic_puzzle",
+      "played_games_logic_puzzle",
+      "games_planning_management",
+      "played_games_planning_management",
+      "games_strategy_decision",
+      "played_games_strategy_decision",
+      "games_observation_deduction",
+      "played_games_observation_deduction",
+      "game_share_combat",
+      "game_share_exploration",
+      "game_share_strategic_reasoning",
+      "played_game_share_combat",
+      "played_game_share_exploration",
+      "played_game_share_strategic_reasoning",
+      "has_recent_activity",
+      "recent_total_playtime_minutes",
+      "recent_active_games",
+      "recent_categorized_playtime_minutes",
+      "recent_categorized_active_games",
+      "recent_category_playtime_coverage",
+      "recent_active_games_combat",
+      "recent_active_games_exploration",
+      "recent_active_games_strategic_reasoning"
+    ]
+  },
+  "model": {
+    "algorithm": "RandomForestClassifier",
+    "strategy": "class_weight",
+    "class_weight": "balanced",
+    "random_state": 42,
+    "rf_params": {
+      "n_estimators": 200,
+      "max_depth": 12,
+      "min_samples_split": 2,
+      "min_samples_leaf": 1,
+      "max_features": "sqrt"
+    },
+    "classes": [
+      "combat",
+      "exploration",
+      "strategic_reasoning"
+    ]
+  },
+  "selection_evidence": {
+    "optimization_stage": "09f",
+    "seed_stability_stage": "09g",
+    "final_heldout_comparison_stage": "09h"
+  },
+  "outputs": {
+    "model": "/Users/mecontudo/Documents/TCC/II/AdaptiveTrials.Api/ai-model/models/final/macro_model_recency_v2.joblib"
+  }
+}

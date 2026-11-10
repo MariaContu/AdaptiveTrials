@@ -30,6 +30,10 @@ public partial class PlayerController : CharacterBody2D, IDamageable
 	public PlayerVisualMode InitialVisualMode { get; set; } =
 		PlayerVisualMode.Normal;
 
+	[ExportGroup("Visual")]
+	[Export(PropertyHint.Range, "0.4,1.5,0.05")]
+	public float VisualScaleMultiplier { get; set; } = 1.0f;
+
 	[ExportGroup("Camera")]
 	[Export]
 	public bool FollowCamera { get; set; } = true;
@@ -79,6 +83,9 @@ public partial class PlayerController : CharacterBody2D, IDamageable
 	{
 		_animatedSprite =
 			GetNode<AnimatedSprite2D>("AnimatedSprite2D");
+
+		_animatedSprite.Scale *=
+			Mathf.Clamp(VisualScaleMultiplier, 0.4f, 1.5f);
 
 		_interactionArea =
 			GetNode<Area2D>("InteractionArea");

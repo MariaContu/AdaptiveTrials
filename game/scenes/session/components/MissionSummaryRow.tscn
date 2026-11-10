@@ -77,7 +77,7 @@ text_overrun_behavior = 3
 [node name="MissionDetailsLabel" type="Label" parent="RowMargin/Content/MissionInfo"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.3882353, 0.31764707, 0.36862746, 1)
-theme_override_font_sizes/font_size = 11
+theme_override_font_sizes/font_size = 12
 text = "Exploração • Difícil"
 text_overrun_behavior = 3
 
@@ -90,7 +90,7 @@ theme_override_constants/separation = 0
 [node name="TimeTitleLabel" type="Label" parent="RowMargin/Content/TimeContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.44313726, 0.36862746, 0.42352942, 1)
-theme_override_font_sizes/font_size = 9
+theme_override_font_sizes/font_size = 12
 text = "TEMPO"
 horizontal_alignment = 1
 

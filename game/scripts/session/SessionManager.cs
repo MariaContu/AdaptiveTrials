@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 using AdaptiveTrials.Game.Api;
 using AdaptiveTrials.Game.Dto;
 using AdaptiveTrials.Game.Dto.Sessions;
+using AdaptiveTrials.Game.Dto.Adaptive;
+using AdaptiveTrials.Game.Missions.Providers;
 using AdaptiveTrials.Game.Enums;
 using AdaptiveTrials.Game.Missions.Shared;
 using Godot;
@@ -34,6 +36,8 @@ public partial class SessionManager : Node
 
 	private ApiClient _apiClient = null!;
 
+	private NextRecommendationResponse? _pendingAdaptiveRecommendation;
+	private bool _isPreparingAdaptiveMission;
 	private bool _isRegisteringMissionResult;
 	private bool _isContinuingSession;
 	private bool _isEndingSession;
@@ -51,7 +55,9 @@ public partial class SessionManager : Node
 		_completedMissionRecords.Count;
 
 	public int TotalMissionCount =>
-		_missionSequence.Count;
+		Mode == GameMode.Adaptive
+			? AdaptiveMissionPolicy.MissionLimit
+			: _missionSequence.Count;
 
 	public IReadOnlyList<MissionDto> MissionSequence =>
 		_missionSequence;
@@ -81,7 +87,7 @@ public partial class SessionManager : Node
 	public bool IsLastMission =>
 		HasCurrentMission &&
 		CurrentMissionIndex ==
-		_missionSequence.Count - 1;
+		TotalMissionCount - 1;
 
 	public bool IsRegisteringMissionResult =>
 		_isRegisteringMissionResult;
@@ -135,6 +141,12 @@ public partial class SessionManager : Node
 		ArgumentNullException.ThrowIfNull(
 			missions);
 
+		if (Mode == GameMode.Adaptive)
+		{
+			throw new InvalidOperationException(
+				"O modo Adaptativo prepara as missões individualmente.");
+		}
+
 		if (missions.Count == 0)
 		{
 			throw new ArgumentException(
@@ -153,6 +165,83 @@ public partial class SessionManager : Node
 		GD.Print(
 			$"Sequência armazenada no SessionManager: " +
 			$"{_missionSequence.Count} missões.");
+	}
+
+	/// <summary>
+	/// Carrega uma recomendação de cada vez, sempre após o evento anterior.
+	/// Preserva a recomendação recebida se a consulta ao catálogo falhar,
+	/// evitando gerar outra recomendação em uma simples tentativa de repetição.
+	/// </summary>
+	public async Task<bool> PrepareNextAdaptiveMissionAsync()
+	{
+		if (!HasActiveSession || Mode != GameMode.Adaptive ||
+			!SessionId.HasValue || !PlayerId.HasValue ||
+			_isPreparingAdaptiveMission)
+		{
+			return false;
+		}
+
+		if (_missionSequence.Count >= AdaptiveMissionPolicy.MissionLimit ||
+			CompletedMissionCount != _missionSequence.Count)
+		{
+			GD.PushWarning("A próxima missão adaptativa ainda não pode ser preparada.");
+			return false;
+		}
+
+		_isPreparingAdaptiveMission = true;
+		try
+		{
+			if (_pendingAdaptiveRecommendation is null)
+			{
+				ApiResult<NextRecommendationResponse> recommendationResult =
+					await _apiClient.GetNextRecommendationAsync(
+						PlayerId.Value, SessionId.Value);
+
+				if (!recommendationResult.IsSuccess || recommendationResult.Data is null)
+				{
+					GD.PushError("Não foi possível obter a recomendação adaptativa: " +
+						recommendationResult.ErrorMessage);
+					return false;
+				}
+
+				_pendingAdaptiveRecommendation = recommendationResult.Data;
+			}
+
+			ApiResult<MissionDto> missionResult =
+				await _apiClient.GetMissionByIdAsync(
+					_pendingAdaptiveRecommendation.RecommendedMissionId);
+
+			if (!missionResult.IsSuccess || missionResult.Data is null)
+			{
+				GD.PushError("Não foi possível carregar a missão recomendada: " +
+					missionResult.ErrorMessage);
+				return false;
+			}
+
+			AdaptiveMissionPolicy.ValidateNext(
+				_missionSequence,
+				CompletedMissionCount,
+				_pendingAdaptiveRecommendation,
+				missionResult.Data);
+
+			_missionSequence.Add(missionResult.Data);
+			GD.Print($"Missão adaptativa preparada: " +
+				$"{_missionSequence.Count}/{TotalMissionCount}, " +
+				$"MissionId={missionResult.Data.Id}, " +
+				$"Dificuldade={missionResult.Data.Difficulty}, " +
+				$"Recomendação={_pendingAdaptiveRecommendation.RecommendationId}");
+			_pendingAdaptiveRecommendation = null;
+			return true;
+		}
+		catch (Exception exception)
+		{
+			GD.PushError("Erro ao preparar a missão adaptativa: " + exception);
+			return false;
+		}
+		finally
+		{
+			_isPreparingAdaptiveMission = false;
+		}
 	}
 
 	/// <summary>
@@ -364,6 +453,12 @@ public partial class SessionManager : Node
 					SessionSummaryScenePath);
 			}
 
+			if (Mode == GameMode.Adaptive &&
+				!await PrepareNextAdaptiveMissionAsync())
+			{
+				return false;
+			}
+
 			CurrentMissionIndex++;
 
 			GD.Print(
@@ -517,6 +612,8 @@ public partial class SessionManager : Node
 
 		CurrentMissionIndex = 0;
 
+		_pendingAdaptiveRecommendation = null;
+		_isPreparingAdaptiveMission = false;
 		_isRegisteringMissionResult = false;
 	}
 }

@@ -335,7 +335,7 @@ theme_override_constants/separation = 1
 [node name="Title" type="Label" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/StatsSection/MetricsGrid/AverageTimeCard/Margin/Content"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.3882353, 0.31764707, 0.36862746, 1)
-theme_override_font_sizes/font_size = 11
+theme_override_font_sizes/font_size = 12
 text = "TEMPO MÉDIO"
 
 [node name="Value" type="Label" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/StatsSection/MetricsGrid/AverageTimeCard/Margin/Content"]
@@ -347,7 +347,7 @@ text = "00:00"
 [node name="Detail" type="Label" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/StatsSection/MetricsGrid/AverageTimeCard/Margin/Content"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.3882353, 0.31764707, 0.36862746, 1)
-theme_override_font_sizes/font_size = 10
+theme_override_font_sizes/font_size = 12
 text = "Total: 00:00"
 
 [node name="SuccessRateCard" type="PanelContainer" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/StatsSection/MetricsGrid"]
@@ -370,7 +370,7 @@ theme_override_constants/separation = 1
 [node name="Title" type="Label" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/StatsSection/MetricsGrid/SuccessRateCard/Margin/Content"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.25490198, 0.38039216, 0.27450982, 1)
-theme_override_font_sizes/font_size = 11
+theme_override_font_sizes/font_size = 12
 text = "TAXA DE SUCESSO"
 
 [node name="Value" type="Label" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/StatsSection/MetricsGrid/SuccessRateCard/Margin/Content"]
@@ -382,7 +382,7 @@ text = "0%"
 [node name="Detail" type="Label" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/StatsSection/MetricsGrid/SuccessRateCard/Margin/Content"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.25490198, 0.38039216, 0.27450982, 1)
-theme_override_font_sizes/font_size = 10
+theme_override_font_sizes/font_size = 12
 text = "0 de 6 concluídas"
 
 [node name="FailedCard" type="PanelContainer" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/StatsSection/MetricsGrid"]
@@ -405,7 +405,7 @@ theme_override_constants/separation = 1
 [node name="Title" type="Label" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/StatsSection/MetricsGrid/FailedCard/Margin/Content"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.45490196, 0.2509804, 0.29411766, 1)
-theme_override_font_sizes/font_size = 11
+theme_override_font_sizes/font_size = 12
 text = "NÃO CONCLUÍDAS"
 
 [node name="Value" type="Label" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/StatsSection/MetricsGrid/FailedCard/Margin/Content"]
@@ -417,7 +417,7 @@ text = "0"
 [node name="Detail" type="Label" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/StatsSection/MetricsGrid/FailedCard/Margin/Content"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.45490196, 0.2509804, 0.29411766, 1)
-theme_override_font_sizes/font_size = 10
+theme_override_font_sizes/font_size = 12
 text = "0 erros durante as missões"
 
 [node name="BestCategoryCard" type="PanelContainer" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/StatsSection/MetricsGrid"]
@@ -440,7 +440,7 @@ theme_override_constants/separation = 1
 [node name="Title" type="Label" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/StatsSection/MetricsGrid/BestCategoryCard/Margin/Content"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.44313726, 0.33333334, 0.2, 1)
-theme_override_font_sizes/font_size = 11
+theme_override_font_sizes/font_size = 12
 text = "MELHOR CATEGORIA"
 
 [node name="Value" type="Label" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/StatsSection/MetricsGrid/BestCategoryCard/Margin/Content"]
@@ -453,7 +453,7 @@ text_overrun_behavior = 3
 [node name="Detail" type="Label" parent="ScreenMargin/SummaryPanel/PanelMargin/RootContent/Body/StatsSection/MetricsGrid/BestCategoryCard/Margin/Content"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.44313726, 0.33333334, 0.2, 1)
-theme_override_font_sizes/font_size = 10
+theme_override_font_sizes/font_size = 12
 text = "Sem dados"
 text_overrun_behavior = 3
 

@@ -1,5 +1,6 @@
 using System;
 using AdaptiveTrials.Game.Enums;
+using AdaptiveTrials.Game.UI;
 using Godot;
 
 namespace AdaptiveTrials.Game.Session;
@@ -41,9 +42,9 @@ public partial class MissionSummaryRow : PanelContainer
 
 		_missionNameLabel.Text = record.Mission.Name;
 		_missionDetailsLabel.Text =
-			$"{GetCategoryText(record.Mission.Type)} • " +
+			$"{MissionPresentation.Name(record.Mission.Type)} • " +
 			$"{GetDifficultyText(record.Mission.Difficulty)}";
-		_categoryIcon.Text = GetCategoryIcon(record.Mission.Type);
+		_categoryIcon.Text = MissionPresentation.Icon(record.Mission.Type);
 		_timeValueLabel.Text = FormatTime(record.Result.CompletionTime);
 
 		ApplyCategoryStyle(record.Mission.Type);
@@ -60,25 +61,8 @@ public partial class MissionSummaryRow : PanelContainer
 			CornerRadiusBottomLeft = 12
 		};
 
-		switch (missionType)
-		{
-			case MissionType.Combat:
-				style.BgColor = new Color("#B9878D");
-				_categoryIcon.Modulate = new Color("#3E252A");
-				break;
-			case MissionType.Exploration:
-				style.BgColor = new Color("#91A58D");
-				_categoryIcon.Modulate = new Color("#26362A");
-				break;
-			case MissionType.Puzzle:
-				style.BgColor = new Color("#8E899E");
-				_categoryIcon.Modulate = new Color("#292637");
-				break;
-			default:
-				style.BgColor = new Color("#96858F");
-				_categoryIcon.Modulate = new Color("#342933");
-				break;
-		}
+		style.BgColor = MissionPresentation.Background(missionType);
+		_categoryIcon.Modulate = MissionPresentation.Foreground(missionType);
 
 		_categoryIconPanel.AddThemeStyleboxOverride("panel", style);
 	}
@@ -109,17 +93,6 @@ public partial class MissionSummaryRow : PanelContainer
 		_resultPanel.AddThemeStyleboxOverride("panel", style);
 	}
 
-	private static string GetCategoryText(MissionType missionType)
-	{
-		return missionType switch
-		{
-			MissionType.Combat => "Combate",
-			MissionType.Exploration => "Exploração",
-			MissionType.Puzzle => "Quebra-cabeça",
-			_ => "Desconhecida"
-		};
-	}
-
 	private static string GetDifficultyText(int difficulty)
 	{
 		return difficulty switch
@@ -128,17 +101,6 @@ public partial class MissionSummaryRow : PanelContainer
 			2 => "Média",
 			3 => "Difícil",
 			_ => "Desconhecida"
-		};
-	}
-
-	private static string GetCategoryIcon(MissionType missionType)
-	{
-		return missionType switch
-		{
-			MissionType.Combat => "⚔",
-			MissionType.Exploration => "⌖",
-			MissionType.Puzzle => "◇",
-			_ => "?"
 		};
 	}
 

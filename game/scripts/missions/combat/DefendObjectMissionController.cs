@@ -28,10 +28,17 @@ public partial class DefendObjectMissionController : Node
     private WaveAnnouncement _waveAnnouncement = null!;
     private Node2D _dynamicEnemies = null!;
     private Node2D _spawnPoints = null!;
+    private Node2D _objectRelocationPoints = null!;
     private Marker2D _playerSpawn = null!;
 
     private readonly List<Marker2D> _spawnMarkers = new();
+    private readonly List<Marker2D> _objectRelocationMarkers = new();
     private readonly List<CombatWaveDefinition> _waves = new();
+    private readonly RandomNumberGenerator _relocationRandom = new();
+
+    private const float MinimumDistanceFromPreviousPosition = 180.0f;
+    private const float MinimumDistanceFromPlayer = 145.0f;
+    private const float MinimumDistanceFromEnemy = 105.0f;
 
     private MissionDto _mission = null!;
     private double _elapsedTime;
@@ -55,6 +62,7 @@ public partial class DefendObjectMissionController : Node
         _player.HealthChanged += OnPlayerHealthChanged;
         _player.Died += OnPlayerDied;
         _defensibleObject.HealthChanged += OnObjectHealthChanged;
+        _defensibleObject.DamageReceived += OnObjectDamageReceived;
         _defensibleObject.Destroyed += OnObjectDestroyed;
         _waveManager.WaveStarted += OnWaveStarted;
         _waveManager.WaveCompleted += OnWaveCompleted;
@@ -67,6 +75,8 @@ public partial class DefendObjectMissionController : Node
             ShowInitializationError("Nenhuma missão ativa foi encontrada.");
             return;
         }
+
+        _relocationRandom.Randomize();
 
         _mission = currentMission;
         if (_mission.Type != MissionType.Combat)
@@ -100,6 +110,8 @@ public partial class DefendObjectMissionController : Node
             "../WaveAnnouncementLayer/WaveAnnouncement");
         _dynamicEnemies = GetNode<Node2D>("../DynamicEnemies");
         _spawnPoints = GetNode<Node2D>("../SpawnPoints/EnemySpawns");
+        _objectRelocationPoints =
+            GetNode<Node2D>("../SpawnPoints/ObjectRelocationPoints");
         _playerSpawn = GetNode<Marker2D>("../SpawnPoints/PlayerSpawn");
     }
 
@@ -144,6 +156,7 @@ public partial class DefendObjectMissionController : Node
         _resultPopup.HidePopup();
 
         ReadSpawnMarkers();
+        ReadObjectRelocationMarkers();
         BuildWaves(settings);
 
         _waveManager.Configure(
@@ -172,6 +185,25 @@ public partial class DefendObjectMissionController : Node
             {
                 _spawnMarkers.Add(marker);
             }
+        }
+    }
+
+    private void ReadObjectRelocationMarkers()
+    {
+        _objectRelocationMarkers.Clear();
+
+        foreach (Node child in _objectRelocationPoints.GetChildren())
+        {
+            if (child is Marker2D marker)
+            {
+                _objectRelocationMarkers.Add(marker);
+            }
+        }
+
+        if (_objectRelocationMarkers.Count == 0)
+        {
+            GD.PushWarning(
+                "Nenhum ponto de reposicionamento foi configurado para o cristal.");
         }
     }
 
@@ -264,13 +296,158 @@ public partial class DefendObjectMissionController : Node
         UpdateStatusText();
     }
 
+    private void OnObjectDamageReceived(int damage, Node source)
+    {
+        if (_missionFinished ||
+            _isFinalizingMission ||
+            _defensibleObject.IsDestroyed ||
+            _defensibleObject.CurrentHealth <= 0)
+        {
+            return;
+        }
+
+        RelocateDefensibleObject();
+    }
+
+    private void RelocateDefensibleObject()
+    {
+        if (_objectRelocationMarkers.Count == 0)
+        {
+            return;
+        }
+
+        Vector2 previousPosition =
+            _defensibleObject.GlobalPosition;
+
+        List<Marker2D> validMarkers =
+            _objectRelocationMarkers.FindAll(
+                marker =>
+                    IsRelocationPointValid(
+                        marker.GlobalPosition,
+                        previousPosition));
+
+        Marker2D? selectedMarker =
+            validMarkers.Count > 0
+                ? validMarkers[
+                    _relocationRandom.RandiRange(
+                        0,
+                        validMarkers.Count - 1)]
+                : FindBestFallbackRelocationPoint(previousPosition);
+
+        if (selectedMarker is null)
+        {
+            GD.PushWarning(
+                "Não foi encontrado um ponto válido para reposicionar o cristal.");
+            return;
+        }
+
+        _defensibleObject.GlobalPosition =
+            selectedMarker.GlobalPosition;
+
+        _defensibleObject.PlayRelocationFeedback();
+
+        GD.Print(
+            $"Cristal reposicionado: " +
+            $"{previousPosition} -> {_defensibleObject.GlobalPosition}. " +
+            $"Vida preservada: " +
+            $"{_defensibleObject.CurrentHealth}/" +
+            $"{_defensibleObject.MaximumHealth}.");
+    }
+
+    private bool IsRelocationPointValid(
+        Vector2 position,
+        Vector2 previousPosition)
+    {
+        if (position.DistanceTo(previousPosition) <
+            MinimumDistanceFromPreviousPosition)
+        {
+            return false;
+        }
+
+        if (position.DistanceTo(_player.GlobalPosition) <
+            MinimumDistanceFromPlayer)
+        {
+            return false;
+        }
+
+        foreach (Node child in _dynamicEnemies.GetChildren())
+        {
+            if (child is not CombatEnemyController enemy ||
+                !GodotObject.IsInstanceValid(enemy))
+            {
+                continue;
+            }
+
+            if (position.DistanceTo(enemy.GlobalPosition) <
+                MinimumDistanceFromEnemy)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private Marker2D? FindBestFallbackRelocationPoint(
+        Vector2 previousPosition)
+    {
+        Marker2D? bestMarker = null;
+        float bestScore = float.MinValue;
+
+        foreach (Marker2D marker in _objectRelocationMarkers)
+        {
+            Vector2 position =
+                marker.GlobalPosition;
+
+            float distanceFromPrevious =
+                position.DistanceTo(previousPosition);
+
+            if (distanceFromPrevious <
+                MinimumDistanceFromPreviousPosition)
+            {
+                continue;
+            }
+
+            float minimumClearance =
+                position.DistanceTo(_player.GlobalPosition);
+
+            foreach (Node child in _dynamicEnemies.GetChildren())
+            {
+                if (child is not CombatEnemyController enemy ||
+                    !GodotObject.IsInstanceValid(enemy))
+                {
+                    continue;
+                }
+
+                minimumClearance =
+                    Mathf.Min(
+                        minimumClearance,
+                        position.DistanceTo(enemy.GlobalPosition));
+            }
+
+            float score =
+                minimumClearance +
+                distanceFromPrevious * 0.25f;
+
+            if (score <= bestScore)
+            {
+                continue;
+            }
+
+            bestScore = score;
+            bestMarker = marker;
+        }
+
+        return bestMarker;
+    }
+
     private void UpdateStatusText()
     {
         _missionHud.SetAttemptsText(
-            $"Crystal: {_defensibleObject.CurrentHealth}/" +
+            $"Cristal: {_defensibleObject.CurrentHealth}/" +
             $"{_defensibleObject.MaximumHealth} | " +
             $"Vida: {_player.CurrentHealth}/{_player.MaximumHealth} | " +
-            $"Enemies: {_activeEnemies}");
+            $"Inimigos: {_activeEnemies}");
     }
 
     private void OnPlayerDied(Node source)
@@ -330,9 +507,9 @@ public partial class DefendObjectMissionController : Node
             _mission.Name,
             _objectiveText,
             _elapsedTime,
-            "Defense Result",
+            "Resultado da defesa",
             success
-                ? $"{_completedWaves}/{_totalWaves} waves cleared"
+                ? $"{_completedWaves}/{_totalWaves} ondas concluídas"
                 : resultDetail,
             GetDifficultyText(_mission.Difficulty),
             _failures);
@@ -374,7 +551,7 @@ public partial class DefendObjectMissionController : Node
             message,
             0,
             "Status",
-            "Initialization error",
+            "Erro de inicialização",
             "-",
             0);
         GD.PushError(message);

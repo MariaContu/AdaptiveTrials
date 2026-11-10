@@ -32,12 +32,12 @@ public partial class FindObjectsMissionController : Node
 	private MissionResultPopup _resultPopup = null!;
 
 	private Node2D _dynamicObjects = null!;
-	private Node2D _spawnPointsContainer = null!;
-	private Marker2D _playerSpawn = null!;
+	private ExplorationMaze _maze = null!;
 
 	private MissionDto _mission = null!;
 
 	private int _requiredItems;
+	private float _lightScale;
 	private int _collectedItems;
 	private int _failures;
 
@@ -83,9 +83,17 @@ public partial class FindObjectsMissionController : Node
 			return;
 		}
 
-		_requiredItems =
-			ReadRequiredItems(
-				_mission.ParametersJson);
+		// A progressão deve ser consistente mesmo com parâmetros antigos na API.
+		_requiredItems = _mission.Difficulty switch { 1 => 3, 2 => 6, _ => 10 };
+
+		// Mantém os parâmetros da API, mas aplica o teto de visibilidade
+		// por nível para evitar que valores antigos deixem o mapa fácil.
+		_lightScale =
+			Mathf.Min(
+				ReadLightScale(
+					_mission.ParametersJson,
+					_mission.Difficulty),
+				GetLightScale(_mission.Difficulty));
 
 		ConfigureMission();
 	}
@@ -122,14 +130,9 @@ public partial class FindObjectsMissionController : Node
 			GetNode<Node2D>(
 				"../DynamicObjects");
 
-		_spawnPointsContainer =
-			GetNode<Node2D>(
-				"../SpawnPoints/" +
-				"CollectibleSpawnPoints");
-
-		_playerSpawn =
-			GetNode<Marker2D>(
-				"../SpawnPoints/PlayerSpawn");
+		_maze =
+			GetNode<ExplorationMaze>(
+				"../Environment/ExplorationMaze");
 	}
 
 	private void ConfigureMission()
@@ -145,11 +148,14 @@ public partial class FindObjectsMissionController : Node
 		Result = null;
 
 		_objectiveText =
-			$"Encontre e colete {_requiredItems} objetos " +
-			"espalhados pelo cenário.";
+			$"Explore o jardim noturno e encontre {_requiredItems} objetos. " +
+			"Use os pontos de referência e sua luz para investigar cada região.";
+
+		_maze.Configure(
+			_mission.Difficulty);
 
 		_player.GlobalPosition =
-			_playerSpawn.GlobalPosition;
+			_maze.PlayerStartPosition;
 
 		_player.Velocity =
 			Vector2.Zero;
@@ -179,6 +185,7 @@ public partial class FindObjectsMissionController : Node
 
 		_resultPopup.HidePopup();
 
+		ConfigureLimitedVisibility();
 		SpawnCollectibles();
 
 		GD.Print(
@@ -190,32 +197,24 @@ public partial class FindObjectsMissionController : Node
 
 	private void SpawnCollectibles()
 	{
-		List<Marker2D> spawnPoints =
-			_spawnPointsContainer
-				.GetChildren()
-				.OfType<Marker2D>()
-				.ToList();
+		IReadOnlyList<Vector2> spawnPoints =
+			_maze.CollectiblePositions;
 
 		if (spawnPoints.Count <
 			_requiredItems)
 		{
 			ShowInitializationError(
-				$"O mapa contém apenas {spawnPoints.Count} " +
-				$"pontos de surgimento, mas a missão exige " +
+				$"O cenário da dificuldade {_mission.Difficulty} contém apenas " +
+				$"{spawnPoints.Count} pontos de coleta, mas a missão exige " +
 				$"{_requiredItems} objetos.");
 
 			return;
 		}
 
-		Shuffle(spawnPoints);
-
 		for (int index = 0;
 			 index < _requiredItems;
 			 index++)
 		{
-			Marker2D spawnPoint =
-				spawnPoints[index];
-
 			CollectibleObject collectible =
 				CollectibleScene
 					.Instantiate<CollectibleObject>();
@@ -230,7 +229,14 @@ public partial class FindObjectsMissionController : Node
 				collectible);
 
 			collectible.GlobalPosition =
-				spawnPoint.GlobalPosition;
+				spawnPoints[index];
+
+			collectible.ConfigureExplorationVisibility(
+				GetCollectibleGlowEnergy(_mission.Difficulty),
+				GetCollectiblePulseSpeed(_mission.Difficulty));
+
+			// Na dificuldade difícil, itens distantes não podem revelar o mapa.
+			collectible.SetGlowEnabled(_mission.Difficulty < 3);
 		}
 	}
 
@@ -260,6 +266,97 @@ public partial class FindObjectsMissionController : Node
 		{
 			_ = CompleteMissionAsync();
 		}
+	}
+
+	private void ConfigureLimitedVisibility()
+	{
+		ExplorationLighting.Configure(
+			GetParent(),
+			_player,
+			_mission.Difficulty,
+			nightGarden: true,
+			gardenLightScale: _lightScale);
+	}
+
+
+	private static float ReadLightScale(
+		string parametersJson,
+		int difficulty)
+	{
+		float fallback =
+			GetLightScale(
+				difficulty);
+
+		if (string.IsNullOrWhiteSpace(
+				parametersJson))
+		{
+			return fallback;
+		}
+
+		try
+		{
+			using JsonDocument document =
+				JsonDocument.Parse(
+					parametersJson);
+
+			JsonElement root =
+				document.RootElement;
+
+			if (!root.TryGetProperty(
+					"lightScale",
+					out JsonElement value) ||
+				!value.TryGetSingle(
+					out float configuredScale))
+			{
+				return fallback;
+			}
+
+			return Mathf.Clamp(
+				configuredScale,
+				1.0f,
+				4.0f);
+		}
+		catch (JsonException)
+		{
+			return fallback;
+		}
+	}
+
+
+	private static float GetLightScale(
+		int difficulty)
+	{
+		return difficulty switch
+		{
+			1 => 2.1f,
+			2 => 1.65f,
+			3 => 1.25f,
+			_ => 1.65f
+		};
+	}
+
+	private static float GetCollectibleGlowEnergy(
+		int difficulty)
+	{
+		return difficulty switch
+		{
+			1 => 0.85f,
+			2 => 0.60f,
+			3 => 0.40f,
+			_ => 0.85f
+		};
+	}
+
+	private static float GetCollectiblePulseSpeed(
+		int difficulty)
+	{
+		return difficulty switch
+		{
+			1 => 2.6f,
+			2 => 2.1f,
+			3 => 1.7f,
+			_ => 2.1f
+		};
 	}
 
 	private async Task CompleteMissionAsync()
@@ -508,6 +605,65 @@ public partial class FindObjectsMissionController : Node
 			3 => "Difícil",
 			_ => $"Nível {difficulty}"
 		};
+	}
+
+	private static List<Marker2D> SelectDistributedSpawnPoints(
+		IReadOnlyList<Marker2D> candidates,
+		int amount,
+		Vector2 playerStartPosition)
+	{
+		List<Marker2D> remaining =
+			candidates.ToList();
+
+		List<Marker2D> selected =
+			new();
+
+		if (remaining.Count == 0 ||
+			amount <= 0)
+		{
+			return selected;
+		}
+
+		Marker2D first =
+			remaining
+				.OrderByDescending(
+					marker =>
+						marker.GlobalPosition.DistanceTo(
+							playerStartPosition))
+				.First();
+
+		selected.Add(first);
+		remaining.Remove(first);
+
+		while (selected.Count < amount &&
+			remaining.Count > 0)
+		{
+			Marker2D next =
+				remaining
+					.OrderByDescending(
+						candidate =>
+						{
+							float minimumDistance =
+								selected.Min(
+									chosen =>
+										candidate.GlobalPosition.DistanceTo(
+											chosen.GlobalPosition));
+
+							float distanceFromStart =
+								candidate.GlobalPosition.DistanceTo(
+									playerStartPosition);
+
+							return
+								minimumDistance +
+								distanceFromStart * 0.20f;
+						})
+					.First();
+
+			selected.Add(next);
+			remaining.Remove(next);
+		}
+
+		return selected;
 	}
 
 	private static void Shuffle<T>(

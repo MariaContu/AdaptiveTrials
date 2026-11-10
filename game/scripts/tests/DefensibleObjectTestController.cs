@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using AdaptiveTrials.Game.Missions.Combat.Shared;
 using Godot;
 
@@ -19,7 +20,9 @@ public partial class DefensibleObjectTestController : Node2D
     private Marker2D _emitter = null!;
     private Label _healthLabel = null!;
     private Label _statusLabel = null!;
+    private readonly List<Marker2D> _relocationPoints = new();
     private float _shotRemaining;
+    private int _lastRelocationIndex = -1;
     private bool _testFinished;
 
     public override void _Ready()
@@ -29,6 +32,17 @@ public partial class DefensibleObjectTestController : Node2D
         _emitter = GetNode<Marker2D>("EnemyOrbEmitter");
         _healthLabel = GetNode<Label>("Interface/Panel/Margin/Content/HealthLabel");
         _statusLabel = GetNode<Label>("Interface/Panel/Margin/Content/StatusLabel");
+
+        Node2D relocationPoints =
+            GetNode<Node2D>("RelocationPoints");
+
+        foreach (Node child in relocationPoints.GetChildren())
+        {
+            if (child is Marker2D marker)
+            {
+                _relocationPoints.Add(marker);
+            }
+        }
 
         EnemyOrbScene ??= GD.Load<PackedScene>(
             "res://scenes/missions/combat/shared/EnemyMagicOrb.tscn");
@@ -102,8 +116,37 @@ public partial class DefensibleObjectTestController : Node2D
 
     private void OnDamageReceived(int damage, Node source)
     {
+        if (_defensibleObject.CurrentHealth <= 0)
+        {
+            return;
+        }
+
+        RelocateObject();
+
         _statusLabel.Text =
-            $"OBJETO ATINGIDO: -{damage} DE VIDA";
+            $"ATINGIDO: -{damage} • REPOSICIONADO • " +
+            $"VIDA {_defensibleObject.CurrentHealth}/" +
+            $"{_defensibleObject.MaximumHealth}";
+    }
+
+    private void RelocateObject()
+    {
+        if (_relocationPoints.Count == 0)
+        {
+            return;
+        }
+
+        int nextIndex =
+            (_lastRelocationIndex + 1) %
+            _relocationPoints.Count;
+
+        _lastRelocationIndex =
+            nextIndex;
+
+        _defensibleObject.GlobalPosition =
+            _relocationPoints[nextIndex].GlobalPosition;
+
+        _defensibleObject.PlayRelocationFeedback();
     }
 
     private void OnDestroyed(Node source)

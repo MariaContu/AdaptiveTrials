@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Text.Json;
 using System.Threading.Tasks;
 using AdaptiveTrials.Game.Components;
 using AdaptiveTrials.Game.Dto;
@@ -25,7 +26,6 @@ public partial class DecipherCodeMissionController : Node
     private MissionDto _mission = null!;
     private int _boardCount;
     private int _maximumAttempts;
-    private int _failures;
     private int _bestSolvedBoards;
     private double _elapsedTime;
     private bool _missionFinished;
@@ -100,11 +100,56 @@ public partial class DecipherCodeMissionController : Node
             3 => 9,
             _ => 6
         };
+
+        if (string.IsNullOrWhiteSpace(_mission.ParametersJson))
+        {
+            return;
+        }
+
+        try
+        {
+            using JsonDocument document =
+                JsonDocument.Parse(_mission.ParametersJson);
+
+            JsonElement root =
+                document.RootElement;
+
+            if (root.TryGetProperty(
+                    "boards",
+                    out JsonElement boardsElement) &&
+                boardsElement.TryGetInt32(
+                    out int configuredBoards))
+            {
+                _boardCount =
+                    Math.Clamp(
+                        configuredBoards,
+                        1,
+                        4);
+            }
+
+            if (root.TryGetProperty(
+                    "attempts",
+                    out JsonElement attemptsElement) &&
+                attemptsElement.TryGetInt32(
+                    out int configuredAttempts))
+            {
+                _maximumAttempts =
+                    Math.Clamp(
+                        configuredAttempts,
+                        1,
+                        12);
+            }
+        }
+        catch (JsonException exception)
+        {
+            GD.PushWarning(
+                $"ParametersJson inválido em Decifrar Código. " +
+                $"Valores padrão serão usados. {exception.Message}");
+        }
     }
 
     private void ConfigureMission()
     {
-        _failures = 0;
         _bestSolvedBoards = 0;
         _elapsedTime = 0;
         _missionFinished = false;
@@ -155,10 +200,7 @@ public partial class DecipherCodeMissionController : Node
             "Sequências descobertas");
         _missionHud.SetAttempts(remainingAttempts, _maximumAttempts);
 
-        if (solvedBoards < _boardCount)
-        {
-            _failures++;
-        }
+        // Palpites incorretos são tentativas do puzzle, não falhas da missão.
 
         GD.Print(
             $"Tentativa em Decifrar Código: " +
@@ -196,13 +238,17 @@ public partial class DecipherCodeMissionController : Node
         _isFinalizingMission = true;
         _board.SetInputEnabled(false);
 
+        // Apenas o esgotamento das tentativas caracteriza falha global.
+        // Acertos parciais e palpites incorretos não são falhas da missão.
+        int missionFailures = success ? 0 : 1;
+
         Result = new MissionResult
         {
             MissionId = _mission.Id,
             CompletionTime = _elapsedTime,
-            Failures = _failures,
+            Failures = missionFailures,
             Success = success,
-            Persistence = CalculatePersistence(success, _failures)
+            Persistence = CalculatePersistence(success, missionFailures)
         };
 
         _resultRegistered =
@@ -221,7 +267,7 @@ public partial class DecipherCodeMissionController : Node
             "Sequências descobertas",
             $"{_bestSolvedBoards}/{_boardCount}",
             GetDifficultyText(_mission.Difficulty),
-            _failures);
+            missionFailures);
 
         GD.Print($"MotivoEncerramento={finishReason}");
         PrintMissionResult();
